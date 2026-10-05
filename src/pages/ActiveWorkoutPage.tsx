@@ -5,7 +5,7 @@ import {
   ArrowDown, ArrowUp, Check, ChevronLeft, ChevronRight, CircleCheck, Dumbbell, Flag, History, ListPlus, Minus, NotebookPen, Plus,
   RotateCcw, Timer, Trash2, X,
 } from 'lucide-react';
-import { useActiveWorkout } from '@/store/ActiveWorkoutContext';
+import { IDLE_LIMIT_MS, useActiveWorkout } from '@/store/ActiveWorkoutContext';
 import { useData } from '@/store/DataContext';
 import { useNow } from '@/hooks/useNow';
 import { useWakeLock } from '@/hooks/useWakeLock';
@@ -21,7 +21,7 @@ import { ActivityRings } from '@/components/ui/ActivityRings';
 import { ExercisePicker } from '@/components/workout/ExercisePicker';
 import { ExerciseMediaButton } from '@/components/exercise/ExerciseMediaButton';
 import { MUSCLE_GROUPS } from '@/data/labels';
-import { formatClock, formatNumber, repsRange } from '@/utils/format';
+import { formatClock, formatDurationWords, formatNumber, repsRange } from '@/utils/format';
 import { lastPerformance } from '@/utils/stats';
 
 export default function ActiveWorkoutPage() {
@@ -71,7 +71,7 @@ export default function ActiveWorkoutPage() {
     );
   }
 
-  const elapsed = (now - new Date(active.startedAt).getTime()) / 1000;
+  const elapsed = (now - new Date(active.startedAt).getTime() - (active.pausedMs ?? 0)) / 1000;
   const idx = Math.min(active.currentIndex, Math.max(0, active.exercises.length - 1));
   const current = active.exercises[idx];
   const currentEx = current ? exerciseById(current.exerciseId) : undefined;
@@ -190,6 +190,14 @@ export default function ActiveWorkoutPage() {
       </header>
 
       <div className="space-y-5 px-4 pt-4">
+        {active.lastActivityAt && now - active.lastActivityAt > IDLE_LIMIT_MS && (
+          <div role="status" className="rounded-[18px] border border-warning/25 bg-warning/[0.07] p-4 text-[14px]">
+            <p className="font-semibold text-warning">Схоже, тренування не завершили вчасно</p>
+            <p className="mt-1 text-muted">
+              Остання дія була {formatDurationWords((now - active.lastActivityAt) / 1000)} тому. Паузу довшу за годину не буде враховано в тривалості тренування.
+            </p>
+          </div>
+        )}
         {active.exercises.length === 0 ? (
           <EmptyState
             icon={ListPlus}

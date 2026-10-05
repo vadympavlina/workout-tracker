@@ -1,4 +1,4 @@
-import { lazy } from 'react';
+import { lazy, Suspense } from 'react';
 import { createHashRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
 import { ToastProvider } from '@/components/ui/Toast';
 import { ConfirmProvider } from '@/components/ui/ConfirmDialog';
@@ -9,9 +9,9 @@ import { AppLayout } from '@/layouts/AppLayout';
 import { FocusLayout } from '@/layouts/FocusLayout';
 import { useTheme } from '@/hooks/useTheme';
 import Dashboard from '@/pages/Dashboard';
-import Onboarding from '@/pages/Onboarding';
 
 // Secondary screens are split into their own chunks.
+const Onboarding = lazy(() => import('@/pages/Onboarding'));
 const PlanPage = lazy(() => import('@/pages/PlanPage'));
 const PlanEditor = lazy(() => import('@/pages/PlanEditor'));
 const WorkoutDetail = lazy(() => import('@/pages/WorkoutDetail'));
@@ -67,7 +67,11 @@ export default function App() {
     <ToastProvider>
       <ConfirmProvider>
         <DataProvider
-          onboarding={(finish) => <Onboarding finish={finish} />}
+          onboarding={(finish) => (
+            <Suspense fallback={null}>
+              <Onboarding finish={finish} />
+            </Suspense>
+          )}
           fallback={
             <div className="mx-auto max-w-[1200px] px-4 pt-8">
               <PageSkeleton />

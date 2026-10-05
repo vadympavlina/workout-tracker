@@ -150,6 +150,10 @@ export interface ActiveWorkout {
   restEndsAt: number | null;
   /** Full length of the current rest in seconds (for the countdown ring). */
   restTotalSec?: number;
+  /** Last time the user changed anything (epoch ms) — detects forgotten workouts. */
+  lastActivityAt?: number;
+  /** Long idle gaps (> 1 h between actions) excluded from the duration, in ms. */
+  pausedMs?: number;
 }
 
 export interface ActiveExercise extends Omit<SessionExercise, 'sets'> {

@@ -97,9 +97,9 @@ export default function ProfilePage() {
       confirmLabel: 'Видалити все',
     });
     if (!ok) return;
-    await data.clearAll();
     active.discard();
-    toast.success('Дані видалено', 'Можна починати з чистого аркуша');
+    await data.clearAll();
+    toast.success('Дані видалено', 'Можна почати з чистого аркуша');
   };
 
   return (

@@ -33,6 +33,9 @@ interface ActiveApi {
 
 const ActiveContext = createContext<ActiveApi | null>(null);
 
+/** Inactivity after which a workout is considered forgotten. */
+export const IDLE_LIMIT_MS = 60 * 60_000;
+
 /** Builds pre-filled sets from the last time the exercise was performed (fast logging). */
 function buildExercise(exercise: Exercise, planned: PlanExercise | null, sessions: WorkoutSession[]): ActiveExercise {
   const last = lastPerformance(sessions, exercise.id);
@@ -79,7 +82,14 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const set = useCallback((next: ActiveWorkout | null) => {
+  const set = useCallback((input: ActiveWorkout | null) => {
+    let next = input;
+    if (input) {
+      const now = Date.now();
+      const prev = activeRef.current;
+      const gap = prev && prev.id === input.id && prev.lastActivityAt ? now - prev.lastActivityAt : 0;
+      next = { ...input, lastActivityAt: now, pausedMs: (input.pausedMs ?? 0) + (gap > IDLE_LIMIT_MS ? gap : 0) };
+    }
     activeRef.current = next;
     setActive(next);
     void dataService.saveActive(next);
@@ -295,7 +305,12 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
           .filter((e) => e.sets.length > 0);
         if (exercises.length === 0) return null;
 
-        const finishedAt = new Date();
+        // A workout left open (app closed without finishing) must not count idle
+        // hours: long gaps between actions are excluded, and a forgotten workout
+        // ends shortly after its last action.
+        const last = a.lastActivityAt ?? Date.now();
+        const finishedAt = new Date(Date.now() - last > IDLE_LIMIT_MS ? last + 5 * 60_000 : Date.now());
+        const activeMs = finishedAt.getTime() - new Date(a.startedAt).getTime() - (a.pausedMs ?? 0);
         const session: WorkoutSession = {
           id: a.id,
           planId: a.planId,
@@ -303,7 +318,7 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
           icon: a.icon,
           startedAt: a.startedAt,
           finishedAt: finishedAt.toISOString(),
-          durationSec: Math.round((finishedAt.getTime() - new Date(a.startedAt).getTime()) / 1000),
+          durationSec: Math.max(0, Math.round(activeMs / 1000)),
           exercises,
           note: a.note.trim(),
         };

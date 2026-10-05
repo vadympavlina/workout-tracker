@@ -11,7 +11,7 @@ export function ActiveWorkoutPill() {
   const now = useNow(1000, !!active);
   if (!active || pathname.startsWith('/active')) return null;
 
-  const elapsed = (now - new Date(active.startedAt).getTime()) / 1000;
+  const elapsed = (now - new Date(active.startedAt).getTime() - (active.pausedMs ?? 0)) / 1000;
   const finished = active.exercises.filter((e) => e.finished).length;
 
   return (

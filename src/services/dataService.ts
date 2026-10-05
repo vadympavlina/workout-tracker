@@ -1,5 +1,5 @@
 import type { ActiveWorkout, AppData, ExportFile } from '@/types';
-import { createDemoData, DEFAULT_SETTINGS, emptyData, emptyUser } from '@/data/demo';
+import { createDemoData, DEFAULT_SETTINGS, emptyUser } from '@/data/demo';
 import { DEFAULT_EXERCISES } from '@/data/exercises';
 import { ACCENTS } from '@/data/labels';
 import { localStorageAdapter, STORAGE_KEYS, type StorageAdapter } from './storage';
@@ -89,12 +89,10 @@ export function createDataService(adapter: StorageAdapter) {
       return demo;
     },
 
-    async clearAll(): Promise<AppData> {
+    /** Wipes everything on this device; the next load starts onboarding again. */
+    async clearAll(): Promise<void> {
       await mediaStore.clear().catch(() => {});
-      const data = emptyData();
-      await writeAll(data);
-      await adapter.remove(STORAGE_KEYS.active);
-      return data;
+      await Promise.all(Object.values(STORAGE_KEYS).map((k) => adapter.remove(k)));
     },
 
     /** Full backup including user photos (as data URLs). */

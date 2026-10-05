@@ -14,6 +14,8 @@ import { readFileAsText } from '@/utils/files';
 import { toISODate } from '@/utils/date';
 import { uid } from '@/utils/id';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { useTheme } from '@/hooks/useTheme';
+import { DEFAULT_SETTINGS } from '@/data/demo';
 
 interface Props {
   finish: (data: AppData) => Promise<void>;
@@ -22,6 +24,7 @@ interface Props {
 /** First launch: start fresh with a short profile, explore the demo, or restore a backup. */
 export default function Onboarding({ finish }: Props) {
   usePageTitle('Ласкаво просимо');
+  useTheme(DEFAULT_SETTINGS);
   const [step, setStep] = useState<'welcome' | 'profile'>('welcome');
   const [busy, setBusy] = useState(false);
   const toast = useToast();

@@ -148,7 +148,12 @@ export function DataProvider({ children, fallback, onboarding }: ProviderProps) 
         await replace(next);
       },
       resetToDemo: async () => replace(await dataService.resetToDemo()),
-      clearAll: async () => replace(await dataService.clearAll()),
+      clearAll: async () => {
+        await dataService.clearAll();
+        dataRef.current = null;
+        setData(null);
+        setFirstRun(true);
+      },
     };
   }, [data, commit, replace]);
 
