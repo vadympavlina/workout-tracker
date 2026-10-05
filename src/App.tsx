@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { HashRouter, Route, Routes } from 'react-router-dom';
+import { createHashRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
 import { ToastProvider } from '@/components/ui/Toast';
 import { ConfirmProvider } from '@/components/ui/ConfirmDialog';
 import { PageSkeleton } from '@/components/ui/Skeleton';
@@ -26,11 +26,11 @@ const WeightPage = lazy(() => import('@/pages/WeightPage'));
 const HelpPage = lazy(() => import('@/pages/HelpPage'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
-function ThemedRoutes() {
-  const { data } = useData();
-  useTheme(data.settings);
-  return (
-    <Routes>
+// Data router (needed for navigation blocking on unsaved edits). Hash-based so
+// refreshes and deep links work on GitHub Pages without server rewrites.
+const router = createHashRouter(
+  createRoutesFromElements(
+    <>
       <Route element={<AppLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="plan" element={<PlanPage />} />
@@ -51,28 +51,32 @@ function ThemedRoutes() {
         <Route path="active" element={<ActiveWorkoutPage />} />
         <Route path="summary/:id" element={<WorkoutSummary />} />
       </Route>
-    </Routes>
-  );
+    </>,
+  ),
+);
+
+function ThemedApp() {
+  const { data } = useData();
+  useTheme(data.settings);
+  return <RouterProvider router={router} />;
 }
 
 export default function App() {
   return (
-    <HashRouter>
-      <ToastProvider>
-        <ConfirmProvider>
-          <DataProvider
-            fallback={
-              <div className="mx-auto max-w-[1200px] px-4 pt-8">
-                <PageSkeleton />
-              </div>
-            }
-          >
-            <ActiveWorkoutProvider>
-              <ThemedRoutes />
-            </ActiveWorkoutProvider>
-          </DataProvider>
-        </ConfirmProvider>
-      </ToastProvider>
-    </HashRouter>
+    <ToastProvider>
+      <ConfirmProvider>
+        <DataProvider
+          fallback={
+            <div className="mx-auto max-w-[1200px] px-4 pt-8">
+              <PageSkeleton />
+            </div>
+          }
+        >
+          <ActiveWorkoutProvider>
+            <ThemedApp />
+          </ActiveWorkoutProvider>
+        </DataProvider>
+      </ConfirmProvider>
+    </ToastProvider>
   );
 }

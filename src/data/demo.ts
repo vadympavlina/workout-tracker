@@ -9,6 +9,7 @@ export const DEFAULT_SETTINGS: Settings = {
   restTimerSec: 90,
   autoRestTimer: true,
   vibration: true,
+  keepAwake: true,
 };
 
 export function emptyUser(): UserProfile {

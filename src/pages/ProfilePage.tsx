@@ -349,6 +349,12 @@ function SettingsSheet({ open, onClose, settings, onChange }: { open: boolean; o
           onChange={(v) => onChange({ autoRestTimer: v })}
         />
         <Switch label="Вібрація" description="Сигнал про кінець відпочинку та нові рекорди" checked={settings.vibration} onChange={(v) => onChange({ vibration: v })} />
+        <Switch
+          label="Екран не гасне"
+          description="Під час тренування телефон не блокується"
+          checked={settings.keepAwake}
+          onChange={(v) => onChange({ keepAwake: v })}
+        />
       </div>
     </Modal>
   );

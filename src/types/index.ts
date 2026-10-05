@@ -148,6 +148,8 @@ export interface ActiveWorkout {
   note: string;
   /** When the current rest timer ends (epoch ms), or null. */
   restEndsAt: number | null;
+  /** Full length of the current rest in seconds (for the countdown ring). */
+  restTotalSec?: number;
 }
 
 export interface ActiveExercise extends Omit<SessionExercise, 'sets'> {
@@ -180,6 +182,8 @@ export interface Settings {
   restTimerSec: number;
   autoRestTimer: boolean;
   vibration: boolean;
+  /** Keep the screen on during an active workout. */
+  keepAwake: boolean;
 }
 
 export interface AppData {

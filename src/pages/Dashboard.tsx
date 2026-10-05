@@ -377,11 +377,18 @@ function WeekPlan() {
 
   const days = WEEKDAYS_SHORT.map((label, i) => {
     const date = addDays(weekStart, i);
-    const plan = data.plans.find((p) => p.days.includes(i as 0));
-    const done = sessions.find((s) => isSameDay(s.startedAt, date));
-    return { label, i, date, plan, done };
+    const plans = data.plans.filter((p) => p.days.includes(i as 0));
+    const done = sessions.filter((s) => isSameDay(s.startedAt, date));
+    return { label, i, date, plans, done };
   });
-  const scheduled = days.filter((d) => d.plan || d.done);
+
+  // One row per finished workout, plus every scheduled plan not yet done that day.
+  const rows = days.flatMap(({ label, i, plans, done }) => [
+    ...done.map((s) => ({ key: s.id, label, i, name: s.name, to: `/history/${s.id}`, done: true })),
+    ...plans
+      .filter((p) => !done.some((s) => s.planId === p.id))
+      .map((p) => ({ key: `${p.id}-${i}`, label, i, name: p.name, to: `/workout/${p.id}`, done: false })),
+  ]);
 
   return (
     <Section title="Цей тиждень" action={<SeeAll to="/plan">План</SeeAll>}>
@@ -399,9 +406,11 @@ function WeekPlan() {
       ) : (
         <div className="card p-4 sm:p-5">
           <ol className="grid grid-cols-7 gap-1" aria-label="Дні тижня">
-            {days.map(({ label, i, date, plan, done }) => {
+            {days.map(({ label, i, date, plans, done: doneList }) => {
               const isToday = i === todayIdx;
               const past = i < todayIdx;
+              const plan = plans[0];
+              const done = doneList.length > 0;
               return (
                 <li key={label} className="flex flex-col items-center gap-2">
                   <span className={clsx('font-mono text-[11px] font-medium uppercase', isToday ? 'text-fg' : 'text-subtle')}>{label}</span>
@@ -431,13 +440,11 @@ function WeekPlan() {
           </ol>
 
           <ul className="mt-4 space-y-1 border-t border-white/[0.06] pt-3">
-            {scheduled.map(({ label, i, plan, done }) => {
+            {rows.map(({ key, label, i, name, to, done }) => {
               const isToday = i === todayIdx;
-              const name = done?.name ?? plan!.name;
-              const to = done ? `/history/${done.id}` : `/workout/${plan!.id}`;
               const status = done ? 'Виконано' : isToday ? 'Сьогодні' : i < todayIdx ? 'Пропущено' : 'Заплановано';
               return (
-                <li key={label}>
+                <li key={key}>
                   <Link to={to} className="-mx-2 flex min-h-[52px] items-center gap-3 rounded-[14px] px-2 transition hover:bg-white/[0.04]">
                     <span className={clsx('w-7 font-mono text-[12px] font-medium uppercase', isToday ? 'text-fg' : 'text-subtle')}>{label}</span>
                     <span className="min-w-0 flex-1 truncate text-[15px] font-medium">{name}</span>

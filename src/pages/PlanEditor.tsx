@@ -1,10 +1,11 @@
-import { useMemo, useState, type FormEvent } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useBlocker, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
-import { ArrowDown, ArrowUp, ListPlus, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, GripVertical, ListPlus, Plus, Save, Trash2 } from 'lucide-react';
 import type { IconKey, PlanExercise, Weekday, WorkoutPlan } from '@/types';
 import { useData } from '@/store/DataContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { useDragReorder } from '@/hooks/useDragReorder';
 import { TopBar } from '@/components/ui/TopBar';
 import { Button, IconButton } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -53,6 +54,35 @@ export default function PlanEditor() {
   const [nameError, setNameError] = useState('');
   const [pickerOpen, setPickerOpen] = useState(false);
 
+  // Unsaved-changes guard: covers in-app navigation (back, tab bar) and closing the tab.
+  const leaving = useRef(false);
+  const dirty = JSON.stringify(plan) !== JSON.stringify(initial);
+  const blocker = useBlocker(({ currentLocation, nextLocation }) => dirty && !leaving.current && currentLocation.pathname !== nextLocation.pathname);
+  useEffect(() => {
+    if (blocker.state !== 'blocked') return;
+    void confirm({
+      title: 'Вийти без збереження?',
+      description: 'Зміни в тренуванні буде втрачено.',
+      confirmLabel: 'Вийти',
+      cancelLabel: 'Залишитись',
+    }).then((ok) => (ok ? blocker.proceed() : blocker.reset()));
+  }, [blocker, confirm]);
+  useEffect(() => {
+    if (!dirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [dirty]);
+
+  const reorder = useDragReorder(plan.exercises.length, (from, to) =>
+    setPlan((cur) => {
+      const list = [...cur.exercises];
+      const [moved] = list.splice(from, 1);
+      list.splice(to, 0, moved);
+      return { ...cur, exercises: list };
+    }),
+  );
+
   if (id && !existing) return <NotFound />;
 
   const patch = (p: Partial<WorkoutPlan>) => setPlan((cur) => ({ ...cur, ...p }));
@@ -85,6 +115,7 @@ export default function PlanEditor() {
         repsMax: Math.max(e.repsMin, e.repsMax),
       })),
     };
+    leaving.current = true;
     savePlan(cleaned);
     toast.success(existing ? 'Тренування оновлено' : 'Тренування створено', cleaned.name);
     navigate(`/workout/${cleaned.id}`, { replace: true });
@@ -98,6 +129,7 @@ export default function PlanEditor() {
       confirmLabel: 'Видалити',
     });
     if (!ok) return;
+    leaving.current = true;
     deletePlan(existing.id);
     toast.success('Тренування видалено');
     navigate('/plan', { replace: true });
@@ -209,14 +241,27 @@ export default function PlanEditor() {
             {plan.exercises.map((pe, i) => {
               const ex = exerciseById(pe.exerciseId);
               return (
-                <li key={pe.id} className="card p-3.5 sm:p-4">
-                  <div className="flex items-center gap-3">
-                    <span className="tabular inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/[0.05] text-[13px] font-semibold text-muted">
-                      {i + 1}
-                    </span>
+                <li
+                  key={pe.id}
+                  ref={reorder.register(i)}
+                  style={reorder.itemStyle(i)}
+                  className={clsx('card p-3.5 sm:p-4', reorder.dragging === i && 'border-accent/40')}
+                >
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      aria-label={`Перетягнути ${ex?.name ?? 'вправу'}`}
+                      className="-ml-1 inline-flex h-11 w-8 shrink-0 items-center justify-center rounded-xl text-subtle transition hover:text-fg"
+                      {...reorder.handleProps(i)}
+                    >
+                      <GripVertical size={18} aria-hidden />
+                    </button>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[15px] font-semibold">{ex?.name ?? 'Видалена вправа'}</p>
-                      {ex && <p className="text-[13px] text-subtle">{MUSCLE_GROUPS[ex.muscleGroup]}</p>}
+                      <p className="text-[13px] text-subtle">
+                        <span className="tabular font-mono">{i + 1}</span>
+                        {ex && ` · ${MUSCLE_GROUPS[ex.muscleGroup]}`}
+                      </p>
                     </div>
                     <IconButton icon={ArrowUp} label="Вище" size="sm" disabled={i === 0} onClick={() => move(i, -1)} />
                     <IconButton icon={ArrowDown} label="Нижче" size="sm" disabled={i === plan.exercises.length - 1} onClick={() => move(i, 1)} />

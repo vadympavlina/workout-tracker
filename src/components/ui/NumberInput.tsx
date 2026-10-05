@@ -20,6 +20,8 @@ interface Props {
   className?: string;
   disabled?: boolean;
   dimmed?: boolean;
+  /** Compact only: tiny caption above the value (e.g. last time's value). */
+  caption?: string;
 }
 
 /**
@@ -28,7 +30,7 @@ interface Props {
  */
 export function NumberInput({
   value, onChange, label, ariaLabel, step = 1, min = 0, max = 9999, decimals = 0, placeholder, suffix,
-  variant = 'stepper', className, disabled, dimmed,
+  variant = 'stepper', className, disabled, dimmed, caption,
 }: Props) {
   const id = useId();
   const [text, setText] = useState(value == null ? '' : String(value));
@@ -70,7 +72,7 @@ export function NumberInput({
       onBlur={() => setText(value == null ? '' : String(value))}
       className={clsx(
         'tabular w-full min-w-0 bg-transparent text-center font-semibold text-fg placeholder:font-normal placeholder:text-subtle focus:outline-none',
-        variant === 'compact' ? 'h-11 text-[17px]' : 'h-12 text-[18px]',
+        variant === 'compact' ? clsx('h-12 text-[17px]', caption && 'pt-2.5') : 'h-12 text-[18px]',
         dimmed && 'text-muted',
       )}
     />
@@ -80,10 +82,15 @@ export function NumberInput({
     return (
       <div
         className={clsx(
-          'rounded-[14px] border border-transparent bg-white/[0.06] transition focus-within:border-accent/70 focus-within:bg-accent/[0.06]',
+          'relative rounded-[14px] border border-transparent bg-white/[0.06] transition focus-within:border-accent/70 focus-within:bg-accent/[0.06]',
           className,
         )}
       >
+        {caption && (
+          <span className="pointer-events-none absolute inset-x-0 top-1 text-center font-mono text-[9.5px] leading-none text-subtle" aria-hidden>
+            {caption}
+          </span>
+        )}
         {input}
       </div>
     );

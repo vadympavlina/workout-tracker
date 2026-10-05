@@ -12,7 +12,9 @@ interface ActiveApi {
   /** Toggles a set; returns `record` when the completed set beats the personal record. */
   toggleSet: (exIndex: number, setIndex: number) => { ok: boolean; record: boolean; reason?: string };
   addSet: (exIndex: number) => void;
-  removeSet: (exIndex: number, setIndex: number) => void;
+  /** Removes a set and returns it so the caller can offer undo. */
+  removeSet: (exIndex: number, setIndex: number) => ActiveSet | null;
+  restoreSet: (exIndex: number, setIndex: number, set: ActiveSet) => void;
   setExerciseNote: (exIndex: number, note: string) => void;
   setWorkoutNote: (note: string) => void;
   finishExercise: (exIndex: number) => void;
@@ -137,7 +139,20 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
       },
 
       updateSet: (exIndex, setIndex, patch) =>
-        mutateExercise(exIndex, (e) => ({ ...e, sets: e.sets.map((s, i) => (i === setIndex ? { ...s, ...patch } : s)) })),
+        mutateExercise(exIndex, (e) => {
+          const before = e.sets[setIndex];
+          // A new working weight carries over to the following, not-yet-done sets
+          // that still had the same weight — they were "the same plan", not custom.
+          const carry = patch.weight !== undefined && before && !before.done;
+          return {
+            ...e,
+            sets: e.sets.map((s, i) => {
+              if (i === setIndex) return { ...s, ...patch };
+              if (carry && i > setIndex && !s.done && s.weight === before.weight) return { ...s, weight: patch.weight ?? null };
+              return s;
+            }),
+          };
+        }),
 
       toggleSet: (exIndex, setIndex) => {
         const a = activeRef.current;
@@ -176,6 +191,7 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
               : done
                 ? null
                 : a.restEndsAt,
+          restTotalSec: done && settings.autoRestTimer ? settings.restTimerSec : a.restTotalSec,
           exercises: a.exercises.map((e, i) =>
             i === exIndex
               ? { ...e, sets: e.sets.map((s, j) => (j === setIndex ? { ...s, done, weight: s.weight ?? 0 } : s)) }
@@ -198,8 +214,18 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
           };
         }),
 
-      removeSet: (exIndex, setIndex) =>
-        mutateExercise(exIndex, (e) => ({ ...e, sets: e.sets.filter((_, i) => i !== setIndex) })),
+      removeSet: (exIndex, setIndex) => {
+        const removed = activeRef.current?.exercises[exIndex]?.sets[setIndex] ?? null;
+        mutateExercise(exIndex, (e) => ({ ...e, sets: e.sets.filter((_, i) => i !== setIndex) }));
+        return removed;
+      },
+
+      restoreSet: (exIndex, setIndex, set) =>
+        mutateExercise(exIndex, (e) => {
+          const sets = [...e.sets];
+          sets.splice(Math.min(setIndex, sets.length), 0, set);
+          return { ...e, sets };
+        }),
 
       setExerciseNote: (exIndex, note) => mutateExercise(exIndex, (e) => ({ ...e, note })),
       setWorkoutNote: (note) => mutate((a) => ({ ...a, note })),
@@ -238,9 +264,17 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
           return { ...a, exercises, currentIndex };
         }),
 
-      startRest: (seconds) => mutate((a) => ({ ...a, restEndsAt: Date.now() + (seconds ?? settingsRef.current.restTimerSec) * 1000 })),
+      startRest: (seconds) =>
+        mutate((a) => {
+          const sec = seconds ?? (settingsRef.current.restTimerSec || 90);
+          return { ...a, restEndsAt: Date.now() + sec * 1000, restTotalSec: sec };
+        }),
       adjustRest: (delta) =>
-        mutate((a) => (a.restEndsAt ? { ...a, restEndsAt: Math.max(Date.now(), a.restEndsAt + delta * 1000) } : a)),
+        mutate((a) =>
+          a.restEndsAt
+            ? { ...a, restEndsAt: Math.max(Date.now(), a.restEndsAt + delta * 1000), restTotalSec: Math.max(1, (a.restTotalSec ?? 90) + delta) }
+            : a,
+        ),
       stopRest: () => mutate((a) => ({ ...a, restEndsAt: null })),
 
       finish: () => {

@@ -8,6 +8,7 @@ import {
 import { useActiveWorkout } from '@/store/ActiveWorkoutContext';
 import { useData } from '@/store/DataContext';
 import { useNow } from '@/hooks/useNow';
+import { useWakeLock } from '@/hooks/useWakeLock';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { Button, ButtonLink, IconButton } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -16,6 +17,7 @@ import { Textarea } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { SetTable } from '@/components/workout/SetTable';
+import { ActivityRings } from '@/components/ui/ActivityRings';
 import { ExercisePicker } from '@/components/workout/ExercisePicker';
 import { ExerciseMediaButton } from '@/components/exercise/ExerciseMediaButton';
 import { MUSCLE_GROUPS } from '@/data/labels';
@@ -35,9 +37,11 @@ export default function ActiveWorkoutPage() {
   const [recordSetId, setRecordSetId] = useState<string | null>(null);
   const [noteOpen, setNoteOpen] = useState(false);
   const cardRef = useRef<HTMLElement>(null);
+  useWakeLock(!!active && data.settings.keepAwake);
 
   // Rest timer completion.
   const restLeft = active?.restEndsAt ? Math.ceil((active.restEndsAt - now) / 1000) : null;
+  const resting = restLeft != null && restLeft > 0;
   useEffect(() => {
     if (restLeft != null && restLeft <= 0) {
       workout.stopRest();
@@ -162,7 +166,7 @@ export default function ActiveWorkoutPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl" style={{ paddingBottom: `calc(${restLeft != null && restLeft > 0 ? 200 : 120}px + var(--safe-bottom))` }}>
+    <div className="mx-auto max-w-2xl" style={{ paddingBottom: 'calc(120px + var(--safe-bottom))' }}>
       {/* Header */}
       <header
         className="sticky top-0 z-30 border-b border-white/[0.06] bg-bg/80 px-2 pb-3 backdrop-blur-2xl sm:px-4"
@@ -281,30 +285,25 @@ export default function ActiveWorkoutPage() {
                 <SetTable
                   exercise={current}
                   isBodyweight={currentEx?.equipment === 'bodyweight'}
+                  weightStep={currentEx?.equipment === 'dumbbell' || currentEx?.equipment === 'kettlebell' ? 1 : 2.5}
                   recordSetId={recordSetId}
                   onChange={(setIndex, patch) => workout.updateSet(idx, setIndex, patch)}
                   onToggle={toggle}
+                  onRemove={(setIndex) => {
+                    const removed = workout.removeSet(idx, setIndex);
+                    if (removed)
+                      toast.show({
+                        kind: 'info',
+                        title: `Підхід ${setIndex + 1} видалено`,
+                        action: { label: 'Повернути', onClick: () => workout.restoreSet(idx, setIndex, removed) },
+                      });
+                  }}
                 />
               </div>
 
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <Button variant="secondary" size="sm" icon={Plus} className="h-11" onClick={() => workout.addSet(idx)}>
-                  Додати підхід
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  icon={Minus}
-                  className="h-11"
-                  disabled={current.sets.length <= 1}
-                  onClick={() => {
-                    const lastUndone = current.sets.map((s) => s.done).lastIndexOf(false);
-                    workout.removeSet(idx, lastUndone >= 0 ? lastUndone : current.sets.length - 1);
-                  }}
-                >
-                  Прибрати
-                </Button>
-              </div>
+              <Button variant="secondary" block icon={Plus} className="mt-3" onClick={() => workout.addSet(idx)}>
+                Додати підхід
+              </Button>
 
               {noteOpen || current.note ? (
                 <Textarea
@@ -388,33 +387,41 @@ export default function ActiveWorkoutPage() {
         </Button>
       </div>
 
-      {/* Rest timer */}
-      {restLeft != null && restLeft > 0 && (
-        <div className="fixed inset-x-0 z-40 flex justify-center px-4" style={{ bottom: 'calc(88px + var(--safe-bottom))' }}>
-          <div role="timer" aria-label="Таймер відпочинку" className="flex w-full max-w-2xl animate-slide-up items-center gap-2 rounded-full border border-volume/25 bg-[rgb(22_22_25/0.9)] p-1.5 pl-4 shadow-2xl backdrop-blur-2xl">
-            <Timer size={18} className="text-volume" aria-hidden />
-            <span className="eyebrow">Відпочинок</span>
-            <span className="metric flex-1 font-mono text-[22px] text-volume">{formatClock(restLeft)}</span>
-            <Button size="sm" variant="secondary" onClick={() => workout.adjustRest(-15)} aria-label="Мінус 15 секунд">
-              −15
-            </Button>
-            <Button size="sm" variant="secondary" onClick={() => workout.adjustRest(15)} aria-label="Плюс 15 секунд">
-              +15
-            </Button>
-            <IconButton icon={X} label="Пропустити відпочинок" size="sm" onClick={workout.stopRest} />
-          </div>
-        </div>
-      )}
-
-      {/* Bottom action */}
-      <div className="fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-bg via-bg/95 to-transparent pt-6" style={{ paddingBottom: 'var(--safe-bottom)' }}>
-        <div className="mx-auto flex max-w-2xl gap-2 px-4 py-3">
-          {restLeft == null && active.exercises.length > 0 && (
-            <IconButton icon={Timer} label="Почати відпочинок" variant="secondary" className="h-14 w-14" onClick={() => workout.startRest()} />
+      {/* Bottom action bar — the rest timer lives here so it never covers content. */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.06] bg-bg/95 backdrop-blur-2xl" style={{ paddingBottom: 'var(--safe-bottom)' }}>
+        <div className="mx-auto flex max-w-2xl items-center gap-2 px-4 py-3">
+          {resting ? (
+            <>
+              <button
+                type="button"
+                onClick={workout.stopRest}
+                aria-label={`Відпочинок: залишилось ${formatClock(restLeft!)}. Натисни, щоб пропустити`}
+                className="relative flex h-14 min-w-0 flex-1 items-center gap-2.5 rounded-full bg-volume/[0.12] pl-1.5 pr-4 transition hover:bg-volume/[0.18] active:scale-[0.97]"
+              >
+                <ActivityRings size={44} stroke={5} rings={[{ label: 'Відпочинок', value: restLeft!, max: active.restTotalSec || 90, color: 'volume' }]} label="">
+                  <Timer size={16} className="text-volume" aria-hidden />
+                </ActivityRings>
+                <span className="min-w-0 text-left">
+                  <span className="eyebrow block text-volume/70">Відпочинок</span>
+                  <span role="timer" className="metric block font-mono text-[19px] text-volume">
+                    {formatClock(restLeft!)}
+                  </span>
+                </span>
+              </button>
+              <IconButton icon={Minus} label="Мінус 15 секунд відпочинку" variant="secondary" className="h-14 w-12" onClick={() => workout.adjustRest(-15)} />
+              <IconButton icon={Plus} label="Плюс 15 секунд відпочинку" variant="secondary" className="h-14 w-12" onClick={() => workout.adjustRest(15)} />
+              <Button size="lg" icon={Flag} className="w-14 shrink-0 px-0" onClick={finishWorkout} aria-label="Завершити тренування" title="Завершити тренування" />
+            </>
+          ) : (
+            <>
+              {active.exercises.length > 0 && (
+                <IconButton icon={Timer} label="Почати відпочинок" variant="secondary" className="h-14 w-14" onClick={() => workout.startRest()} />
+              )}
+              <Button size="lg" block icon={Flag} onClick={finishWorkout}>
+                Завершити тренування
+              </Button>
+            </>
           )}
-          <Button size="lg" block icon={Flag} onClick={finishWorkout}>
-            Завершити тренування
-          </Button>
         </div>
       </div>
 

@@ -10,6 +10,8 @@ interface ToastItem {
   kind: ToastKind;
   title: string;
   description?: string;
+  /** Optional inline action, e.g. "Undo". */
+  action?: { label: string; onClick: () => void };
 }
 
 interface ToastApi {
@@ -38,8 +40,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const show = useCallback(
     (toast: Omit<ToastItem, 'id'>) => {
       const id = nextId.current++;
-      setToasts((list) => [...list.slice(-2), { ...toast, id }]);
-      window.setTimeout(() => dismiss(id), toast.kind === 'error' ? 5000 : 3200);
+      // Same message again replaces the old one instead of stacking; at most 2 visible.
+      setToasts((list) => [...list.filter((t) => t.title !== toast.title).slice(-1), { ...toast, id }]);
+      window.setTimeout(() => dismiss(id), toast.action ? 5000 : toast.kind === 'error' ? 4500 : 2600);
     },
     [dismiss],
   );
@@ -61,7 +64,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         <div
           aria-live="polite"
           className="pointer-events-none fixed inset-x-0 z-[60] flex flex-col items-center gap-2 px-4 lg:bottom-6 lg:left-auto lg:right-6 lg:items-end"
-          style={{ top: 'calc(12px + var(--safe-top))' }}
+          style={{ top: 'calc(8px + var(--safe-top))' }}
         >
           {toasts.map((t) => {
             const Icon = ICON[t.kind];
@@ -70,20 +73,32 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 key={t.id}
                 role={t.kind === 'error' ? 'alert' : 'status'}
                 className={clsx(
-                  'pointer-events-auto flex w-full max-w-sm animate-slide-up items-start gap-3 rounded-[22px] border border-white/[0.08] bg-[rgb(28_28_31/0.9)] p-3.5 pr-2 shadow-2xl backdrop-blur-2xl',
+                  'pointer-events-auto flex w-full max-w-sm animate-slide-up items-center gap-3 rounded-[20px] border border-white/[0.08] bg-[rgb(28_28_31/0.92)] py-2 pl-3.5 pr-1.5 shadow-2xl backdrop-blur-2xl',
                   t.kind === 'record' && 'border-warning/30',
                 )}
               >
-                <Icon size={20} className={clsx('mt-0.5 shrink-0', TONE[t.kind], t.kind === 'record' && 'animate-pop')} aria-hidden />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[15px] font-semibold leading-snug">{t.title}</p>
-                  {t.description && <p className="mt-0.5 text-[13px] text-muted">{t.description}</p>}
+                <Icon size={19} className={clsx('shrink-0', TONE[t.kind], t.kind === 'record' && 'animate-pop')} aria-hidden />
+                <div className="min-w-0 flex-1 py-0.5">
+                  <p className="truncate text-[14px] font-semibold leading-snug">{t.title}</p>
+                  {t.description && <p className="truncate text-[12.5px] text-muted">{t.description}</p>}
                 </div>
+                {t.action && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      t.action!.onClick();
+                      dismiss(t.id);
+                    }}
+                    className="h-9 shrink-0 rounded-full bg-white/[0.1] px-3.5 text-[13px] font-semibold text-accent transition hover:bg-white/[0.16]"
+                  >
+                    {t.action.label}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => dismiss(t.id)}
                   aria-label="Закрити сповіщення"
-                  className="-my-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-subtle hover:bg-white/[0.06] hover:text-fg"
+                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-subtle hover:bg-white/[0.06] hover:text-fg"
                 >
                   <X size={16} aria-hidden />
                 </button>
