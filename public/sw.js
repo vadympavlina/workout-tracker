@@ -1,11 +1,20 @@
 /* Pulse service worker — offline support for a static GitHub Pages build.
  * Paths are resolved relative to the worker's scope, so it works from any sub-path. */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL_CACHE = `pulse-shell-${VERSION}`;
 const ASSET_CACHE = `pulse-assets-${VERSION}`;
 const scopeUrl = (path) => new URL(path, self.registration.scope).toString();
 
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png'];
+const SHELL = [
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './favicon.ico',
+  './icons/favicon.svg',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/apple-touch-icon.png',
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

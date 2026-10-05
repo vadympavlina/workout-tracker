@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Simplified mark for 16–48px: bar + two plates, no outer collars. -->
+  <rect width="512" height="512" rx="128" fill="#C4F53D"/>
+  <g fill="#0A0A0A">
+    <rect x="72" y="212" width="368" height="88" rx="28"/>
+    <rect x="120" y="108" width="104" height="296" rx="40"/>
+    <rect x="288" y="108" width="104" height="296" rx="40"/>
+  </g>
+</svg>
