@@ -1,0 +1,57 @@
+import { CalendarDays, Download, Play, Smartphone, Timer, Trophy } from 'lucide-react';
+import { usePageTitle } from '@/hooks/usePageTitle';
+import { TopBar } from '@/components/ui/TopBar';
+import { IconBadge } from '@/components/ui/IconBadge';
+
+const TOPICS = [
+  {
+    icon: CalendarDays,
+    title: 'Плани тренувань',
+    body: 'У розділі «План» створи тренування, додай вправи, задай підходи й діапазон повторень та обери дні тижня. Тренування без дня — це шаблон, який можна запускати будь-коли.',
+  },
+  {
+    icon: Play,
+    title: 'Запис тренування',
+    body: 'Натисни «Почати тренування». Вага й повторення з минулого разу підставляються автоматично — зміни цифру, якщо потрібно, і познач підхід галочкою. Можна згорнути тренування й повернутися до нього — дані не загубляться.',
+  },
+  {
+    icon: Timer,
+    title: 'Таймер відпочинку',
+    body: 'Після кожного виконаного підходу запускається таймер відпочинку. Тривалість і автозапуск налаштовуються в Профіль → Налаштування.',
+  },
+  {
+    icon: Trophy,
+    title: 'Рекорди та прогрес',
+    body: 'Рекорд — найбільша вага у вправі (за однакової ваги — більше повторень). Розділ «Прогрес» показує обсяг, кількість тренувань, вагу тіла та динаміку кожної вправи.',
+  },
+  {
+    icon: Download,
+    title: 'Збереження даних',
+    body: 'Усі дані зберігаються лише в цьому браузері (localStorage). Очищення даних сайту видалить історію, тож регулярно роби «Експорт даних» у профілі. Файл можна імпортувати на іншому пристрої.',
+  },
+  {
+    icon: Smartphone,
+    title: 'Встановлення на телефон',
+    body: 'iPhone: Safari → «Поділитися» → «На екран Додому». Android: Chrome → меню ⋮ → «Встановити застосунок». Після встановлення Pulse відкривається на весь екран і працює офлайн.',
+  },
+];
+
+export default function HelpPage() {
+  usePageTitle('Допомога');
+  return (
+    <div className="mx-auto max-w-3xl">
+      <TopBar back="/profile" title="Допомога" subtitle="Як отримати максимум від Pulse" />
+      <ul className="space-y-3">
+        {TOPICS.map(({ icon, title, body }) => (
+          <li key={title} className="card flex gap-4 p-4 sm:p-5">
+            <IconBadge icon={icon} />
+            <div>
+              <h2 className="text-[16px] font-semibold">{title}</h2>
+              <p className="mt-1 text-[15px] leading-relaxed text-muted">{body}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}

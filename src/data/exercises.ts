@@ -1,0 +1,48 @@
+import type { Exercise } from '@/types';
+
+type Seed = Omit<Exercise, 'isCustom'>;
+
+const seed: Seed[] = [
+  { id: 'leg-press', name: 'Жим ногами', muscleGroup: 'legs', equipment: 'machine', icon: 'footprints', defaultSets: 4, defaultRepsMin: 10, defaultRepsMax: 12,
+    description: 'Ступні на ширині плечей посередині платформи. Опускай платформу до кута ~90° в колінах, не відриваючи поперек від спинки.' },
+  { id: 'chest-press-machine', name: 'Жим грудей у тренажері', muscleGroup: 'chest', equipment: 'machine', icon: 'dumbbell', defaultSets: 3, defaultRepsMin: 8, defaultRepsMax: 12,
+    description: 'Лопатки зведені й притиснуті до спинки. Ручки на рівні середини грудей, лікті трохи нижче плечей.' },
+  { id: 'pec-deck', name: 'Розводка в тренажері', muscleGroup: 'chest', equipment: 'machine', icon: 'shield', defaultSets: 3, defaultRepsMin: 12, defaultRepsMax: 15,
+    description: 'Злегка зігнуті лікті зафіксовані. Зводь руки дугою, фокусуючись на скороченні грудних, повільно повертай назад.' },
+  { id: 'lat-pulldown', name: 'Тяга верхнього блоку', muscleGroup: 'back', equipment: 'cable', icon: 'mountain', defaultSets: 3, defaultRepsMin: 8, defaultRepsMax: 12,
+    description: 'Хват трохи ширше плечей. Тягни руків\'я до верхньої частини грудей ліктями вниз, без розгойдування корпусом.' },
+  { id: 'seated-cable-row', name: 'Тяга нижнього блоку', muscleGroup: 'back', equipment: 'cable', icon: 'activity', defaultSets: 3, defaultRepsMin: 10, defaultRepsMax: 12,
+    description: 'Спина рівна, груди вперед. Тягни руків\'я до низу живота, зводячи лопатки; не відкидайся корпусом назад.' },
+  { id: 'chest-supported-row', name: 'Тяга в тренажері з упором у груди', muscleGroup: 'back', equipment: 'machine', icon: 'shield', defaultSets: 3, defaultRepsMin: 8, defaultRepsMax: 12,
+    description: 'Груди щільно притиснуті до упору. Тягни лікті назад уздовж корпусу, затримуйся на секунду в піковому скороченні.' },
+  { id: 'biceps-curl-machine', name: 'Згинання рук у тренажері', muscleGroup: 'biceps', equipment: 'machine', icon: 'biceps', defaultSets: 3, defaultRepsMin: 10, defaultRepsMax: 12,
+    description: 'Пахви щільно на подушці. Згинай руки без ривків, повільно опускай до майже повного розгинання.' },
+  { id: 'triceps-extension-machine', name: 'Розгинання рук у тренажері', muscleGroup: 'triceps', equipment: 'machine', icon: 'zap', defaultSets: 3, defaultRepsMin: 10, defaultRepsMax: 12,
+    description: 'Лікті нерухомі на подушці. Розгинай руки повністю, контрольовано повертай у вихідне положення.' },
+  { id: 'leg-extension', name: 'Розгинання ніг', muscleGroup: 'legs', equipment: 'machine', icon: 'footprints', defaultSets: 3, defaultRepsMin: 12, defaultRepsMax: 15,
+    description: 'Вісь тренажера на рівні колін. Розгинай ноги до кінця, затримайся на секунду, повільно опускай.' },
+  { id: 'leg-curl', name: 'Згинання ніг', muscleGroup: 'legs', equipment: 'machine', icon: 'footprints', defaultSets: 3, defaultRepsMin: 10, defaultRepsMax: 12,
+    description: 'Таз притиснутий до сидіння. Згинай ноги максимально, без відриву стегон, повільна негативна фаза.' },
+  { id: 'calf-raise', name: 'Підйом на ікри', muscleGroup: 'calves', equipment: 'machine', icon: 'flame', defaultSets: 4, defaultRepsMin: 12, defaultRepsMax: 15,
+    description: 'Повна амплітуда: глибоке розтягнення внизу та пауза у верхній точці.' },
+  { id: 'crunch', name: 'Прес', muscleGroup: 'core', equipment: 'bodyweight', icon: 'target', defaultSets: 3, defaultRepsMin: 15, defaultRepsMax: 20,
+    description: 'Скручування: поперек притиснутий до підлоги, підіймай лопатки за рахунок м\'язів пресу, не тягни голову руками.' },
+  { id: 'shoulder-press-machine', name: 'Жим плечей у тренажері', muscleGroup: 'shoulders', equipment: 'machine', icon: 'weight', defaultSets: 3, defaultRepsMin: 8, defaultRepsMax: 12,
+    description: 'Спина притиснута до спинки. Вижимай ручки вгору без повного блокування ліктів.' },
+  { id: 'lateral-raise', name: 'Махи гантелями в сторони', muscleGroup: 'shoulders', equipment: 'dumbbell', icon: 'weight', defaultSets: 3, defaultRepsMin: 12, defaultRepsMax: 15,
+    description: 'Легкий нахил уперед, лікті трохи зігнуті. Підіймай гантелі до рівня плечей ліктями, не кистями.' },
+  { id: 'incline-db-press', name: 'Жим гантелей на похилій лаві', muscleGroup: 'chest', equipment: 'dumbbell', icon: 'dumbbell', defaultSets: 3, defaultRepsMin: 8, defaultRepsMax: 12,
+    description: 'Кут лави 30°. Опускай гантелі до рівня грудей, лікті під кутом ~45° до корпусу.' },
+  { id: 'squat', name: 'Присідання зі штангою', muscleGroup: 'legs', equipment: 'barbell', icon: 'weight', defaultSets: 4, defaultRepsMin: 6, defaultRepsMax: 10,
+    description: 'Штанга на трапеціях, корпус напружений. Присідай до паралелі стегон з підлогою, коліна по лінії носків.' },
+  { id: 'romanian-deadlift', name: 'Румунська тяга', muscleGroup: 'glutes', equipment: 'barbell', icon: 'activity', defaultSets: 3, defaultRepsMin: 8, defaultRepsMax: 10,
+    description: 'Ноги злегка зігнуті. Відводь таз назад, ведучи штангу вздовж ніг до розтягнення задньої поверхні стегна.' },
+  { id: 'hammer-curl', name: 'Молоткові згинання', muscleGroup: 'biceps', equipment: 'dumbbell', icon: 'biceps', defaultSets: 3, defaultRepsMin: 10, defaultRepsMax: 12,
+    description: 'Нейтральний хват (долоні дивляться одна на одну). Лікті притиснуті до корпусу.' },
+  { id: 'triceps-pushdown', name: 'Розгинання на блоці', muscleGroup: 'triceps', equipment: 'cable', icon: 'zap', defaultSets: 3, defaultRepsMin: 10, defaultRepsMax: 12,
+    description: 'Лікті біля корпусу. Розгинай руки донизу повністю, не допомагаючи плечима.' },
+  { id: 'hanging-leg-raise', name: 'Підйом ніг у висі', muscleGroup: 'core', equipment: 'bodyweight', icon: 'target', defaultSets: 3, defaultRepsMin: 10, defaultRepsMax: 15,
+    description: 'Вис на перекладині. Підіймай ноги без розгойдування, підкручуючи таз догори.' },
+];
+
+export const DEFAULT_EXERCISES: Exercise[] = seed.map((e) => ({ ...e, isCustom: false }));

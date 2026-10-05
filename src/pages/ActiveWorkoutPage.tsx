@@ -1,0 +1,432 @@
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import clsx from 'clsx';
+import {
+  ArrowDown, ArrowUp, Check, ChevronLeft, ChevronRight, CircleCheck, Dumbbell, Flag, History, ListPlus, Minus, NotebookPen, Plus,
+  RotateCcw, Timer, Trash2, X,
+} from 'lucide-react';
+import { useActiveWorkout } from '@/store/ActiveWorkoutContext';
+import { useData } from '@/store/DataContext';
+import { useNow } from '@/hooks/useNow';
+import { usePageTitle } from '@/hooks/usePageTitle';
+import { Button, ButtonLink, IconButton } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { Textarea } from '@/components/ui/Input';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
+import { SetTable } from '@/components/workout/SetTable';
+import { ExercisePicker } from '@/components/workout/ExercisePicker';
+import { IconBadge } from '@/components/ui/IconBadge';
+import { MUSCLE_GROUPS } from '@/data/labels';
+import { formatClock, formatNumber, repsRange } from '@/utils/format';
+import { lastPerformance } from '@/utils/stats';
+
+export default function ActiveWorkoutPage() {
+  usePageTitle('Тренування');
+  const workout = useActiveWorkout();
+  const { active } = workout;
+  const { data, sessions, exerciseById } = useData();
+  const navigate = useNavigate();
+  const toast = useToast();
+  const confirm = useConfirm();
+  const now = useNow(1000, !!active);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [recordSetId, setRecordSetId] = useState<string | null>(null);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const cardRef = useRef<HTMLElement>(null);
+
+  // Rest timer completion.
+  const restLeft = active?.restEndsAt ? Math.ceil((active.restEndsAt - now) / 1000) : null;
+  useEffect(() => {
+    if (restLeft != null && restLeft <= 0) {
+      workout.stopRest();
+      if (data.settings.vibration) navigator.vibrate?.([180, 80, 180]);
+      toast.info('Відпочинок завершено', 'Час для наступного підходу');
+    }
+  }, [restLeft, workout, data.settings.vibration, toast]);
+
+  useEffect(() => {
+    setNoteOpen(false);
+  }, [active?.currentIndex]);
+
+  if (!active) {
+    return (
+      <div className="mx-auto max-w-xl px-4 pt-16">
+        <EmptyState
+          icon={Dumbbell}
+          title="Немає активного тренування"
+          description="Обери план на головній або у розділі «План», щоб почати."
+          action={
+            <ButtonLink to="/" icon={ChevronLeft} variant="secondary">
+              На головну
+            </ButtonLink>
+          }
+        />
+      </div>
+    );
+  }
+
+  const elapsed = (now - new Date(active.startedAt).getTime()) / 1000;
+  const idx = Math.min(active.currentIndex, Math.max(0, active.exercises.length - 1));
+  const current = active.exercises[idx];
+  const currentEx = current ? exerciseById(current.exerciseId) : undefined;
+  const finishedCount = active.exercises.filter((e) => e.finished).length;
+  const totalSets = active.exercises.reduce((s, e) => s + e.sets.length, 0);
+  const doneSets = active.exercises.reduce((s, e) => s + e.sets.filter((x) => x.done).length, 0);
+  const lastTime = current ? lastPerformance(sessions, current.exerciseId) : null;
+
+  const toggle = (setIndex: number) => {
+    const result = workout.toggleSet(idx, setIndex);
+    if (!result.ok) {
+      if (result.reason) toast.error(result.reason);
+      return;
+    }
+    if (result.record) {
+      const set = current.sets[setIndex];
+      setRecordSetId(set.id);
+      window.setTimeout(() => setRecordSetId((id) => (id === set.id ? null : id)), 2200);
+      if (data.settings.vibration) navigator.vibrate?.([60, 40, 60, 40, 120]);
+      toast.show({ kind: 'record', title: 'Новий рекорд!', description: `${current.name}: ${formatNumber(set.weight ?? 0, 2)} кг × ${set.reps}` });
+    }
+  };
+
+  const finishExercise = async () => {
+    const pending = current.sets.filter((s) => !s.done).length;
+    if (pending > 0 && current.sets.some((s) => s.done)) {
+      const ok = await confirm({
+        title: 'Завершити вправу?',
+        description: `${pending} ${pending === 1 ? 'підхід не позначено' : 'підходи не позначено'} виконаними — вони не збережуться.`,
+        confirmLabel: 'Завершити',
+        tone: 'primary',
+      });
+      if (!ok) return;
+    }
+    const isLast = active.exercises.every((e, i) => i === idx || e.finished);
+    workout.finishExercise(idx);
+    if (isLast) toast.success('Усі вправи виконано', 'Можна завершувати тренування');
+    cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const finishWorkout = async () => {
+    if (doneSets === 0) {
+      const ok = await confirm({
+        title: 'Немає виконаних підходів',
+        description: 'Тренування нема чого зберігати. Скасувати його?',
+        confirmLabel: 'Скасувати тренування',
+        cancelLabel: 'Продовжити',
+      });
+      if (ok) {
+        workout.discard();
+        navigate('/', { replace: true });
+      }
+      return;
+    }
+    const pending = totalSets - doneSets;
+    const ok = await confirm({
+      title: 'Завершити тренування?',
+      description:
+        pending > 0
+          ? `Буде збережено ${doneSets} виконаних підходів. ${pending} невідмічених не збережуться.`
+          : `Чудова робота! Буде збережено ${doneSets} підходів.`,
+      confirmLabel: 'Завершити',
+      cancelLabel: 'Продовжити',
+      tone: 'primary',
+    });
+    if (!ok) return;
+    const session = workout.finish();
+    if (session) navigate(`/summary/${session.id}`, { replace: true });
+  };
+
+  const discard = async () => {
+    const ok = await confirm({
+      title: 'Скасувати тренування?',
+      description: 'Усі введені в цьому тренуванні дані буде втрачено.',
+      confirmLabel: 'Скасувати тренування',
+      cancelLabel: 'Ні, продовжити',
+    });
+    if (ok) {
+      workout.discard();
+      toast.info('Тренування скасовано');
+      navigate('/', { replace: true });
+    }
+  };
+
+  const removeExercise = async (i: number) => {
+    const ex = active.exercises[i];
+    if (ex.sets.some((s) => s.done)) {
+      const ok = await confirm({ title: `Прибрати «${ex.name}»?`, description: 'Виконані підходи цієї вправи не збережуться.', confirmLabel: 'Прибрати' });
+      if (!ok) return;
+    }
+    workout.removeExercise(i);
+  };
+
+  return (
+    <div className="mx-auto max-w-2xl" style={{ paddingBottom: `calc(${restLeft != null && restLeft > 0 ? 200 : 120}px + var(--safe-bottom))` }}>
+      {/* Header */}
+      <header
+        className="sticky top-0 z-30 border-b border-line bg-bg/85 px-2 pb-3 backdrop-blur-xl sm:px-4"
+        style={{ paddingTop: 'calc(8px + var(--safe-top))' }}
+      >
+        <div className="flex items-center gap-1">
+          <IconButton icon={ChevronLeft} label="Згорнути тренування" onClick={() => navigate('/')} />
+          <div className="min-w-0 flex-1 px-1">
+            <h1 className="truncate text-[17px] font-semibold leading-tight">{active.name}</h1>
+            <p className="text-[13px] text-muted">
+              <span className="tabular">{finishedCount} / {active.exercises.length}</span> вправ ·{' '}
+              <span className="tabular">{doneSets} / {totalSets}</span> підх.
+            </p>
+          </div>
+          <div className="tabular flex h-11 items-center gap-1.5 rounded-ctl bg-accent/10 px-3 text-[18px] font-semibold text-accent" role="timer" aria-label="Тривалість тренування">
+            <Timer size={17} aria-hidden />
+            {formatClock(elapsed)}
+          </div>
+        </div>
+        <ProgressBar value={doneSets} max={totalSets || 1} label="Виконані підходи" tone="positive" className="mt-3" />
+      </header>
+
+      <div className="space-y-5 px-4 pt-4">
+        {active.exercises.length === 0 ? (
+          <EmptyState
+            icon={ListPlus}
+            title="Додай першу вправу"
+            description="Вільне тренування — обирай вправи по ходу. Минулі результати підставляться автоматично."
+            action={
+              <Button icon={Plus} onClick={() => setPickerOpen(true)}>
+                Додати вправу
+              </Button>
+            }
+          />
+        ) : (
+          <>
+            {/* Exercise stepper */}
+            <nav aria-label="Вправи тренування" className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4">
+              {active.exercises.map((e, i) => {
+                const done = e.sets.filter((s) => s.done).length;
+                return (
+                  <button
+                    key={e.id}
+                    type="button"
+                    onClick={() => workout.goTo(i)}
+                    aria-current={i === idx ? 'step' : undefined}
+                    className={clsx(
+                      'flex h-11 max-w-[180px] shrink-0 items-center gap-2 rounded-full border pl-2 pr-3.5 text-[13px] font-medium transition',
+                      i === idx ? 'border-accent/50 bg-accent/10 text-fg' : 'border-line bg-surface text-muted hover:text-fg',
+                    )}
+                  >
+                    <span
+                      className={clsx(
+                        'tabular inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold',
+                        e.finished ? 'bg-positive text-[#06210f]' : i === idx ? 'bg-accent text-[#120f1f]' : 'bg-white/[0.06]',
+                      )}
+                    >
+                      {e.finished ? <Check size={14} strokeWidth={3} aria-label="Завершено" /> : i + 1}
+                    </span>
+                    <span className="truncate">{e.name}</span>
+                    {!e.finished && done > 0 && <span className="tabular text-subtle">{done}/{e.sets.length}</span>}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Current exercise */}
+            <section ref={cardRef} aria-labelledby="current-ex" className="card scroll-mt-28 p-4 sm:p-5">
+              <div className="flex items-start gap-3">
+                <IconBadge icon={currentEx?.icon ?? 'dumbbell'} />
+                <div className="min-w-0 flex-1">
+                  <p className="eyebrow">
+                    Вправа {idx + 1} / {active.exercises.length}
+                    {currentEx && ` · ${MUSCLE_GROUPS[currentEx.muscleGroup]}`}
+                  </p>
+                  <h2 id="current-ex" className="mt-1 text-[20px] font-semibold leading-tight tracking-tight">
+                    {current.name}
+                  </h2>
+                  <p className="mt-1 text-[14px] text-muted">
+                    Ціль: <span className="tabular font-medium text-fg">{current.sets.length} × {repsRange(current.targetRepsMin ?? 8, current.targetRepsMax ?? 12)}</span>
+                  </p>
+                </div>
+                <div className="flex">
+                  <IconButton icon={ChevronLeft} label="Попередня вправа" size="sm" disabled={idx === 0} onClick={() => workout.goTo(idx - 1)} />
+                  <IconButton icon={ChevronRight} label="Наступна вправа" size="sm" disabled={idx === active.exercises.length - 1} onClick={() => workout.goTo(idx + 1)} />
+                </div>
+              </div>
+
+              <p className="mt-3 flex items-start gap-2 rounded-ctl bg-white/[0.03] px-3 py-2.5 text-[13px] text-muted">
+                <History size={15} className="mt-0.5 shrink-0 text-subtle" aria-hidden />
+                {lastTime ? (
+                  <span>
+                    Минулого разу:{' '}
+                    <span className="tabular font-medium text-fg">
+                      {lastTime.exercise.sets.filter((s) => s.done).map((s) => `${formatNumber(s.weight, 2)}×${s.reps}`).join(', ')}
+                    </span>
+                  </span>
+                ) : (
+                  <span>Перше виконання — встанови стартову вагу.</span>
+                )}
+              </p>
+
+              {current.finished && (
+                <div className="mt-3 flex items-center justify-between gap-3 rounded-ctl border border-positive/25 bg-positive/[0.06] px-3 py-2">
+                  <span className="flex items-center gap-2 text-[14px] font-medium text-positive">
+                    <CircleCheck size={17} aria-hidden /> Вправу завершено
+                  </span>
+                  <Button size="sm" variant="ghost" icon={RotateCcw} onClick={() => workout.reopenExercise(idx)}>
+                    Відновити
+                  </Button>
+                </div>
+              )}
+
+              <div className="mt-4">
+                <SetTable
+                  exercise={current}
+                  isBodyweight={currentEx?.equipment === 'bodyweight'}
+                  recordSetId={recordSetId}
+                  onChange={(setIndex, patch) => workout.updateSet(idx, setIndex, patch)}
+                  onToggle={toggle}
+                />
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <Button variant="secondary" size="sm" icon={Plus} className="h-11" onClick={() => workout.addSet(idx)}>
+                  Додати підхід
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon={Minus}
+                  className="h-11"
+                  disabled={current.sets.length <= 1}
+                  onClick={() => {
+                    const lastUndone = current.sets.map((s) => s.done).lastIndexOf(false);
+                    workout.removeSet(idx, lastUndone >= 0 ? lastUndone : current.sets.length - 1);
+                  }}
+                >
+                  Прибрати
+                </Button>
+              </div>
+
+              {noteOpen || current.note ? (
+                <Textarea
+                  className="mt-3"
+                  label="Примітка до вправи"
+                  value={current.note}
+                  onChange={(e) => workout.setExerciseNote(idx, e.target.value)}
+                  placeholder="Напр., сидіння на 4, важко останній підхід"
+                  maxLength={200}
+                  autoFocus={noteOpen && !current.note}
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setNoteOpen(true)}
+                  className="mt-2 inline-flex h-11 items-center gap-2 rounded-ctl px-2 text-[14px] text-muted transition hover:text-fg"
+                >
+                  <NotebookPen size={16} aria-hidden /> Додати примітку
+                </button>
+              )}
+
+              {!current.finished && (
+                <Button variant="positive" block size="lg" icon={Check} className="mt-3" onClick={finishExercise}>
+                  Завершити вправу
+                </Button>
+              )}
+            </section>
+
+            {/* Overview */}
+            <section aria-labelledby="overview" className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 id="overview" className="text-[17px] font-semibold">
+                  Усі вправи
+                </h2>
+                <Button size="sm" variant="ghost" icon={Plus} onClick={() => setPickerOpen(true)}>
+                  Додати
+                </Button>
+              </div>
+              <ol className="card divide-y divide-line">
+                {active.exercises.map((e, i) => {
+                  const done = e.sets.filter((s) => s.done).length;
+                  return (
+                    <li key={e.id} className="flex items-center gap-2 py-1.5 pl-3 pr-1.5">
+                      <button type="button" onClick={() => workout.goTo(i)} className="flex min-h-[48px] min-w-0 flex-1 items-center gap-3 text-left">
+                        <span
+                          className={clsx(
+                            'tabular inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold',
+                            e.finished ? 'bg-positive/15 text-positive' : i === idx ? 'bg-accent/15 text-accent' : 'bg-white/[0.05] text-muted',
+                          )}
+                        >
+                          {e.finished ? <Check size={14} strokeWidth={3} aria-hidden /> : i + 1}
+                        </span>
+                        <span className="min-w-0">
+                          <span className={clsx('block truncate text-[15px]', i === idx ? 'font-semibold' : 'font-medium')}>{e.name}</span>
+                          <span className="tabular block text-[12px] text-subtle">
+                            {done} / {e.sets.length} підходів
+                          </span>
+                        </span>
+                      </button>
+                      <IconButton icon={ArrowUp} label="Вище" size="sm" disabled={i === 0} onClick={() => workout.moveExercise(i, -1)} />
+                      <IconButton icon={ArrowDown} label="Нижче" size="sm" disabled={i === active.exercises.length - 1} onClick={() => workout.moveExercise(i, 1)} />
+                      <IconButton icon={X} label={`Прибрати ${e.name}`} size="sm" onClick={() => removeExercise(i)} />
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
+          </>
+        )}
+
+        <Textarea
+          label="Нотатка до тренування"
+          value={active.note}
+          onChange={(e) => workout.setWorkoutNote(e.target.value)}
+          placeholder="Самопочуття, сон, що змінити наступного разу…"
+          maxLength={500}
+        />
+
+        <Button variant="ghost" block icon={Trash2} className="text-negative hover:bg-negative/10 hover:text-negative" onClick={discard}>
+          Скасувати тренування
+        </Button>
+      </div>
+
+      {/* Rest timer */}
+      {restLeft != null && restLeft > 0 && (
+        <div className="fixed inset-x-0 z-40 flex justify-center px-4" style={{ bottom: 'calc(88px + var(--safe-bottom))' }}>
+          <div role="timer" aria-label="Таймер відпочинку" className="flex w-full max-w-2xl animate-slide-up items-center gap-2 rounded-card border border-line bg-elevated/95 p-2 pl-4 shadow-2xl backdrop-blur-xl">
+            <Timer size={18} className="text-accent" aria-hidden />
+            <span className="text-[14px] text-muted">Відпочинок</span>
+            <span className="tabular flex-1 text-[20px] font-semibold">{formatClock(restLeft)}</span>
+            <Button size="sm" variant="secondary" onClick={() => workout.adjustRest(-15)} aria-label="Мінус 15 секунд">
+              −15
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => workout.adjustRest(15)} aria-label="Плюс 15 секунд">
+              +15
+            </Button>
+            <IconButton icon={X} label="Пропустити відпочинок" size="sm" onClick={workout.stopRest} />
+          </div>
+        </div>
+      )}
+
+      {/* Bottom action */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/90 backdrop-blur-xl" style={{ paddingBottom: 'var(--safe-bottom)' }}>
+        <div className="mx-auto flex max-w-2xl gap-2 px-4 py-3">
+          {restLeft == null && active.exercises.length > 0 && (
+            <IconButton icon={Timer} label="Почати відпочинок" variant="secondary" className="h-14 w-14" onClick={() => workout.startRest()} />
+          )}
+          <Button size="lg" block icon={Flag} onClick={finishWorkout}>
+            Завершити тренування
+          </Button>
+        </div>
+      </div>
+
+      <ExercisePicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        selectedIds={active.exercises.map((e) => e.exerciseId)}
+        onSelect={(ex) => {
+          workout.addExercise(ex);
+          setPickerOpen(false);
+          toast.success('Вправу додано', ex.name);
+        }}
+      />
+    </div>
+  );
+}
