@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import { History } from 'lucide-react';
 import type { Exercise } from '@/types';
-import { IconBadge } from '@/components/ui/IconBadge';
+import { ExerciseThumb } from '@/components/exercise/ExerciseThumb';
 import { MUSCLE_GROUPS } from '@/data/labels';
 import { formatNumber } from '@/utils/format';
 
@@ -20,7 +20,7 @@ export function ExerciseCard({ exercise, name, index, scheme, previous, actions,
   return (
     <div className={clsx('card flex items-center gap-3.5 p-3.5 sm:p-4', className)}>
       <div className="relative">
-        <IconBadge icon={exercise?.icon ?? 'dumbbell'} tone="neutral" />
+        <ExerciseThumb exercise={exercise} />
         {index != null && (
           <span className="absolute -left-1.5 -top-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-line bg-elevated px-1 text-[11px] font-semibold text-muted">
             {index}

@@ -17,7 +17,7 @@ import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { SetTable } from '@/components/workout/SetTable';
 import { ExercisePicker } from '@/components/workout/ExercisePicker';
-import { IconBadge } from '@/components/ui/IconBadge';
+import { ExerciseMediaButton } from '@/components/exercise/ExerciseMediaButton';
 import { MUSCLE_GROUPS } from '@/data/labels';
 import { formatClock, formatNumber, repsRange } from '@/utils/format';
 import { lastPerformance } from '@/utils/stats';
@@ -232,25 +232,25 @@ export default function ActiveWorkoutPage() {
             {/* Current exercise */}
             <section ref={cardRef} aria-labelledby="current-ex" className="card relative scroll-mt-28 overflow-clip p-4 sm:p-5">
               <div className="glow-blob -right-20 -top-24 h-56 w-56 bg-accent/[0.08]" aria-hidden />
-              <div className="flex items-start gap-3">
-                <IconBadge icon={currentEx?.icon ?? 'dumbbell'} />
-                <div className="min-w-0 flex-1">
+              <div className="relative flex items-start gap-3">
+                <ExerciseMediaButton key={current.exerciseId} exercise={currentEx} />
+                <div className="min-w-0 flex-1 pt-0.5">
                   <p className="eyebrow">
                     Вправа {idx + 1} / {active.exercises.length}
-                    {currentEx && ` · ${MUSCLE_GROUPS[currentEx.muscleGroup]}`}
                   </p>
-                  <h2 id="current-ex" className="mt-1.5 text-[24px] font-bold leading-[1.1] tracking-[-0.035em]">
-                    {current.name}
-                  </h2>
+                  {currentEx && <p className="mt-1 text-[13px] text-muted">{MUSCLE_GROUPS[currentEx.muscleGroup]}</p>}
                   <p className="mt-1 text-[14px] text-muted">
-                    Ціль: <span className="tabular font-medium text-fg">{current.sets.length} × {repsRange(current.targetRepsMin ?? 8, current.targetRepsMax ?? 12)}</span>
+                    Ціль: <span className="tabular font-semibold text-fg">{current.sets.length} × {repsRange(current.targetRepsMin ?? 8, current.targetRepsMax ?? 12)}</span>
                   </p>
                 </div>
-                <div className="flex">
+                <div className="-mr-1 flex">
                   <IconButton icon={ChevronLeft} label="Попередня вправа" size="sm" disabled={idx === 0} onClick={() => workout.goTo(idx - 1)} />
                   <IconButton icon={ChevronRight} label="Наступна вправа" size="sm" disabled={idx === active.exercises.length - 1} onClick={() => workout.goTo(idx + 1)} />
                 </div>
               </div>
+              <h2 id="current-ex" className="relative mt-4 text-[26px] font-bold leading-[1.1] tracking-[-0.035em]">
+                {current.name}
+              </h2>
 
               <p className="relative mt-4 flex items-start gap-2 rounded-[14px] bg-white/[0.04] px-3 py-2.5 text-[13px] text-muted">
                 <History size={15} className="mt-0.5 shrink-0 text-subtle" aria-hidden />

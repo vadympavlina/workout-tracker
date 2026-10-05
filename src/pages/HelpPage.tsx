@@ -1,4 +1,4 @@
-import { CalendarDays, Download, Play, Smartphone, Timer, Trophy } from 'lucide-react';
+import { CalendarDays, Camera, Download, Play, Smartphone, Timer, Trophy } from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { TopBar } from '@/components/ui/TopBar';
 import { IconBadge } from '@/components/ui/IconBadge';
@@ -28,6 +28,11 @@ const TOPICS = [
     icon: Download,
     title: 'Збереження даних',
     body: 'Усі дані зберігаються лише в цьому браузері (localStorage). Очищення даних сайту видалить історію, тож регулярно роби «Експорт даних» у профілі. Файл можна імпортувати на іншому пристрої.',
+  },
+  {
+    icon: Camera,
+    title: 'Фото та схеми мʼязів',
+    body: 'Фото вправ — з відкритої бази Free Exercise DB (github.com/yuhonas/free-exercise-db), суспільне надбання. Схема показує основні мʼязи яскравим кольором, допоміжні — блідішим. До власних вправ можна додати своє фото — воно зберігається лише в цьому браузері та потрапляє в експорт.',
   },
   {
     icon: Smartphone,

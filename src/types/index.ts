@@ -23,6 +23,23 @@ export type MuscleGroup =
   | 'fullBody'
   | 'cardio';
 
+/** Individual muscles drawn on the muscle map. */
+export type Muscle =
+  | 'chest'
+  | 'shoulders'
+  | 'biceps'
+  | 'triceps'
+  | 'forearms'
+  | 'abs'
+  | 'obliques'
+  | 'lats'
+  | 'traps'
+  | 'lowerBack'
+  | 'glutes'
+  | 'quads'
+  | 'hamstrings'
+  | 'calves';
+
 export type Equipment = 'machine' | 'cable' | 'barbell' | 'dumbbell' | 'bodyweight' | 'kettlebell' | 'other';
 
 export type IconKey =
@@ -64,6 +81,8 @@ export interface Exercise {
   defaultRepsMin: number;
   defaultRepsMax: number;
   isCustom: boolean;
+  /** Custom exercises only: a user photo is stored in the media store (IndexedDB). */
+  hasPhoto?: boolean;
 }
 
 export interface PlanExercise {
@@ -176,6 +195,8 @@ export interface ExportFile extends AppData {
   app: 'pulse-workout-tracker';
   schemaVersion: number;
   exportedAt: ISODateTime;
+  /** User exercise photos as data URLs, keyed by exercise id. */
+  media?: Record<ID, string>;
 }
 
 export interface PersonalRecord {

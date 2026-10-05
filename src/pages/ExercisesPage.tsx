@@ -7,7 +7,7 @@ import { useData } from '@/store/DataContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { TopBar } from '@/components/ui/TopBar';
 import { Button } from '@/components/ui/Button';
-import { IconBadge } from '@/components/ui/IconBadge';
+import { ExerciseThumb } from '@/components/exercise/ExerciseThumb';
 import { useToast } from '@/components/ui/Toast';
 import { ExerciseFormModal } from '@/components/workout/ExerciseFormModal';
 import { EQUIPMENT, MUSCLE_GROUPS } from '@/data/labels';
@@ -87,7 +87,7 @@ export default function ExercisesPage() {
             return (
               <li key={e.id}>
                 <Link to={`/exercises/${e.id}`} className="card-interactive flex items-center gap-3.5 p-3.5">
-                  <IconBadge icon={e.icon} tone="neutral" />
+                  <ExerciseThumb exercise={e} />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
                       <span className="truncate text-[15px] font-semibold">{e.name}</span>

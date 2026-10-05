@@ -3,6 +3,7 @@ import { createDemoData, DEFAULT_SETTINGS, emptyData, emptyUser } from '@/data/d
 import { DEFAULT_EXERCISES } from '@/data/exercises';
 import { ACCENTS } from '@/data/labels';
 import { localStorageAdapter, STORAGE_KEYS, type StorageAdapter } from './storage';
+import { blobToDataUrl, dataUrlToBlob, mediaStore } from './mediaStore';
 
 /**
  * Domain-level data access. UI code talks to this service (via the data store),
@@ -83,6 +84,7 @@ export function createDataService(adapter: StorageAdapter) {
     },
 
     async resetToDemo(): Promise<AppData> {
+      await mediaStore.clear().catch(() => {});
       const demo = createDemoData();
       await writeAll(demo);
       await adapter.remove(STORAGE_KEYS.active);
@@ -90,14 +92,25 @@ export function createDataService(adapter: StorageAdapter) {
     },
 
     async clearAll(): Promise<AppData> {
+      await mediaStore.clear().catch(() => {});
       const data = emptyData();
       await writeAll(data);
       await adapter.remove(STORAGE_KEYS.active);
       return data;
     },
 
-    toExportFile(data: AppData): ExportFile {
-      return { app: 'pulse-workout-tracker', schemaVersion: SCHEMA_VERSION, exportedAt: new Date().toISOString(), ...data };
+    /** Full backup including user photos (as data URLs). */
+    async toExportFile(data: AppData): Promise<ExportFile> {
+      const media: Record<string, string> = {};
+      const entries = await mediaStore.entries().catch(() => [] as [string, Blob][]);
+      for (const [id, blob] of entries) media[id] = await blobToDataUrl(blob);
+      return { app: 'pulse-workout-tracker', schemaVersion: SCHEMA_VERSION, exportedAt: new Date().toISOString(), ...data, media };
+    },
+
+    /** Replaces stored photos with the ones from an import file. */
+    async importMedia(media: Record<string, string>) {
+      await mediaStore.clear();
+      for (const [id, url] of Object.entries(media)) await mediaStore.put(id, await dataUrlToBlob(url));
     },
   };
 }
@@ -110,6 +123,14 @@ export const dataService = createDataService(localStorageAdapter);
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const isArr = Array.isArray;
+
+/** Extracts valid image data URLs from an import file (older exports have none). */
+export function parseImportMedia(raw: unknown): Record<string, string> {
+  if (!isObj(raw) || !isObj(raw.media)) return {};
+  return Object.fromEntries(
+    Object.entries(raw.media).filter((e): e is [string, string] => typeof e[1] === 'string' && e[1].startsWith('data:image/')),
+  );
+}
 
 /** Validates a parsed JSON export and returns normalized data, or throws a readable error. */
 export function parseImport(raw: unknown): AppData {

@@ -43,3 +43,27 @@ export function resizeImage(file: File, size = 256): Promise<string> {
     img.src = url;
   });
 }
+
+/** Downscales an image so its longer side is at most `maxSide`, as a JPEG blob. */
+export function resizeImageToBlob(file: File, maxSide = 900, quality = 0.82): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext('2d');
+      URL.revokeObjectURL(url);
+      if (!ctx) return reject(new Error('Canvas недоступний'));
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Не вдалося обробити фото'))), 'image/jpeg', quality);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Файл не є зображенням'));
+    };
+    img.src = url;
+  });
+}

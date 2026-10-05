@@ -21,7 +21,7 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { ACCENTS, GOALS } from '@/data/labels';
-import { dataService, parseImport } from '@/services/dataService';
+import { dataService, parseImport, parseImportMedia } from '@/services/dataService';
 import { downloadJson, readFileAsText, resizeImage } from '@/utils/files';
 import { formatNumber, pluralWorkouts } from '@/utils/format';
 import { latestWeight } from '@/utils/stats';
@@ -51,15 +51,17 @@ export default function ProfilePage() {
     }
   };
 
-  const exportData = () => {
-    downloadJson(dataService.toExportFile(data.data), `pulse-backup-${toISODate(new Date())}.json`);
+  const exportData = async () => {
+    downloadJson(await dataService.toExportFile(data.data), `pulse-backup-${toISODate(new Date())}.json`);
     toast.success('Експорт готовий', 'JSON-файл збережено на пристрій');
   };
 
   const importData = async (file: File | undefined) => {
     if (!file) return;
     try {
-      const parsed = parseImport(JSON.parse(await readFileAsText(file)));
+      const raw: unknown = JSON.parse(await readFileAsText(file));
+      const parsed = parseImport(raw);
+      const media = parseImportMedia(raw);
       const ok = await confirm({
         title: 'Імпортувати дані?',
         description: `Поточні дані буде замінено: ${pluralWorkouts(parsed.sessions.length)}, ${parsed.plans.length} план(ів), ${parsed.bodyWeight.length} записів ваги.`,
@@ -67,6 +69,7 @@ export default function ProfilePage() {
         tone: 'primary',
       });
       if (!ok) return;
+      await dataService.importMedia(media).catch(() => toast.error('Фото не імпортовано', 'Сховище браузера недоступне.'));
       await data.replaceAll(parsed);
       active.discard();
       toast.success('Дані імпортовано');
@@ -145,7 +148,7 @@ export default function ProfilePage() {
         </MenuGroup>
 
         <MenuGroup title="Дані">
-          <MenuItem icon={Download} label="Експорт даних" hint="Завантажити JSON-резервну копію" onClick={exportData} />
+          <MenuItem icon={Download} label="Експорт даних" hint="Завантажити JSON-резервну копію" onClick={() => void exportData()} />
           <MenuItem icon={Upload} label="Імпорт даних" hint="Відновити з JSON-файлу" onClick={() => importInput.current?.click()} />
           <MenuItem icon={RotateCcw} label="Відновити демо-дані" onClick={resetDemo} />
           <MenuItem icon={Trash2} label="Видалити всі дані" danger onClick={clearAll} />

@@ -50,6 +50,10 @@ src/
 
 `StorageAdapter` — асинхронний інтерфейс (`read` / `write` / `remove`). Для Firebase достатньо реалізувати його (або замінити `createDataService` на Firestore-виклики) і передати в `createDataService(adapter)` у `services/dataService.ts`. UI та store не змінюються.
 
+## Фото вправ
+
+Фото стандартних вправ — [Free Exercise DB](https://github.com/yuhonas/free-exercise-db) (Unlicense / суспільне надбання), по два кадри (початок/кінець руху), перекодовані у WebP: `public/exercises/<id>/{0,1}.webp`. Мапінг вправ і цільових мʼязів — `src/data/exerciseMedia.ts`. Фото власних вправ зберігаються в IndexedDB (`services/mediaStore.ts`) і включаються в JSON-експорт.
+
 ## Дані
 
 При першому запуску створюються демо-дані (Вадим Павліна, 198 см, ~2 місяці історії). У Профілі: експорт/імпорт JSON, відновлення демо-даних, повне очищення.

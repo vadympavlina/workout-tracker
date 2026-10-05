@@ -4,7 +4,7 @@ import { Check, Plus, Search } from 'lucide-react';
 import type { Exercise, MuscleGroup } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { IconBadge } from '@/components/ui/IconBadge';
+import { ExerciseThumb } from '@/components/exercise/ExerciseThumb';
 import { EQUIPMENT, MUSCLE_GROUPS } from '@/data/labels';
 import { useData } from '@/store/DataContext';
 import { ExerciseFormModal } from './ExerciseFormModal';
@@ -81,7 +81,7 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
                   onClick={() => onSelect(e)}
                   className="flex w-full items-center gap-3 rounded-ctl p-2.5 text-left transition hover:bg-white/[0.04] active:bg-white/[0.06]"
                 >
-                  <IconBadge icon={e.icon} tone={added ? 'accent' : 'neutral'} size="sm" />
+                  <ExerciseThumb exercise={e} className={added ? 'ring-1 ring-accent/50' : undefined} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[15px] font-medium">{e.name}</span>
                     <span className="block text-[13px] text-subtle">

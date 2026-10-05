@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { AppData, BodyWeightEntry, Exercise, PersonalRecord, Settings, UserProfile, WorkoutPlan, WorkoutSession } from '@/types';
 import { dataService } from '@/services/dataService';
+import { mediaStore } from '@/services/mediaStore';
 import { useToast } from '@/components/ui/Toast';
 import { personalRecords, sortSessions } from '@/utils/stats';
 import { uid } from '@/utils/id';
@@ -111,6 +112,7 @@ export function DataProvider({ children, fallback }: { children: ReactNode; fall
         ),
       deleteExercise: (id) => {
         commit('exercises', (list) => list.filter((e) => e.id !== id));
+        mediaStore.remove(id).catch(() => {});
         commit('plans', (plans) =>
           plans.map((p) =>
             p.exercises.some((e) => e.exerciseId === id) ? { ...p, exercises: p.exercises.filter((e) => e.exerciseId !== id) } : p,
