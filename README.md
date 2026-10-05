@@ -12,15 +12,13 @@ npm run preview    # перегляд збірки
 npm run typecheck
 ```
 
-## Деплой на GitHub Pages (вручну)
+## Деплой на GitHub Pages (автоматично)
 
-1. `npm run build`
-2. Опублікуй вміст `dist/` — наприклад, у гілку `gh-pages`:
-   ```bash
-   git subtree push --prefix dist origin gh-pages   # або скопіюй dist/ у гілку вручну
-   ```
-   (`dist/` у `.gitignore`, тож для subtree спершу зроби `git add -f dist && git commit`.)
-3. Settings → Pages → Source: *Deploy from a branch* → `gh-pages` / root.
+Workflow `.github/workflows/deploy.yml` збирає застосунок і публікує `dist/` на кожен push у `main` (або вручну: Actions → Deploy to GitHub Pages → Run workflow).
+
+Одноразове налаштування: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+
+Адреса сайту: `https://<user>.github.io/<repo>/`.
 
 Збірка не залежить від назви репозиторію:
 
