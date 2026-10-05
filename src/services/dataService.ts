@@ -20,9 +20,13 @@ function normalizeSettings(raw: Partial<AppData['settings']> | null | undefined)
   return merged;
 }
 
-interface Meta {
+export interface Meta {
   schemaVersion: number;
   initializedAt: string;
+  /** Last successful JSON export. */
+  lastBackupAt?: string;
+  /** Backup reminder hidden until this moment. */
+  backupSnoozedUntil?: string;
 }
 
 type CollectionKey = Exclude<keyof AppData, never>;
@@ -72,6 +76,17 @@ export function createDataService(adapter: StorageAdapter) {
     },
 
     replaceAll: writeAll,
+
+    async loadMeta(): Promise<Meta | null> {
+      return adapter.read<Meta>(STORAGE_KEYS.meta);
+    },
+    async updateMeta(patch: Partial<Meta>): Promise<Meta | null> {
+      const meta = await adapter.read<Meta>(STORAGE_KEYS.meta);
+      if (!meta) return null;
+      const next = { ...meta, ...patch };
+      await adapter.write(STORAGE_KEYS.meta, next);
+      return next;
+    },
 
     async loadActive(): Promise<ActiveWorkout | null> {
       return adapter.read<ActiveWorkout>(STORAGE_KEYS.active);

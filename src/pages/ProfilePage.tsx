@@ -8,6 +8,7 @@ import {
 import type { AccentKey, GoalType, Settings, UserProfile } from '@/types';
 import { useData } from '@/store/DataContext';
 import { useActiveWorkout } from '@/store/ActiveWorkoutContext';
+import { useBackup } from '@/hooks/useBackup';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { TopBar } from '@/components/ui/TopBar';
 import { Avatar } from '@/components/ui/Avatar';
@@ -22,10 +23,9 @@ import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { ACCENTS, GOALS } from '@/data/labels';
 import { dataService, parseImport, parseImportMedia } from '@/services/dataService';
-import { downloadJson, readFileAsText, resizeImage } from '@/utils/files';
-import { formatNumber, pluralWorkouts } from '@/utils/format';
+import { readFileAsText, resizeImage } from '@/utils/files';
+import { formatNumber, plural, pluralWorkouts } from '@/utils/format';
 import { latestWeight } from '@/utils/stats';
-import { toISODate } from '@/utils/date';
 
 type Sheet = 'personal' | 'goals' | 'settings' | 'theme' | null;
 
@@ -51,10 +51,13 @@ export default function ProfilePage() {
     }
   };
 
-  const exportData = async () => {
-    downloadJson(await dataService.toExportFile(data.data), `pulse-backup-${toISODate(new Date())}.json`);
-    toast.success('Експорт готовий', 'JSON-файл збережено на пристрій');
-  };
+  const backup = useBackup();
+  const backupHint =
+    backup.daysSince == null
+      ? 'Ще не робилась — збережи JSON-копію'
+      : backup.daysSince === 0
+        ? 'Остання копія: сьогодні'
+        : `Остання копія: ${backup.daysSince} ${plural(backup.daysSince, ['день', 'дні', 'днів'])} тому`;
 
   const importData = async (file: File | undefined) => {
     if (!file) return;
@@ -148,7 +151,7 @@ export default function ProfilePage() {
         </MenuGroup>
 
         <MenuGroup title="Дані">
-          <MenuItem icon={Download} label="Експорт даних" hint="Завантажити JSON-резервну копію" onClick={() => void exportData()} />
+          <MenuItem icon={Download} label="Експорт даних" hint={backupHint} onClick={() => void backup.exportNow()} />
           <MenuItem icon={Upload} label="Імпорт даних" hint="Відновити з JSON-файлу" onClick={() => importInput.current?.click()} />
           <MenuItem icon={RotateCcw} label="Відновити демо-дані" onClick={resetDemo} />
           <MenuItem icon={Trash2} label="Видалити всі дані" danger onClick={clearAll} />
@@ -156,7 +159,8 @@ export default function ProfilePage() {
         </MenuGroup>
 
         <p className="pb-4 text-center text-[13px] text-subtle">
-          Pulse 1.0 · Дані зберігаються локально в цьому браузері.
+          Pulse 1.0 · Дані зберігаються локально в цьому браузері
+          {data.backup.persisted === true && ' і захищені від автоочищення'}.
           <br />
           Регулярно роби експорт, щоб не втратити історію.
         </p>

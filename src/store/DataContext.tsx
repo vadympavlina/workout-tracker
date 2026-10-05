@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { AppData, BodyWeightEntry, Exercise, PersonalRecord, Settings, UserProfile, WorkoutPlan, WorkoutSession } from '@/types';
-import { dataService } from '@/services/dataService';
+import { dataService, type Meta } from '@/services/dataService';
 import { mediaStore } from '@/services/mediaStore';
 import { useToast } from '@/components/ui/Toast';
 import { personalRecords, sortSessions } from '@/utils/stats';
@@ -31,6 +31,11 @@ interface DataApi {
   saveWeight: (entry: Omit<BodyWeightEntry, 'id'> & { id?: string }) => void;
   deleteWeight: (id: string) => void;
 
+  /** Backup bookkeeping (last export, reminder snooze) and storage protection status. */
+  backup: { lastAt: string | null; snoozedUntil: string | null; persisted: boolean | null };
+  markBackup: () => void;
+  snoozeBackupReminder: (days: number) => void;
+
   replaceAll: (data: AppData) => Promise<void>;
   resetToDemo: () => Promise<void>;
   clearAll: () => Promise<void>;
@@ -48,6 +53,8 @@ interface ProviderProps {
 export function DataProvider({ children, fallback, onboarding }: ProviderProps) {
   const [data, setData] = useState<AppData | null>(null);
   const [firstRun, setFirstRun] = useState(false);
+  const [meta, setMeta] = useState<Meta | null>(null);
+  const [persisted, setPersisted] = useState<boolean | null>(null);
   const dataRef = useRef<AppData | null>(null);
   const toast = useToast();
 
@@ -61,6 +68,20 @@ export function DataProvider({ children, fallback, onboarding }: ProviderProps) 
       setData(loaded);
     });
   }, []);
+
+  // Once real data exists: load backup bookkeeping and ask the browser not to
+  // evict our storage under pressure (granted silently for installed PWAs).
+  useEffect(() => {
+    if (!data) return;
+    void dataService.loadMeta().then(setMeta);
+    const storage = navigator.storage;
+    if (!storage?.persisted) return;
+    void storage
+      .persisted()
+      .then((already) => (already || !storage.persist ? already : storage.persist()))
+      .then(setPersisted)
+      .catch(() => setPersisted(null));
+  }, [data !== null]);
 
   /** Applies an update to one collection: state first (instant UI), then persistence. */
   const commit = useCallback(
@@ -143,6 +164,11 @@ export function DataProvider({ children, fallback, onboarding }: ProviderProps) 
         }),
       deleteWeight: (id) => commit('bodyWeight', (list) => list.filter((e) => e.id !== id)),
 
+      backup: { lastAt: meta?.lastBackupAt ?? null, snoozedUntil: meta?.backupSnoozedUntil ?? null, persisted },
+      markBackup: () => void dataService.updateMeta({ lastBackupAt: new Date().toISOString() }).then(setMeta),
+      snoozeBackupReminder: (days) =>
+        void dataService.updateMeta({ backupSnoozedUntil: new Date(Date.now() + days * 86_400_000).toISOString() }).then(setMeta),
+
       replaceAll: async (next) => {
         await dataService.replaceAll(next);
         await replace(next);
@@ -155,7 +181,7 @@ export function DataProvider({ children, fallback, onboarding }: ProviderProps) 
         setFirstRun(true);
       },
     };
-  }, [data, commit, replace]);
+  }, [data, commit, replace, meta, persisted]);
 
   if (firstRun && !api)
     return (

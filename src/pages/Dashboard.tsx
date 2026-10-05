@@ -15,6 +15,7 @@ import { StatCard } from '@/components/ui/StatCard';
 import { IconBadge } from '@/components/ui/IconBadge';
 import { ActivityRings, type Ring } from '@/components/ui/ActivityRings';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { BackupReminder } from '@/components/BackupReminder';
 import { addDays, isSameDay, startOfWeek, weekdayOf, WEEKDAYS_SHORT } from '@/utils/date';
 import {
   formatClock, formatDate, formatDurationWords, formatNumber, formatPercent, formatSigned, formatVolume, formatWeekdayDate, pluralExercises,
@@ -115,6 +116,8 @@ export default function Dashboard() {
 
         <TodayCard />
       </div>
+
+      <BackupReminder />
 
       <section aria-label="Коротка статистика" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
