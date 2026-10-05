@@ -1,6 +1,7 @@
 import type { ActiveWorkout, AppData, ExportFile } from '@/types';
 import { createDemoData, DEFAULT_SETTINGS, emptyData, emptyUser } from '@/data/demo';
 import { DEFAULT_EXERCISES } from '@/data/exercises';
+import { ACCENTS } from '@/data/labels';
 import { localStorageAdapter, STORAGE_KEYS, type StorageAdapter } from './storage';
 
 /**
@@ -10,6 +11,13 @@ import { localStorageAdapter, STORAGE_KEYS, type StorageAdapter } from './storag
  */
 
 export const SCHEMA_VERSION = 1;
+
+/** Fills defaults and drops values from older versions (e.g. a removed accent colour). */
+function normalizeSettings(raw: Partial<AppData['settings']> | null | undefined): AppData['settings'] {
+  const merged = { ...DEFAULT_SETTINGS, ...raw };
+  if (!(merged.accent in ACCENTS)) merged.accent = DEFAULT_SETTINGS.accent;
+  return merged;
+}
 
 interface Meta {
   schemaVersion: number;
@@ -56,7 +64,7 @@ export function createDataService(adapter: StorageAdapter) {
         exercises: exercises?.length ? exercises : DEFAULT_EXERCISES,
         sessions: sessions ?? [],
         bodyWeight: bodyWeight ?? [],
-        settings: { ...DEFAULT_SETTINGS, ...settings },
+        settings: normalizeSettings(settings),
       };
     },
 
@@ -130,6 +138,6 @@ export function parseImport(raw: unknown): AppData {
     exercises: (exercises as AppData['exercises']).length ? (exercises as AppData['exercises']) : DEFAULT_EXERCISES,
     sessions: sessions as AppData['sessions'],
     bodyWeight: bodyWeight as AppData['bodyWeight'],
-    settings: { ...DEFAULT_SETTINGS, ...(isObj(settings) ? (settings as Partial<AppData['settings']>) : {}) },
+    settings: normalizeSettings(isObj(settings) ? (settings as Partial<AppData['settings']>) : null),
   };
 }

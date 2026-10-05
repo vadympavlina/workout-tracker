@@ -70,7 +70,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 key={t.id}
                 role={t.kind === 'error' ? 'alert' : 'status'}
                 className={clsx(
-                  'pointer-events-auto flex w-full max-w-sm animate-slide-up items-start gap-3 rounded-card border border-line bg-elevated/95 p-3.5 pr-2 shadow-2xl backdrop-blur-xl',
+                  'pointer-events-auto flex w-full max-w-sm animate-slide-up items-start gap-3 rounded-[22px] border border-white/[0.08] bg-[rgb(28_28_31/0.9)] p-3.5 pr-2 shadow-2xl backdrop-blur-2xl',
                   t.kind === 'record' && 'border-warning/30',
                 )}
               >

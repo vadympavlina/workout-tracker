@@ -103,7 +103,7 @@ export default function ProfilePage() {
     <div className="mx-auto max-w-3xl">
       <TopBar title="Профіль" />
 
-      <Card padding="lg" className="relative overflow-hidden">
+      <Card padding="lg" className="relative overflow-clip">
         <div className="pointer-events-none absolute -left-16 -top-24 h-56 w-56 rounded-full bg-accent/10 blur-3xl" aria-hidden />
         <div className="relative flex items-center gap-4">
           <div className="relative">
@@ -112,7 +112,7 @@ export default function ProfilePage() {
               type="button"
               onClick={() => photoInput.current?.click()}
               aria-label="Змінити фото"
-              className="absolute -bottom-1 -right-1 inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-surface bg-accent text-[#120f1f] transition hover:brightness-110"
+              className="absolute -bottom-1 -right-1 inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-surface bg-accent text-black transition hover:brightness-110"
             >
               <Camera size={16} aria-hidden />
             </button>

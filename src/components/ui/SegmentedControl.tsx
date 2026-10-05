@@ -10,7 +10,7 @@ interface Props<T extends string> {
 
 export function SegmentedControl<T extends string>({ value, onChange, options, label, className }: Props<T>) {
   return (
-    <div role="radiogroup" aria-label={label} className={clsx('flex rounded-ctl border border-line bg-surface p-1', className)}>
+    <div role="radiogroup" aria-label={label} className={clsx('flex rounded-full bg-white/[0.06] p-1', className)}>
       {options.map((o) => {
         const active = o.value === value;
         return (
@@ -21,8 +21,8 @@ export function SegmentedControl<T extends string>({ value, onChange, options, l
             aria-checked={active}
             onClick={() => onChange(o.value)}
             className={clsx(
-              'h-9 flex-1 rounded-xl px-3 text-[13px] font-semibold transition duration-200',
-              active ? 'bg-elevated text-fg shadow-card ring-1 ring-inset ring-white/[0.08]' : 'text-subtle hover:text-fg',
+              'h-9 flex-1 rounded-full px-3 text-[13px] font-semibold transition duration-200',
+              active ? 'bg-fg text-black shadow-card' : 'text-muted hover:text-fg',
             )}
           >
             {o.label}

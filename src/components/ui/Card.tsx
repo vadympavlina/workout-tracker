@@ -26,7 +26,7 @@ export function Section({ title, action, children, className, id }: SectionProps
   return (
     <section aria-labelledby={headingId} className={clsx('space-y-3', className)}>
       <div className="flex min-h-[32px] items-center justify-between gap-3">
-        <h2 id={headingId} className="text-[17px] font-semibold tracking-tight">
+        <h2 id={headingId} className="text-[20px] font-bold tracking-[-0.03em]">
           {title}
         </h2>
         {action}

@@ -2,7 +2,7 @@ import { forwardRef, useId, type InputHTMLAttributes, type ReactNode, type Texta
 import clsx from 'clsx';
 
 const fieldBase =
-  'w-full rounded-ctl border border-line bg-elevated px-3.5 text-[16px] text-fg placeholder:text-subtle transition duration-200 hover:border-white/[0.12] focus:border-accent/60 focus:outline-none focus:ring-2 focus:ring-accent/20';
+  'w-full rounded-ctl border border-white/[0.06] bg-white/[0.05] px-4 text-[16px] text-fg placeholder:text-subtle transition duration-200 hover:border-white/[0.12] focus:border-accent/70 focus:bg-white/[0.07] focus:outline-none focus:ring-4 focus:ring-accent/10';
 
 interface FieldProps {
   label?: string;

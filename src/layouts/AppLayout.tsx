@@ -24,7 +24,7 @@ export function AppLayout() {
     <StartSheetContext.Provider value={() => setStartOpen(true)}>
       <a
         href="#main"
-        className="sr-only z-[70] rounded-ctl bg-accent px-4 py-2 font-semibold text-[#120f1f] focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        className="sr-only z-[70] rounded-ctl bg-accent px-4 py-2 font-semibold text-black focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
       >
         До основного вмісту
       </a>

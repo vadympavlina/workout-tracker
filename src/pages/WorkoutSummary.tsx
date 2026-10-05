@@ -6,26 +6,34 @@ import { useData } from '@/store/DataContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { ButtonLink } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ActivityRings } from '@/components/ui/ActivityRings';
 import { formatClock, formatNumber, formatPercent, formatVolume } from '@/utils/format';
 import { percentChange, sessionRecords, sessionSetCount, sessionVolume } from '@/utils/stats';
 
 export default function WorkoutSummary() {
   usePageTitle('Тренування завершено');
   const { id } = useParams();
-  const { sessions } = useData();
+  const { data, sessions } = useData();
   const session = sessions.find((s) => s.id === id);
 
   const info = useMemo(() => {
     if (!session) return null;
     const previous = sessions.find((s) => s.id !== session.id && s.startedAt < session.startedAt && (session.planId ? s.planId === session.planId : s.name === session.name));
     const volume = sessionVolume(session);
+    const sets = sessionSetCount(session);
+    const plan = data.plans.find((p) => p.id === session.planId);
     return {
       volume,
-      sets: sessionSetCount(session),
+      sets,
+      rings: [
+        { label: 'Обсяг', value: volume, max: previous ? sessionVolume(previous) : volume, color: 'volume' as const },
+        { label: 'Підходи', value: sets, max: previous ? sessionSetCount(previous) : sets, color: 'sets' as const },
+        { label: 'Час', value: session.durationSec, max: plan ? plan.estimatedMinutes * 60 : session.durationSec, color: 'move' as const },
+      ],
       records: sessionRecords(sessions, session),
       volumeChange: previous ? percentChange(volume, sessionVolume(previous)) : null,
     };
-  }, [session, sessions]);
+  }, [session, sessions, data.plans]);
 
   if (!session || !info) {
     return (
@@ -44,31 +52,33 @@ export default function WorkoutSummary() {
   }
 
   const stats = [
-    { icon: Clock, label: 'Тривалість', value: formatClock(session.durationSec) },
-    { icon: Dumbbell, label: 'Вправ', value: String(session.exercises.length) },
-    { icon: Weight, label: 'Загальна вага', value: formatVolume(info.volume) },
-    { icon: Layers, label: 'Підходів', value: String(info.sets) },
+    { icon: Clock, label: 'Тривалість', value: formatClock(session.durationSec), color: 'text-move' },
+    { icon: Dumbbell, label: 'Вправ', value: String(session.exercises.length), color: 'text-fg' },
+    { icon: Weight, label: 'Загальна вага', value: formatVolume(info.volume), color: 'text-volume' },
+    { icon: Layers, label: 'Підходів', value: String(info.sets), color: 'text-sets' },
   ];
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-4" style={{ paddingTop: 'calc(48px + var(--safe-top))', paddingBottom: 'calc(24px + var(--safe-bottom))' }}>
       <div className="relative flex flex-col items-center text-center">
-        <div className="pointer-events-none absolute -top-16 h-56 w-56 rounded-full bg-positive/10 blur-3xl" aria-hidden />
-        <span className="relative inline-flex h-20 w-20 animate-pop items-center justify-center rounded-full bg-positive text-[#06210f] shadow-[0_0_48px_-6px_rgb(var(--c-positive)/0.6)]">
-          <Check size={40} strokeWidth={3} aria-hidden />
-        </span>
+        <div className="glow-blob -top-10 h-64 w-64 bg-accent/[0.12]" aria-hidden />
+        <ActivityRings rings={info.rings} size={200} stroke={20} gap={5} label="Порівняння з минулим разом">
+          <span className="inline-flex h-12 w-12 animate-pop items-center justify-center rounded-full bg-accent text-black [animation-delay:900ms]">
+            <Check size={26} strokeWidth={3} aria-hidden />
+          </span>
+        </ActivityRings>
         <p className="eyebrow mt-6 animate-slide-up">Тренування завершено</p>
-        <h1 className="mt-2 animate-slide-up text-[30px] font-semibold leading-tight tracking-tight [animation-delay:60ms]">Чудова робота!</h1>
+        <h1 className="mt-2 animate-slide-up text-[38px] font-bold leading-tight tracking-[-0.045em] [animation-delay:60ms]">Чудова робота!</h1>
         <p className="mt-1 animate-slide-up text-[16px] text-muted [animation-delay:100ms]">{session.name}</p>
       </div>
 
       <dl className="mt-8 grid grid-cols-2 gap-3">
-        {stats.map(({ icon: Icon, label, value }, i) => (
+        {stats.map(({ icon: Icon, label, value, color }, i) => (
           <div key={label} className="card animate-slide-up p-4" style={{ animationDelay: `${140 + i * 50}ms` }}>
-            <dt className="flex items-center gap-1.5 text-[13px] text-muted">
-              <Icon size={15} aria-hidden /> {label}
+            <dt className="eyebrow flex items-center gap-1.5">
+              <Icon size={13} aria-hidden /> {label}
             </dt>
-            <dd className="tabular mt-2 text-[24px] font-semibold tracking-tight">{value}</dd>
+            <dd className={`metric mt-3 text-[28px] ${color}`}>{value}</dd>
           </div>
         ))}
       </dl>

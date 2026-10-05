@@ -134,7 +134,7 @@ export default function SessionDetail() {
       />
 
       <div className="space-y-6">
-        <Card padding="none" className="grid grid-cols-2 gap-px overflow-hidden bg-line sm:grid-cols-4">
+        <Card padding="none" className="grid grid-cols-2 gap-px overflow-hidden bg-line bg-none sm:grid-cols-4">
           {stats.map(({ icon: Icon, label, value }) => (
             <div key={label} className="bg-surface p-4">
               <p className="flex items-center gap-1.5 text-[12px] text-subtle">

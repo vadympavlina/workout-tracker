@@ -34,8 +34,8 @@ export const GOALS: Record<GoalType, { label: string; hint: string }> = {
 
 /** Accent palettes as "r g b" triplets for CSS variables. */
 export const ACCENTS: Record<AccentKey, { label: string; accent: string; strong: string }> = {
-  lavender: { label: 'Лаванда', accent: '185 167 255', strong: '151 125 255' },
-  violet: { label: 'Фіалка', accent: '196 148 255', strong: '168 102 250' },
-  indigo: { label: 'Індиго', accent: '151 164 255', strong: '108 124 250' },
-  mint: { label: "М'ята", accent: '128 226 196', strong: '72 200 160' },
+  lime: { label: 'Лайм', accent: '196 245 61', strong: '168 222 28' },
+  cyan: { label: 'Блакитний', accent: '82 214 255', strong: '40 186 240' },
+  pink: { label: 'Рожевий', accent: '255 122 174', strong: '245 84 146' },
+  violet: { label: 'Фіолетовий', accent: '188 162 255', strong: '160 126 250' },
 };

@@ -273,7 +273,6 @@ export default function PlanEditor() {
             ],
           });
           setPickerOpen(false);
-          toast.success('Вправу додано', ex.name);
         }}
       />
     </form>

@@ -17,7 +17,7 @@ export function ProgressBar({ value, max, label, tone = 'accent', className }: P
       aria-valuemin={0}
       aria-valuemax={max}
       aria-label={label}
-      className={clsx('h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]', className)}
+      className={clsx('h-1 w-full overflow-hidden rounded-full bg-white/[0.08]', className)}
     >
       <div
         className={clsx('h-full rounded-full transition-[width] duration-500 ease-out', tone === 'accent' ? 'bg-accent' : 'bg-positive')}

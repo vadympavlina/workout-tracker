@@ -80,7 +80,7 @@ export default function WeightPage() {
                 )}
               </div>
               {series.length >= 2 ? (
-                <TrendChart data={series} tone="positive" domain={['auto', 'auto']} formatValue={(v) => `${formatNumber(v, 1)} кг`} ariaLabel="Графік зміни ваги" />
+                <TrendChart data={series} tone="body" domain={['auto', 'auto']} formatValue={(v) => `${formatNumber(v, 1)} кг`} ariaLabel="Графік зміни ваги" />
               ) : (
                 <p className="py-8 text-center text-[14px] text-muted">Додай ще один запис, щоб побачити графік.</p>
               )}

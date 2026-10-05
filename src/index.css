@@ -4,18 +4,23 @@
 
 @layer base {
   :root {
-    --c-bg: 9 9 11;
-    --c-surface: 19 19 23;
-    --c-elevated: 27 27 32;
-    --c-line: 37 37 44;
-    --c-fg: 244 244 246;
-    --c-muted: 161 161 170;
-    --c-subtle: 113 113 122;
-    --c-accent: 185 167 255;
-    --c-accent-strong: 151 125 255;
-    --c-positive: 94 220 145;
-    --c-negative: 248 113 113;
-    --c-warning: 250 196 80;
+    --c-bg: 5 5 6;
+    --c-surface: 16 16 18;
+    --c-elevated: 26 26 29;
+    --c-line: 36 36 40;
+    --c-fg: 250 250 250;
+    --c-muted: 163 163 170;
+    --c-subtle: 108 108 116;
+    --c-accent: 196 245 61;
+    --c-accent-strong: 168 222 28;
+    --c-positive: 196 245 61;
+    --c-negative: 255 99 99;
+    --c-warning: 255 196 72;
+    /* Metric identity colours (rings + charts). Always shown with a text label. */
+    --c-move: 196 245 61;
+    --c-volume: 82 214 255;
+    --c-sets: 255 122 174;
+    --c-body: 188 162 255;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-top: env(safe-area-inset-top, 0px);
     color-scheme: dark;
@@ -23,9 +28,9 @@
 
   :root[data-oled='true'] {
     --c-bg: 0 0 0;
-    --c-surface: 14 14 17;
-    --c-elevated: 22 22 26;
-    --c-line: 32 32 38;
+    --c-surface: 12 12 13;
+    --c-elevated: 21 21 23;
+    --c-line: 30 30 33;
   }
 
   html {
@@ -39,19 +44,25 @@
 
   body {
     @apply bg-bg font-sans text-[15px] leading-relaxed text-fg antialiased;
-    font-feature-settings: 'cv11', 'ss01', 'tnum' 0;
     min-height: 100dvh;
     overscroll-behavior-y: none;
   }
 
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.02em;
+  }
+
   ::selection {
-    background: rgb(var(--c-accent) / 0.3);
+    background: rgb(var(--c-accent) / 0.35);
+    color: #000;
   }
 
   :focus-visible {
     outline: 2px solid rgb(var(--c-accent));
     outline-offset: 2px;
-    border-radius: 10px;
+    border-radius: 12px;
   }
 
   input[type='number']::-webkit-outer-spin-button,
@@ -61,6 +72,10 @@
   }
   input[type='number'] {
     -moz-appearance: textfield;
+  }
+  input[type='date']::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.5;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -75,17 +90,28 @@
 }
 
 @layer components {
+  /* Surfaces: a faint top-lit gradient instead of flat grey boxes. */
   .card {
-    @apply rounded-card border border-line bg-surface shadow-card;
+    @apply rounded-card border border-white/[0.06] shadow-card;
+    background: linear-gradient(180deg, rgb(var(--c-surface)) 0%, rgb(var(--c-surface) / 0.86) 100%);
   }
   .card-interactive {
-    @apply card transition duration-200 hover:border-white/[0.12] hover:bg-elevated active:scale-[0.99];
+    @apply card transition duration-200 hover:border-white/[0.12] active:scale-[0.985];
+  }
+  .card-interactive:hover {
+    background: linear-gradient(180deg, rgb(var(--c-elevated)) 0%, rgb(var(--c-surface)) 100%);
   }
   .label {
     @apply text-[13px] font-medium text-muted;
   }
+  /* Small uppercase mono caption — the "data" voice of the UI. */
   .eyebrow {
-    @apply text-xs font-semibold uppercase tracking-[0.08em] text-subtle;
+    @apply font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-subtle;
+  }
+  /* Big metric numerals. */
+  .metric {
+    @apply font-semibold tabular-nums leading-none;
+    letter-spacing: -0.045em;
   }
   .tabular {
     font-variant-numeric: tabular-nums;
@@ -102,6 +128,10 @@
     display: none;
   }
   .pb-nav {
-    padding-bottom: calc(88px + var(--safe-bottom));
+    padding-bottom: calc(112px + var(--safe-bottom));
+  }
+  /* Soft coloured light behind hero blocks. */
+  .glow-blob {
+    @apply pointer-events-none absolute rounded-full blur-3xl;
   }
 }

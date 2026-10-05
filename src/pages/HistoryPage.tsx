@@ -116,7 +116,7 @@ export default function HistoryPage() {
                     'tabular relative flex aspect-square min-h-[40px] flex-col items-center justify-center rounded-xl text-[14px] transition',
                     !inMonth && 'opacity-30',
                     has ? 'font-semibold text-fg hover:bg-white/[0.06]' : 'text-subtle',
-                    isSel && 'bg-accent text-[#120f1f] hover:bg-accent',
+                    isSel && 'bg-accent text-black hover:bg-accent',
                     !isSel && key === todayKey && 'ring-1 ring-inset ring-accent/50',
                   )}
                 >

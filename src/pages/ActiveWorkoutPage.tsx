@@ -165,20 +165,20 @@ export default function ActiveWorkoutPage() {
     <div className="mx-auto max-w-2xl" style={{ paddingBottom: `calc(${restLeft != null && restLeft > 0 ? 200 : 120}px + var(--safe-bottom))` }}>
       {/* Header */}
       <header
-        className="sticky top-0 z-30 border-b border-line bg-bg/85 px-2 pb-3 backdrop-blur-xl sm:px-4"
+        className="sticky top-0 z-30 border-b border-white/[0.06] bg-bg/80 px-2 pb-3 backdrop-blur-2xl sm:px-4"
         style={{ paddingTop: 'calc(8px + var(--safe-top))' }}
       >
         <div className="flex items-center gap-1">
           <IconButton icon={ChevronLeft} label="Згорнути тренування" onClick={() => navigate('/')} />
           <div className="min-w-0 flex-1 px-1">
-            <h1 className="truncate text-[17px] font-semibold leading-tight">{active.name}</h1>
-            <p className="text-[13px] text-muted">
+            <h1 className="truncate text-[17px] font-bold leading-tight tracking-[-0.02em]">{active.name}</h1>
+            <p className="font-mono text-[11.5px] uppercase tracking-wide text-subtle">
               <span className="tabular">{finishedCount} / {active.exercises.length}</span> вправ ·{' '}
               <span className="tabular">{doneSets} / {totalSets}</span> підх.
             </p>
           </div>
-          <div className="tabular flex h-11 items-center gap-1.5 rounded-ctl bg-accent/10 px-3 text-[18px] font-semibold text-accent" role="timer" aria-label="Тривалість тренування">
-            <Timer size={17} aria-hidden />
+          <div className="flex h-11 items-center gap-2 rounded-full bg-accent px-4 font-mono text-[17px] font-semibold tabular-nums text-black shadow-glow" role="timer" aria-label="Тривалість тренування">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-black/70" aria-hidden />
             {formatClock(elapsed)}
           </div>
         </div>
@@ -210,27 +210,28 @@ export default function ActiveWorkoutPage() {
                     onClick={() => workout.goTo(i)}
                     aria-current={i === idx ? 'step' : undefined}
                     className={clsx(
-                      'flex h-11 max-w-[180px] shrink-0 items-center gap-2 rounded-full border pl-2 pr-3.5 text-[13px] font-medium transition',
-                      i === idx ? 'border-accent/50 bg-accent/10 text-fg' : 'border-line bg-surface text-muted hover:text-fg',
+                      'flex h-11 max-w-[190px] shrink-0 items-center gap-2 rounded-full pl-1.5 pr-4 text-[13px] font-medium transition',
+                      i === idx ? 'bg-fg text-black' : 'bg-white/[0.06] text-muted hover:text-fg',
                     )}
                   >
                     <span
                       className={clsx(
                         'tabular inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold',
-                        e.finished ? 'bg-positive text-[#06210f]' : i === idx ? 'bg-accent text-[#120f1f]' : 'bg-white/[0.06]',
+                        e.finished ? 'bg-positive text-black' : i === idx ? 'bg-black text-fg' : 'bg-white/[0.08]',
                       )}
                     >
                       {e.finished ? <Check size={14} strokeWidth={3} aria-label="Завершено" /> : i + 1}
                     </span>
                     <span className="truncate">{e.name}</span>
-                    {!e.finished && done > 0 && <span className="tabular text-subtle">{done}/{e.sets.length}</span>}
+                    {!e.finished && done > 0 && <span className={clsx('tabular', i === idx ? 'text-black/60' : 'text-subtle')}>{done}/{e.sets.length}</span>}
                   </button>
                 );
               })}
             </nav>
 
             {/* Current exercise */}
-            <section ref={cardRef} aria-labelledby="current-ex" className="card scroll-mt-28 p-4 sm:p-5">
+            <section ref={cardRef} aria-labelledby="current-ex" className="card relative scroll-mt-28 overflow-clip p-4 sm:p-5">
+              <div className="glow-blob -right-20 -top-24 h-56 w-56 bg-accent/[0.08]" aria-hidden />
               <div className="flex items-start gap-3">
                 <IconBadge icon={currentEx?.icon ?? 'dumbbell'} />
                 <div className="min-w-0 flex-1">
@@ -238,7 +239,7 @@ export default function ActiveWorkoutPage() {
                     Вправа {idx + 1} / {active.exercises.length}
                     {currentEx && ` · ${MUSCLE_GROUPS[currentEx.muscleGroup]}`}
                   </p>
-                  <h2 id="current-ex" className="mt-1 text-[20px] font-semibold leading-tight tracking-tight">
+                  <h2 id="current-ex" className="mt-1.5 text-[24px] font-bold leading-[1.1] tracking-[-0.035em]">
                     {current.name}
                   </h2>
                   <p className="mt-1 text-[14px] text-muted">
@@ -251,7 +252,7 @@ export default function ActiveWorkoutPage() {
                 </div>
               </div>
 
-              <p className="mt-3 flex items-start gap-2 rounded-ctl bg-white/[0.03] px-3 py-2.5 text-[13px] text-muted">
+              <p className="relative mt-4 flex items-start gap-2 rounded-[14px] bg-white/[0.04] px-3 py-2.5 text-[13px] text-muted">
                 <History size={15} className="mt-0.5 shrink-0 text-subtle" aria-hidden />
                 {lastTime ? (
                   <span>
@@ -390,10 +391,10 @@ export default function ActiveWorkoutPage() {
       {/* Rest timer */}
       {restLeft != null && restLeft > 0 && (
         <div className="fixed inset-x-0 z-40 flex justify-center px-4" style={{ bottom: 'calc(88px + var(--safe-bottom))' }}>
-          <div role="timer" aria-label="Таймер відпочинку" className="flex w-full max-w-2xl animate-slide-up items-center gap-2 rounded-card border border-line bg-elevated/95 p-2 pl-4 shadow-2xl backdrop-blur-xl">
-            <Timer size={18} className="text-accent" aria-hidden />
-            <span className="text-[14px] text-muted">Відпочинок</span>
-            <span className="tabular flex-1 text-[20px] font-semibold">{formatClock(restLeft)}</span>
+          <div role="timer" aria-label="Таймер відпочинку" className="flex w-full max-w-2xl animate-slide-up items-center gap-2 rounded-full border border-volume/25 bg-[rgb(22_22_25/0.9)] p-1.5 pl-4 shadow-2xl backdrop-blur-2xl">
+            <Timer size={18} className="text-volume" aria-hidden />
+            <span className="eyebrow">Відпочинок</span>
+            <span className="metric flex-1 font-mono text-[22px] text-volume">{formatClock(restLeft)}</span>
             <Button size="sm" variant="secondary" onClick={() => workout.adjustRest(-15)} aria-label="Мінус 15 секунд">
               −15
             </Button>
@@ -406,7 +407,7 @@ export default function ActiveWorkoutPage() {
       )}
 
       {/* Bottom action */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/90 backdrop-blur-xl" style={{ paddingBottom: 'var(--safe-bottom)' }}>
+      <div className="fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-bg via-bg/95 to-transparent pt-6" style={{ paddingBottom: 'var(--safe-bottom)' }}>
         <div className="mx-auto flex max-w-2xl gap-2 px-4 py-3">
           {restLeft == null && active.exercises.length > 0 && (
             <IconButton icon={Timer} label="Почати відпочинок" variant="secondary" className="h-14 w-14" onClick={() => workout.startRest()} />

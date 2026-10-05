@@ -13,7 +13,7 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { IconBadge } from '@/components/ui/IconBadge';
 import { BarsChart, TrendChart } from '@/components/charts/Chart';
 import { addDays, daysBetween } from '@/utils/date';
-import { formatDate, formatDurationWords, formatHours, formatNumber, formatPercent, formatSigned, formatVolume, pluralWorkouts } from '@/utils/format';
+import { formatDate, formatHours, formatNumber, formatPercent, formatSigned, formatVolume, pluralWorkouts } from '@/utils/format';
 import {
   exerciseProgress, latestWeight, percentChange, sessionsBetween, sumDuration, sumVolume, weeklyBuckets, weightChangeSince, weightSeries,
 } from '@/utils/stats';
@@ -45,7 +45,10 @@ export default function ProgressPage() {
     const current = sessionsBetween(sessions, from, now);
     const previous = sessionsBetween(sessions, addDays(from, -days), from);
     const weeks = Math.min(104, Math.max(4, Math.ceil(days / 7)));
-    const buckets = weeklyBuckets(sessions, weeks, now);
+    const all = weeklyBuckets(sessions, weeks, now);
+    // Skip empty weeks before the first workout so the chart doesn't fake a drop to zero.
+    const firstActive = all.findIndex((b) => b.count > 0);
+    const buckets = firstActive > 0 ? all.slice(Math.min(firstActive, all.length - 4)) : all;
     const volume = sumVolume(current);
     const duration = sumDuration(current);
     return {
@@ -89,27 +92,30 @@ export default function ProgressPage() {
     <div>
       <TopBar title="Прогрес" subtitle="Статистика, рекорди та динаміка" />
 
-      <SegmentedControl label="Період" value={period} onChange={setPeriod} options={PERIODS} className="mb-6 max-w-md" />
+      <SegmentedControl label="Період" value={period} onChange={setPeriod} options={PERIODS} className="mb-8 max-w-md" />
 
       <div className="space-y-8">
         <section aria-label="Підсумки періоду" className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
           <StatCard
             label="Тренувань"
+            color="move"
             value={view.current.length}
             icon={Dumbbell}
             trend={view.countChange != null && view.countChange !== 0 ? { value: formatSigned(view.countChange), direction: view.countChange > 0 ? 'up' : 'down' } : undefined}
           />
           <StatCard
-            label="Загальний обсяг"
+            label="Обсяг"
+            color="volume"
             value={formatVolume(view.volume)}
             icon={Weight}
             trend={view.volumeChange != null ? { value: formatPercent(view.volumeChange), direction: view.volumeChange > 0 ? 'up' : view.volumeChange < 0 ? 'down' : 'flat' } : undefined}
           />
-          <StatCard label="Годин" value={formatHours(view.duration)} icon={Hourglass} />
-          <StatCard label="Середня тривалість" value={formatDurationWords(view.avgDuration)} icon={Timer} />
-          <StatCard label="Поточна вага" value={weight ? formatNumber(weight.weight, 1) : '—'} unit={weight ? 'кг' : undefined} icon={Scale} />
+          <StatCard label="Годин" color="sets" value={formatHours(view.duration)} icon={Hourglass} />
+          <StatCard label="Сер. тривалість" color="sets" value={`${Math.round(view.avgDuration / 60)} хв`} icon={Timer} />
+          <StatCard label="Вага" color="body" value={weight ? formatNumber(weight.weight, 1) : '—'} unit={weight ? 'кг' : undefined} icon={Scale} />
           <StatCard
             label="Зміна ваги"
+            color="body"
             value={weightDelta != null ? formatSigned(weightDelta) : '—'}
             unit={weightDelta != null ? 'кг' : undefined}
             icon={Clock}
@@ -119,24 +125,28 @@ export default function ProgressPage() {
 
         <div className="grid gap-4 lg:grid-cols-2">
           <ChartCard
+            color="volume"
             title="Загальний обсяг"
             value={formatVolume(view.volume)}
             change={view.volumeChange}
           >
             <TrendChart
+              tone="volume"
               data={view.buckets.map((b) => ({ label: b.label, value: Math.round(b.volume) }))}
               formatValue={(v) => `${formatNumber(v)} кг`}
               ariaLabel={`Обсяг по тижнях, загалом ${formatVolume(view.volume)}`}
             />
           </ChartCard>
-          <ChartCard title="Кількість тренувань" value={pluralWorkouts(view.current.length)} caption="по тижнях">
+          <ChartCard color="move" title="Кількість тренувань" value={pluralWorkouts(view.current.length)} caption="по тижнях">
             <BarsChart
+              tone="move"
               data={view.buckets.map((b) => ({ label: b.label, value: b.count }))}
               formatValue={(v) => pluralWorkouts(v)}
               ariaLabel={`Тренувань по тижнях: ${view.current.length} за період`}
             />
           </ChartCard>
           <ChartCard
+            color="body"
             title="Вага тіла"
             value={weight ? `${formatNumber(weight.weight, 1)} кг` : '—'}
             caption={weightDelta != null ? `${formatSigned(weightDelta, 'кг')} за період` : undefined}
@@ -150,7 +160,7 @@ export default function ProgressPage() {
             {weightData.length >= 2 ? (
               <TrendChart
                 data={weightData}
-                tone="positive"
+                tone="body"
                 domain={['auto', 'auto']}
                 formatValue={(v) => `${formatNumber(v, 1)} кг`}
                 ariaLabel={`Зміна ваги: зараз ${weight?.weight ?? '—'} кг`}
@@ -229,9 +239,12 @@ export default function ProgressPage() {
   );
 }
 
+const DOT = { move: 'bg-move', volume: 'bg-volume', sets: 'bg-sets', body: 'bg-body', accent: 'bg-accent' } as const;
+
 function ChartCard({
-  title, value, change, caption, action, children, className,
+  title, value, change, caption, action, children, className, color,
 }: {
+  color: keyof typeof DOT;
   title: string;
   value: string;
   change?: number | null;
@@ -244,14 +257,17 @@ function ChartCard({
     <Card padding="lg" className={className}>
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
-          <h2 className="label">{title}</h2>
-          <p className="tabular mt-1 text-[26px] font-semibold leading-tight tracking-tight">{value}</p>
+          <h2 className="eyebrow flex items-center gap-2">
+            <span className={`h-1.5 w-1.5 rounded-full ${DOT[color]}`} aria-hidden />
+            {title}
+          </h2>
+          <p className="metric mt-3 text-[34px]">{value}</p>
           {change != null ? (
-            <p className={`mt-0.5 text-[13px] font-medium ${change >= 0 ? 'text-positive' : 'text-negative'}`}>
+            <p className={`mt-2 text-[13px] font-medium ${change >= 0 ? 'text-positive' : 'text-negative'}`}>
               {formatPercent(change)} <span className="font-normal text-subtle">до попереднього періоду</span>
             </p>
           ) : (
-            caption && <p className="mt-0.5 text-[13px] text-subtle">{caption}</p>
+            caption && <p className="mt-2 text-[13px] text-subtle">{caption}</p>
           )}
         </div>
         {action}

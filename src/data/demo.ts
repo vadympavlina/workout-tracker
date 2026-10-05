@@ -4,7 +4,7 @@ import { uid } from '@/utils/id';
 import { DEFAULT_EXERCISES } from './exercises';
 
 export const DEFAULT_SETTINGS: Settings = {
-  accent: 'lavender',
+  accent: 'lime',
   oled: false,
   restTimerSec: 90,
   autoRestTimer: true,

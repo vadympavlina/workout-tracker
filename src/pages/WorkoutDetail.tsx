@@ -91,7 +91,7 @@ export default function WorkoutDetail() {
       />
 
       <div className="space-y-6">
-        <Card padding="none" className="grid grid-cols-2 gap-px overflow-hidden bg-line sm:grid-cols-4">
+        <Card padding="none" className="grid grid-cols-2 gap-px overflow-hidden bg-line bg-none sm:grid-cols-4">
           <Info icon={Clock} label="Тривалість" value={`≈ ${plan.estimatedMinutes} хв`} />
           <Info icon={ListChecks} label="Вправ / підходів" value={`${plan.exercises.length} / ${totalSets}`} />
           <Info icon={Weight} label="Обсяг минулого разу" value={lastVolume != null ? formatVolume(lastVolume) : '—'} />

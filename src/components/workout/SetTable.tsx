@@ -17,8 +17,8 @@ const GRID = 'grid grid-cols-[30px_minmax(0,1fr)_76px_64px_46px] items-center ga
 /** Compact set logger: one row per set — previous result, kg, reps, done. */
 export function SetTable({ exercise, isBodyweight, recordSetId, onChange, onToggle }: Props) {
   return (
-    <div role="table" aria-label={`Підходи: ${exercise.name}`}>
-      <div role="row" className={clsx(GRID, 'px-1 pb-2 text-[12px] font-semibold uppercase tracking-wide text-subtle')}>
+    <div role="table" aria-label={`Підходи: ${exercise.name}`} className="relative">
+      <div role="row" className={clsx(GRID, 'px-1 pb-2 font-mono text-[10.5px] font-medium uppercase tracking-[0.12em] text-subtle')}>
         <span role="columnheader" className="text-center">
           #
         </span>
@@ -44,8 +44,8 @@ export function SetTable({ exercise, isBodyweight, recordSetId, onChange, onTogg
               role="row"
               className={clsx(
                 GRID,
-                'relative rounded-ctl px-1 py-1 transition-colors duration-300',
-                set.done ? 'bg-positive/[0.07]' : 'bg-transparent',
+                'relative rounded-[18px] px-1 py-1 transition-colors duration-300',
+                set.done ? 'bg-positive/[0.09]' : 'bg-transparent',
               )}
             >
               <span role="cell" className={clsx('tabular text-center text-[15px] font-semibold', set.done ? 'text-positive' : 'text-muted')}>
@@ -85,10 +85,10 @@ export function SetTable({ exercise, isBodyweight, recordSetId, onChange, onTogg
                   aria-pressed={set.done}
                   aria-label={set.done ? `Підхід ${i + 1} виконано, скасувати` : `Позначити підхід ${i + 1} виконаним`}
                   className={clsx(
-                    'inline-flex h-11 w-11 items-center justify-center rounded-xl border transition duration-200 active:scale-90',
+                    'inline-flex h-11 w-11 items-center justify-center rounded-full transition duration-200 active:scale-90',
                     set.done
-                      ? 'border-positive bg-positive text-[#06210f]'
-                      : 'border-line bg-white/[0.04] text-subtle hover:border-white/20 hover:text-fg',
+                      ? 'bg-positive text-black shadow-[0_4px_16px_-4px_rgb(var(--c-positive)/0.7)]'
+                      : 'bg-white/[0.07] text-subtle hover:bg-white/[0.12] hover:text-fg',
                   )}
                 >
                   <Check size={20} strokeWidth={2.6} aria-hidden />
@@ -96,7 +96,7 @@ export function SetTable({ exercise, isBodyweight, recordSetId, onChange, onTogg
               </span>
 
               {isRecord && (
-                <span className="pointer-events-none absolute -top-2 right-12 flex animate-pop items-center gap-1 rounded-full bg-warning px-2 py-0.5 text-[11px] font-bold text-[#231500] shadow-lg">
+                <span className="pointer-events-none absolute -top-2 right-12 flex animate-pop items-center gap-1 rounded-full bg-warning px-2 py-0.5 text-[11px] font-bold text-black shadow-lg">
                   <Trophy size={12} aria-hidden />
                   Рекорд
                 </span>

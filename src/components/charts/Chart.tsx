@@ -1,11 +1,12 @@
 import { useId } from 'react';
+import type { MetricColor } from '@/components/ui/ActivityRings';
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts';
 
 /** Single-series charts: one accent hue, recessive grid/axes, hover tooltip. No legend (the card title names the series). */
 
-const AXIS = { fontSize: 12, fill: 'rgb(var(--c-subtle))' };
+const AXIS = { fontSize: 11, fill: 'rgb(var(--c-subtle))', fontFamily: '"Geist Mono Variable", ui-monospace, monospace' };
 
 interface Point {
   label: string;
@@ -18,7 +19,7 @@ interface BaseProps {
   formatValue: (v: number) => string;
   /** Screen-reader summary of the chart. */
   ariaLabel: string;
-  tone?: 'accent' | 'positive';
+  tone?: MetricColor;
 }
 
 interface TooltipContentProps {
@@ -31,14 +32,14 @@ interface TooltipContentProps {
 function ChartTooltip({ active, payload, label, formatValue }: TooltipContentProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-line bg-elevated/95 px-3 py-2 shadow-2xl backdrop-blur">
-      <p className="text-[12px] text-subtle">{label}</p>
-      <p className="tabular text-[15px] font-semibold text-fg">{formatValue(Number(payload[0].value))}</p>
+    <div className="rounded-[14px] border border-white/[0.08] bg-[rgb(28_28_31/0.92)] px-3 py-2 shadow-2xl backdrop-blur-xl">
+      <p className="font-mono text-[11px] uppercase tracking-wider text-subtle">{label}</p>
+      <p className="metric mt-1 text-[17px] text-fg">{formatValue(Number(payload[0].value))}</p>
     </div>
   );
 }
 
-const color = (tone: BaseProps['tone']) => (tone === 'positive' ? 'rgb(var(--c-positive))' : 'rgb(var(--c-accent))');
+const color = (tone: BaseProps['tone'] = 'accent') => `rgb(var(--c-${tone}))`;
 
 export function TrendChart({ data, height = 180, formatValue, ariaLabel, tone = 'accent', domain }: BaseProps & { domain?: [number | 'auto', number | 'auto'] }) {
   const gradientId = useId().replace(/:/g, '');
@@ -49,11 +50,11 @@ export function TrendChart({ data, height = 180, formatValue, ariaLabel, tone = 
         <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={stroke} stopOpacity={0.28} />
+              <stop offset="0%" stopColor={stroke} stopOpacity={0.35} />
               <stop offset="100%" stopColor={stroke} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid vertical={false} stroke="rgb(255 255 255 / 0.05)" />
+          <CartesianGrid vertical={false} stroke="rgb(255 255 255 / 0.06)" strokeDasharray="2 4" />
           <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={false} minTickGap={24} dy={6} />
           <YAxis
             tick={AXIS}
@@ -71,7 +72,7 @@ export function TrendChart({ data, height = 180, formatValue, ariaLabel, tone = 
             type="monotone"
             dataKey="value"
             stroke={stroke}
-            strokeWidth={2}
+            strokeWidth={2.5}
             fill={`url(#${gradientId})`}
             dot={false}
             activeDot={{ r: 5, strokeWidth: 2, stroke: 'rgb(var(--c-surface))', fill: stroke }}
@@ -90,7 +91,7 @@ export function BarsChart({ data, height = 180, formatValue, ariaLabel, tone = '
     <div role="img" aria-label={ariaLabel} style={{ height }} className="-ml-2">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} barCategoryGap="28%">
-          <CartesianGrid vertical={false} stroke="rgb(255 255 255 / 0.05)" />
+          <CartesianGrid vertical={false} stroke="rgb(255 255 255 / 0.06)" strokeDasharray="2 4" />
           <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={false} minTickGap={12} dy={6} />
           <YAxis tick={AXIS} tickLine={false} axisLine={false} width={44} allowDecimals={false} />
           <Tooltip cursor={{ fill: 'rgb(255 255 255 / 0.04)' }} content={<ChartTooltip formatValue={formatValue} />} />
@@ -107,7 +108,7 @@ export function BarsChart({ data, height = 180, formatValue, ariaLabel, tone = '
                 <path
                   d={`M${x},${y + h} L${x},${y + r} Q${x},${y} ${x + r},${y} L${x + width - r},${y} Q${x + width},${y} ${x + width},${y + r} L${x + width},${y + h} Z`}
                   fill={fill}
-                  fillOpacity={highlightLast && !isLast ? 0.45 : 1}
+                  fillOpacity={highlightLast && !isLast ? 0.72 : 1}
                 />
               );
             }}

@@ -80,7 +80,7 @@ export function NumberInput({
     return (
       <div
         className={clsx(
-          'rounded-xl border border-transparent bg-white/[0.05] transition focus-within:border-accent/60 focus-within:bg-accent/[0.06]',
+          'rounded-[14px] border border-transparent bg-white/[0.06] transition focus-within:border-accent/70 focus-within:bg-accent/[0.06]',
           className,
         )}
       >
@@ -96,13 +96,13 @@ export function NumberInput({
           {label}
         </label>
       )}
-      <div className="flex items-center gap-1 rounded-ctl border border-line bg-elevated p-1 focus-within:border-accent/60">
+      <div className="flex items-center gap-1 rounded-ctl border border-white/[0.06] bg-white/[0.05] p-1 focus-within:border-accent/70">
         <button
           type="button"
           onClick={() => bump(-1)}
           disabled={disabled || (value ?? 0) <= min}
           aria-label={`Зменшити ${label ?? ''}`.trim()}
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted transition hover:bg-white/[0.06] hover:text-fg active:scale-95 disabled:opacity-30"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted transition hover:bg-white/[0.06] hover:text-fg active:scale-95 disabled:opacity-30"
         >
           <Minus size={18} aria-hidden />
         </button>
@@ -117,7 +117,7 @@ export function NumberInput({
           onClick={() => bump(1)}
           disabled={disabled || (value ?? 0) >= max}
           aria-label={`Збільшити ${label ?? ''}`.trim()}
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted transition hover:bg-white/[0.06] hover:text-fg active:scale-95 disabled:opacity-30"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted transition hover:bg-white/[0.06] hover:text-fg active:scale-95 disabled:opacity-30"
         >
           <Plus size={18} aria-hidden />
         </button>

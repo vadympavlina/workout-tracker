@@ -16,20 +16,20 @@ interface CommonProps {
 }
 
 const base =
-  'inline-flex select-none items-center justify-center gap-2 font-semibold transition duration-200 disabled:pointer-events-none disabled:opacity-40 active:scale-[0.98]';
+  'inline-flex select-none items-center justify-center gap-2 rounded-full font-semibold tracking-[-0.01em] transition duration-200 disabled:pointer-events-none disabled:opacity-40 active:scale-[0.97]';
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-accent text-[#120f1f] hover:bg-accent/90 shadow-glow',
-  secondary: 'bg-elevated text-fg border border-line hover:bg-white/[0.08] hover:border-white/[0.12]',
-  ghost: 'text-muted hover:text-fg hover:bg-white/[0.05]',
-  danger: 'bg-negative/10 text-negative border border-negative/20 hover:bg-negative/15',
-  positive: 'bg-positive text-[#06210f] hover:bg-positive/90',
+  primary: 'bg-accent text-black hover:brightness-110 shadow-glow',
+  secondary: 'bg-white/[0.08] text-fg hover:bg-white/[0.12]',
+  ghost: 'text-muted hover:text-fg hover:bg-white/[0.06]',
+  danger: 'bg-negative/[0.12] text-negative hover:bg-negative/20',
+  positive: 'bg-positive text-black hover:brightness-110',
 };
 
 const sizes: Record<Size, string> = {
-  sm: 'h-9 rounded-xl px-3 text-[13px]',
-  md: 'h-11 rounded-ctl px-4 text-[15px]',
-  lg: 'h-14 rounded-card px-6 text-base',
+  sm: 'h-9 px-3.5 text-[13px]',
+  md: 'h-11 px-5 text-[15px]',
+  lg: 'h-14 px-7 text-[16px]',
 };
 
 export function buttonClass({ variant = 'primary', size = 'md', block }: Pick<CommonProps, 'variant' | 'size' | 'block'>) {
@@ -92,10 +92,10 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       aria-label={label}
       title={label}
       className={clsx(
-        'inline-flex shrink-0 items-center justify-center rounded-ctl transition duration-200 active:scale-95 disabled:pointer-events-none disabled:opacity-30',
+        'inline-flex shrink-0 items-center justify-center rounded-full transition duration-200 active:scale-95 disabled:pointer-events-none disabled:opacity-30',
         size === 'md' ? 'h-11 w-11' : 'h-9 w-9',
         variant === 'ghost' && 'text-muted hover:bg-white/[0.06] hover:text-fg',
-        variant === 'secondary' && 'border border-line bg-elevated text-fg hover:bg-white/[0.08]',
+        variant === 'secondary' && 'bg-white/[0.08] text-fg hover:bg-white/[0.12]',
         variant === 'danger' && 'text-negative hover:bg-negative/10',
         className,
       )}

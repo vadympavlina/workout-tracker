@@ -16,17 +16,23 @@ export default {
         positive: 'rgb(var(--c-positive) / <alpha-value>)',
         negative: 'rgb(var(--c-negative) / <alpha-value>)',
         warning: 'rgb(var(--c-warning) / <alpha-value>)',
+        // Fixed metric colours (Apple-Fitness-style rings): identity never changes with the accent.
+        move: 'rgb(var(--c-move) / <alpha-value>)',
+        volume: 'rgb(var(--c-volume) / <alpha-value>)',
+        sets: 'rgb(var(--c-sets) / <alpha-value>)',
+        body: 'rgb(var(--c-body) / <alpha-value>)',
       },
       fontFamily: {
-        sans: ['"Inter Variable"', 'Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['"Geist Variable"', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: ['"Geist Mono Variable"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       borderRadius: {
-        card: '18px',
-        ctl: '14px',
+        card: '24px',
+        ctl: '16px',
       },
       boxShadow: {
-        card: '0 1px 0 0 rgb(255 255 255 / 0.03) inset, 0 8px 24px -12px rgb(0 0 0 / 0.6)',
-        glow: '0 0 0 1px rgb(var(--c-accent) / 0.25), 0 8px 32px -8px rgb(var(--c-accent) / 0.35)',
+        card: 'inset 0 1px 0 0 rgb(255 255 255 / 0.05), 0 12px 32px -16px rgb(0 0 0 / 0.8)',
+        glow: '0 8px 28px -6px rgb(var(--c-accent) / 0.45)',
       },
       keyframes: {
         'fade-in': { from: { opacity: 0 }, to: { opacity: 1 } },

@@ -52,7 +52,7 @@ export default function PlanPage() {
         />
       ) : (
         <div className="space-y-8">
-          <div role="tablist" aria-label="День тижня" className="grid grid-cols-8 gap-1.5 rounded-card border border-line bg-surface p-1.5">
+          <div role="tablist" aria-label="День тижня" className="grid grid-cols-8 gap-1 rounded-full bg-white/[0.06] p-1">
             {(['all', 0, 1, 2, 3, 4, 5, 6] as const).map((d) => {
               const active = filter === d;
               const has = d !== 'all' && byDay[d].length > 0;
@@ -63,13 +63,13 @@ export default function PlanPage() {
                   aria-selected={active}
                   onClick={() => setFilter(d)}
                   className={clsx(
-                    'relative flex h-12 flex-col items-center justify-center rounded-ctl text-[13px] font-semibold transition',
-                    active ? 'bg-elevated text-fg ring-1 ring-inset ring-white/[0.08]' : 'text-subtle hover:text-fg',
+                    'relative flex h-12 flex-col items-center justify-center rounded-full text-[13px] font-semibold transition',
+                    active ? 'bg-fg text-black' : 'text-muted hover:text-fg',
                     d === today && !active && 'text-accent',
                   )}
                 >
                   {d === 'all' ? 'Усі' : WEEKDAYS_SHORT[d]}
-                  {has && <span className={clsx('mt-1 h-1 w-1 rounded-full', active ? 'bg-accent' : 'bg-white/30')} aria-hidden />}
+                  {has && <span className={clsx('mt-1 h-1 w-1 rounded-full', active ? 'bg-black' : 'bg-accent')} aria-hidden />}
                 </button>
               );
             })}

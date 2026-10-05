@@ -152,7 +152,7 @@ export interface BodyWeightEntry {
   weight: number;
 }
 
-export type AccentKey = 'lavender' | 'violet' | 'indigo' | 'mint';
+export type AccentKey = 'lime' | 'cyan' | 'pink' | 'violet';
 
 export interface Settings {
   accent: AccentKey;

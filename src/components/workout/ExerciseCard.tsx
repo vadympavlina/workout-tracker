@@ -39,7 +39,10 @@ export function ExerciseCard({ exercise, name, index, scheme, previous, actions,
             <History size={13} aria-hidden />
             {previous ? (
               <span>
-                Минулого разу: <span className="tabular font-medium text-muted">{formatNumber(previous.weight, 2)} кг × {previous.reps}</span>
+                Минулого разу:{' '}
+                <span className="tabular font-medium text-muted">
+                  {previous.weight > 0 ? `${formatNumber(previous.weight, 2)} кг × ${previous.reps}` : `${previous.reps} повт.`}
+                </span>
               </span>
             ) : (
               <span>Ще не виконувалась</span>
