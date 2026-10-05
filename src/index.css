@@ -46,6 +46,8 @@
     @apply bg-bg font-sans text-[15px] leading-relaxed text-fg antialiased;
     min-height: 100dvh;
     overscroll-behavior-y: none;
+    /* Safety net: decorative glows must never create sideways scrolling. */
+    overflow-x: clip;
   }
 
   h1,

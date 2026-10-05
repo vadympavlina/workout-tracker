@@ -37,7 +37,15 @@ export function ActivityRings({ rings, size = 168, stroke = 16, gap = 4, childre
 
   return (
     <div className="relative inline-flex shrink-0 items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={summary} className="-rotate-90">
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        role={summary ? 'img' : undefined}
+        aria-label={summary || undefined}
+        aria-hidden={summary ? undefined : true}
+        className="-rotate-90"
+      >
         {rings.map((ring, i) => {
           const r = size / 2 - stroke / 2 - i * (stroke + gap);
           if (r <= stroke / 2) return null;

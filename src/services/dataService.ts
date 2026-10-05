@@ -39,18 +39,16 @@ const KEY_FOR: Record<CollectionKey, (typeof STORAGE_KEYS)[keyof typeof STORAGE_
 export function createDataService(adapter: StorageAdapter) {
   async function writeAll(data: AppData) {
     await Promise.all((Object.keys(KEY_FOR) as CollectionKey[]).map((k) => adapter.write(KEY_FOR[k], data[k])));
+    // Any full write means the app has been set up on this device.
+    if (!(await adapter.read<Meta>(STORAGE_KEYS.meta)))
+      await adapter.write<Meta>(STORAGE_KEYS.meta, { schemaVersion: SCHEMA_VERSION, initializedAt: new Date().toISOString() });
   }
 
   return {
-    /** Loads everything; seeds demo data on the very first launch. */
-    async load(): Promise<AppData> {
+    /** Loads everything, or returns null on the very first launch (onboarding decides what to create). */
+    async load(): Promise<AppData | null> {
       const meta = await adapter.read<Meta>(STORAGE_KEYS.meta);
-      if (!meta) {
-        const demo = createDemoData();
-        await writeAll(demo);
-        await adapter.write<Meta>(STORAGE_KEYS.meta, { schemaVersion: SCHEMA_VERSION, initializedAt: new Date().toISOString() });
-        return demo;
-      }
+      if (!meta) return null;
       const [user, plans, exercises, sessions, bodyWeight, settings] = await Promise.all([
         adapter.read<AppData['user']>(STORAGE_KEYS.user),
         adapter.read<AppData['plans']>(STORAGE_KEYS.plans),

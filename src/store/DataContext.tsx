@@ -38,13 +38,25 @@ interface DataApi {
 
 const DataContext = createContext<DataApi | null>(null);
 
-export function DataProvider({ children, fallback }: { children: ReactNode; fallback: ReactNode }) {
+interface ProviderProps {
+  children: ReactNode;
+  fallback: ReactNode;
+  /** Rendered on the very first launch; call `finish` with the initial data set. */
+  onboarding: (finish: (data: AppData) => Promise<void>) => ReactNode;
+}
+
+export function DataProvider({ children, fallback, onboarding }: ProviderProps) {
   const [data, setData] = useState<AppData | null>(null);
+  const [firstRun, setFirstRun] = useState(false);
   const dataRef = useRef<AppData | null>(null);
   const toast = useToast();
 
   useEffect(() => {
     dataService.load().then((loaded) => {
+      if (!loaded) {
+        setFirstRun(true);
+        return;
+      }
       dataRef.current = loaded;
       setData(loaded);
     });
@@ -140,6 +152,17 @@ export function DataProvider({ children, fallback }: { children: ReactNode; fall
     };
   }, [data, commit, replace]);
 
+  if (firstRun && !api)
+    return (
+      <>
+        {onboarding(async (initial) => {
+          await dataService.replaceAll(initial);
+          dataRef.current = initial;
+          setData(initial);
+          setFirstRun(false);
+        })}
+      </>
+    );
   if (!api) return <>{fallback}</>;
   return <DataContext.Provider value={api}>{children}</DataContext.Provider>;
 }

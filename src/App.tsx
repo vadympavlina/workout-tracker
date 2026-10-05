@@ -9,6 +9,7 @@ import { AppLayout } from '@/layouts/AppLayout';
 import { FocusLayout } from '@/layouts/FocusLayout';
 import { useTheme } from '@/hooks/useTheme';
 import Dashboard from '@/pages/Dashboard';
+import Onboarding from '@/pages/Onboarding';
 
 // Secondary screens are split into their own chunks.
 const PlanPage = lazy(() => import('@/pages/PlanPage'));
@@ -66,6 +67,7 @@ export default function App() {
     <ToastProvider>
       <ConfirmProvider>
         <DataProvider
+          onboarding={(finish) => <Onboarding finish={finish} />}
           fallback={
             <div className="mx-auto max-w-[1200px] px-4 pt-8">
               <PageSkeleton />

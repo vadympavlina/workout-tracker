@@ -12,7 +12,8 @@ interface Props {
 /** Tiny decorative trend line for stat tiles (the tile's number carries the data). */
 export function Sparkline({ values, color, width = 96, height = 32, className }: Props) {
   const id = useId().replace(/:/g, '');
-  if (values.length < 2) return null;
+  // No trend to show (too few points, or nothing logged yet).
+  if (values.length < 2 || values.every((v) => v === values[0])) return null;
   const min = Math.min(...values);
   const max = Math.max(...values);
   const span = max - min || 1;

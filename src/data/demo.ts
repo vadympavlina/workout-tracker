@@ -100,11 +100,9 @@ const PROGRESSION: Record<string, [number, number]> = {
 
 const roundTo = (n: number, step: number) => Math.round(n / step) * step;
 
-export function createDemoData(now = new Date()): AppData {
-  const rand = mulberry32(198_79);
-  const createdAt = addDays(now, -63).toISOString();
-
-  const plans: WorkoutPlan[] = PLAN_SEEDS.map((p) => ({
+/** The four ready-made weekly plans (also offered to new users during onboarding). */
+export function createStarterPlans(createdAt = new Date().toISOString()): WorkoutPlan[] {
+  return PLAN_SEEDS.map((p) => ({
     id: uid(),
     name: p.name,
     icon: p.icon,
@@ -115,6 +113,13 @@ export function createDemoData(now = new Date()): AppData {
     createdAt,
     updatedAt: createdAt,
   }));
+}
+
+export function createDemoData(now = new Date()): AppData {
+  const rand = mulberry32(198_79);
+  const createdAt = addDays(now, -63).toISOString();
+
+  const plans = createStarterPlans(createdAt);
 
   const exerciseName = (id: string) => DEFAULT_EXERCISES.find((e) => e.id === id)!.name;
   const sessions: WorkoutSession[] = [];
