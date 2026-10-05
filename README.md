@@ -10,11 +10,19 @@ npm run dev        # http://localhost:5173
 npm run build      # production-збірка в dist/
 npm run preview    # перегляд збірки
 npm run typecheck
+npm test           # unit-тести (Vitest): статистика, рекорди, формати, імпорт
+npm run test:e2e   # збірка + браузерні тести (Playwright) на шляху /workout-tracker/
 ```
+
+### Тести
+
+- `src/**/*.test.ts` — unit-тести логіки (рекорди, обсяг, тижні, плюралізація, валідація імпорту).
+- `tests/e2e/*.spec.ts` — сценарії в Chromium з мобільним вʼюпортом: повний цикл план → тренування → журнал → прогрес, запис підходів (−/+, перенесення ваги, видалення з undo, таймер, wake lock), «забуте» тренування, редактор (перетягування, незбережені зміни), онбординг, фото, відсутність горизонтального скролу, PWA.
+- `scripts/serve-dist.mjs` віддає `dist/` під `/workout-tracker/`, як GitHub Pages.
 
 ## Деплой на GitHub Pages (автоматично)
 
-Workflow `.github/workflows/deploy.yml` збирає застосунок і публікує `dist/` на кожен push у `main` (або вручну: Actions → Deploy to GitHub Pages → Run workflow).
+Workflow `.github/workflows/deploy.yml` на кожен push у `main`: typecheck → unit-тести → збірка → E2E-тести → публікація `dist/`. Якщо хоч один тест падає, сайт не оновлюється. На pull request запускаються лише тести.
 
 Одноразове налаштування: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 
