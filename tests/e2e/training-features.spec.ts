@@ -44,3 +44,24 @@ test('per-exercise rest time drives the rest timer', async ({ page }) => {
   await expect(page.getByRole('button', { name: /Відпочинок: залишилось 3:00/ })).toBeVisible();
   noErrors();
 });
+
+test('plate calculator for barbell exercises', async ({ page }) => {
+  const noErrors = trackErrors(page);
+  await startDemo(page);
+  await page.goto('./#/plan');
+  await page.getByRole('link', { name: /Ноги \+ Прес/ }).first().click();
+  await page.getByRole('button', { name: 'Почати тренування' }).click();
+  // Machines have no plate calculator; the barbell exercise does.
+  await expect(page.getByRole('button', { name: 'Диски' })).toBeHidden();
+  await page.getByRole('button', { name: /Румунська тяга/ }).first().click();
+  await expect(page.locator('#current-ex')).toHaveText('Румунська тяга');
+  await page.getByRole('button', { name: 'Диски' }).click();
+
+  const sheet = page.getByRole('dialog', { name: 'Калькулятор дисків' });
+  await sheet.getByRole('textbox', { name: 'Вага на штанзі, кг' }).fill('102,5');
+  await expect(sheet.getByRole('img', { name: /На кожну сторону/ })).toHaveAttribute('aria-label', 'На кожну сторону: 25 + 15 + 1.25 кг');
+  await expect(sheet).toContainText('Разом: 102,5 кг');
+  await sheet.getByRole('radio', { name: '15' }).click();
+  await expect(sheet.getByRole('img', { name: /На кожну сторону/ })).toHaveAttribute('aria-label', 'На кожну сторону: 25 + 15 + 2.5 + 1.25 кг');
+  noErrors();
+});

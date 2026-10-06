@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import {
-  ArrowDown, ArrowUp, Check, ChevronLeft, ChevronRight, CircleCheck, Dumbbell, Flag, History, ListPlus, Minus, NotebookPen, Plus,
+  ArrowDown, ArrowUp, Check, ChevronLeft, ChevronRight, CircleCheck, Disc3, Dumbbell, Flag, History, ListPlus, Minus, NotebookPen, Plus,
   RotateCcw, Timer, Trash2, TrendingUp, X,
 } from 'lucide-react';
 import { IDLE_LIMIT_MS, useActiveWorkout } from '@/store/ActiveWorkoutContext';
@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { SetTable } from '@/components/workout/SetTable';
+import { PlateCalculator } from '@/components/workout/PlateCalculator';
 import { ActivityRings } from '@/components/ui/ActivityRings';
 import { ExercisePicker } from '@/components/workout/ExercisePicker';
 import { ExerciseMediaButton } from '@/components/exercise/ExerciseMediaButton';
@@ -38,6 +39,7 @@ export default function ActiveWorkoutPage() {
   const [recordSetId, setRecordSetId] = useState<string | null>(null);
   const [noteOpen, setNoteOpen] = useState(false);
   const [dismissedHints, setDismissedHints] = useState<string[]>([]);
+  const [platesOpen, setPlatesOpen] = useState(false);
   const cardRef = useRef<HTMLElement>(null);
   useWakeLock(!!active && data.settings.keepAwake);
 
@@ -264,6 +266,15 @@ export default function ActiveWorkoutPage() {
                   <p className="mt-1 text-[14px] text-muted">
                     Ціль: <span className="tabular font-semibold text-fg">{current.sets.length} × {repsRange(current.targetRepsMin ?? 8, current.targetRepsMax ?? 12)}</span>
                   </p>
+                  {currentEx?.equipment === 'barbell' && (
+                    <button
+                      type="button"
+                      onClick={() => setPlatesOpen(true)}
+                      className="mt-2 inline-flex h-8 items-center gap-1.5 rounded-full bg-white/[0.07] px-3 text-[12.5px] font-medium text-fg transition hover:bg-white/[0.12]"
+                    >
+                      <Disc3 size={14} aria-hidden /> Диски
+                    </button>
+                  )}
                 </div>
                 <div className="-mr-1 flex">
                   <IconButton icon={ChevronLeft} label="Попередня вправа" size="sm" disabled={idx === 0} onClick={() => workout.goTo(idx - 1)} />
@@ -467,6 +478,14 @@ export default function ActiveWorkoutPage() {
           )}
         </div>
       </div>
+
+      {current && (
+        <PlateCalculator
+          open={platesOpen}
+          onClose={() => setPlatesOpen(false)}
+          initialWeight={(current.sets.find((x) => !x.done) ?? current.sets[current.sets.length - 1])?.weight ?? null}
+        />
+      )}
 
       <ExercisePicker
         open={pickerOpen}
