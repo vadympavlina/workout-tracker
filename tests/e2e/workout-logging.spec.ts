@@ -86,3 +86,54 @@ test('forgotten workout does not count idle hours', async ({ page }) => {
   }, prefix);
   expect(minutes).toBe(40);
 });
+
+/** Touch swipe: Playwright has no swipe helper, so dispatch the pointer events a finger produces. */
+async function swipeLeft(page: import('@playwright/test').Page, locator: import('@playwright/test').Locator, fraction: number) {
+  const box = (await locator.boundingBox())!;
+  const y = box.y + box.height / 2;
+  const x0 = box.x + box.width - 20;
+  const opts = { pointerType: 'touch', isPrimary: true, pointerId: 7, bubbles: true };
+  await locator.dispatchEvent('pointerdown', { ...opts, clientX: x0, clientY: y });
+  for (let i = 1; i <= 8; i++) await locator.dispatchEvent('pointermove', { ...opts, clientX: x0 - (box.width * fraction * i) / 8, clientY: y });
+  await locator.dispatchEvent('pointerup', { ...opts, clientX: x0 - box.width * fraction, clientY: y });
+}
+
+test('swipe to delete in journal, weight and plan lists, with undo', async ({ page }) => {
+  const noErrors = trackErrors(page);
+  await startDemo(page);
+
+  // Journal: a full swipe deletes at once; "Повернути" brings it back.
+  await page.goto('./#/history');
+  const rows = page.locator('main ul li a[href*="#/history/"]');
+  await expect(rows.first()).toBeVisible();
+  const before = await rows.count();
+  await swipeLeft(page, rows.first(), 0.8);
+  await expect(rows).toHaveCount(before - 1);
+  await page.getByRole('button', { name: 'Повернути' }).last().click();
+  await expect(rows).toHaveCount(before);
+
+  // A half swipe only reveals the button and must not open the session.
+  await swipeLeft(page, rows.first(), 0.35);
+  await expect(page).toHaveURL(/#\/history$/);
+  await page.getByRole('button', { name: /^Видалити тренування/ }).first().click();
+  await expect(rows).toHaveCount(before - 1);
+
+  // Weight entries.
+  await page.goto('./#/weight');
+  const weights = page.getByRole('region', { name: 'Записи' }).locator('li');
+  await expect(weights.first()).toBeVisible();
+  const w = await weights.count();
+  await swipeLeft(page, weights.first().locator('span').first(), 1.5); // the date span is narrower than the row
+  await expect(weights).toHaveCount(w - 1);
+
+  // Plans.
+  await page.goto('./#/plan');
+  const plans = page.locator('main a[href*="#/workout/"]');
+  await expect(plans.first()).toBeVisible();
+  const p = await plans.count();
+  await swipeLeft(page, plans.first(), 0.8);
+  await expect(plans).toHaveCount(p - 1);
+  await page.getByRole('button', { name: 'Повернути' }).last().click();
+  await expect(plans).toHaveCount(p);
+  noErrors();
+});

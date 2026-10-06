@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
 import { ChevronLeft, ChevronRight, Clock, NotebookText, Play, X } from 'lucide-react';
 import { useData } from '@/store/DataContext';
+import { useToast } from '@/components/ui/Toast';
+import { SwipeToDelete } from '@/components/ui/SwipeToDelete';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useStartSheet } from '@/layouts/AppLayout';
 import { TopBar } from '@/components/ui/TopBar';
@@ -16,7 +18,8 @@ import type { WorkoutSession } from '@/types';
 
 export default function HistoryPage() {
   usePageTitle('Журнал');
-  const { sessions } = useData();
+  const { sessions, deleteSession, addSession } = useData();
+  const toast = useToast();
   const openStart = useStartSheet();
   // `?date=YYYY-MM-DD` (e.g. from the year heatmap) opens that day directly.
   const [params] = useSearchParams();
@@ -146,7 +149,16 @@ export default function HistoryPage() {
             <ul className="space-y-2.5">
               {visible.map((s) => (
                 <li key={s.id}>
-                  <SessionRow session={s} />
+                  <SwipeToDelete
+                    className="rounded-card"
+                    label={`Видалити тренування ${s.name}, ${formatDate(s.startedAt)}`}
+                    onDelete={() => {
+                      deleteSession(s.id);
+                      toast.show({ kind: 'info', title: 'Тренування видалено', description: s.name, action: { label: 'Повернути', onClick: () => addSession(s) } });
+                    }}
+                  >
+                    <SessionRow session={s} />
+                  </SwipeToDelete>
                 </li>
               ))}
             </ul>

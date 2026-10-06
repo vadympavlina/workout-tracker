@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 import { BookOpen, CalendarDays, ChevronRight, LayoutTemplate, Plus } from 'lucide-react';
@@ -10,13 +10,30 @@ import { Section } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { IconBadge } from '@/components/ui/IconBadge';
 import { WorkoutCard } from '@/components/workout/WorkoutCard';
+import { SwipeToDelete } from '@/components/ui/SwipeToDelete';
+import { useToast } from '@/components/ui/Toast';
+import type { WorkoutPlan } from '@/types';
 import { weekdayOf, WEEKDAYS_LONG, WEEKDAYS_SHORT } from '@/utils/date';
 import { pluralWorkouts } from '@/utils/format';
 import type { Weekday } from '@/types';
 
 export default function PlanPage() {
   usePageTitle('План');
-  const { data } = useData();
+  const { data, deletePlan, savePlan } = useData();
+  const toast = useToast();
+  const swipeable = (plan: WorkoutPlan, card: ReactNode) => (
+    <SwipeToDelete
+      key={plan.id}
+      className="rounded-card"
+      label={`Видалити тренування ${plan.name}`}
+      onDelete={() => {
+        deletePlan(plan.id);
+        toast.show({ kind: 'info', title: 'Тренування видалено', description: plan.name, action: { label: 'Повернути', onClick: () => savePlan(plan) } });
+      }}
+    >
+      {card}
+    </SwipeToDelete>
+  );
   const today = weekdayOf(new Date());
   const [filter, setFilter] = useState<Weekday | 'all'>('all');
 
@@ -98,9 +115,7 @@ export default function PlanPage() {
                 >
                   {plans.length > 0 ? (
                     <div className="space-y-3">
-                      {plans.map((p) => (
-                        <WorkoutCard key={p.id} plan={p} highlight={d === today} />
-                      ))}
+                      {plans.map((p) => swipeable(p, <WorkoutCard plan={p} highlight={d === today} />))}
                     </div>
                   ) : (
                     <div className="card flex items-center justify-between gap-3 p-4">
@@ -118,9 +133,7 @@ export default function PlanPage() {
           {filter === 'all' && templates.length > 0 && (
             <Section title="Шаблони без дня">
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                {templates.map((p) => (
-                  <WorkoutCard key={p.id} plan={p} />
-                ))}
+                {templates.map((p) => swipeable(p, <WorkoutCard plan={p} />))}
               </div>
             </Section>
           )}

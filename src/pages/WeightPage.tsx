@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Plus, Scale, Target, Trash2 } from 'lucide-react';
+import { SwipeToDelete } from '@/components/ui/SwipeToDelete';
 import { useData } from '@/store/DataContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { TopBar } from '@/components/ui/TopBar';
@@ -87,12 +88,25 @@ export default function WeightPage() {
             </Card>
 
             <Section title="Записи">
-              <ul className="card divide-y divide-line">
+              <ul className="card divide-y divide-line overflow-hidden">
                 {entries.map((e, i) => {
                   const prev = entries[i + 1];
                   const delta = prev ? Math.round((e.weight - prev.weight) * 10) / 10 : null;
                   return (
-                    <li key={e.id} className="flex items-center gap-3 py-2 pl-4 pr-2">
+                    <li key={e.id}>
+                      <SwipeToDelete
+                        label={`Видалити запис ${formatDate(fromISODate(e.date))}`}
+                        onDelete={() => {
+                          deleteWeight(e.id);
+                          toast.show({
+                            kind: 'info',
+                            title: 'Запис видалено',
+                            description: `${formatDate(fromISODate(e.date))} — ${formatNumber(e.weight, 1)} кг`,
+                            action: { label: 'Повернути', onClick: () => saveWeight(e) },
+                          });
+                        }}
+                      >
+                      <div className="flex items-center gap-3 py-2 pl-4 pr-2">
                       <span className="min-w-0 flex-1 text-[15px]">{formatDate(fromISODate(e.date))}</span>
                       {delta != null && delta !== 0 && (
                         <span className={`tabular text-[13px] ${delta > 0 ? 'text-positive' : 'text-muted'}`}>{formatSigned(delta)}</span>
@@ -107,6 +121,8 @@ export default function WeightPage() {
                           if (ok) deleteWeight(e.id);
                         }}
                       />
+                      </div>
+                      </SwipeToDelete>
                     </li>
                   );
                 })}
