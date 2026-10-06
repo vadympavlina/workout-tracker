@@ -1,4 +1,19 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, test as base, type Page } from '@playwright/test';
+
+/**
+ * Demo data is generated relative to "today", and the dashboard depends on the
+ * weekday. Pin the browser clock to a Monday (a training day in the demo plan)
+ * so every test sees the same data whatever day CI runs on.
+ */
+export const FIXED_NOW = new Date('2026-10-05T12:00:00');
+
+export const test = base.extend({
+  page: async ({ page }, use) => {
+    await page.clock.setFixedTime(FIXED_NOW);
+    await use(page);
+  },
+});
+export { expect };
 
 /** Fails the test on any uncaught error or console error. */
 export function trackErrors(page: Page) {

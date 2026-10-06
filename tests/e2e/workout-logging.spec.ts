@@ -1,5 +1,4 @@
-import { expect, test } from '@playwright/test';
-import { startDemo, trackErrors } from './helpers';
+import { expect, startDemo, test, trackErrors } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -24,13 +23,19 @@ test('steppers, weight carry-over, delete with undo, rest bar, wake lock', async
   await expect.poll(() => page.evaluate(() => (window as unknown as { __wakeLocks: number }).__wakeLocks)).toBeGreaterThan(0);
 
   const weight = (i: number) => page.getByLabel(`Вага, підхід ${i}`);
-  await expect(weight(1)).toHaveValue('55');
+  // Demo data depends on today's date, so set known weights first. Edit top-down
+  // because a change carries over to following sets that shared the old weight.
+  for (const [i, kg] of [[1, '50'], [2, '60'], [3, '60']] as const) {
+    await weight(i).fill(kg);
+    await weight(i).blur();
+  }
+  await expect(weight(1)).toHaveValue('50');
   await expect(weight(2)).toHaveValue('60');
   await expect(weight(3)).toHaveValue('60');
 
   // +2.5 on set 1 does not touch sets that had a different weight…
   await page.getByRole('button', { name: 'Плюс 2,5 кг, підхід 1' }).click();
-  await expect(weight(1)).toHaveValue('57.5');
+  await expect(weight(1)).toHaveValue('52.5');
   await expect(weight(2)).toHaveValue('60');
   // …but carries over to following sets that shared the old weight.
   await page.getByRole('button', { name: 'Плюс 2,5 кг, підхід 2' }).click();

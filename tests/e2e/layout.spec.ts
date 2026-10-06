@@ -1,5 +1,4 @@
-import { expect, test } from '@playwright/test';
-import { startDemo } from './helpers';
+import { expect, startDemo, test } from './helpers';
 
 const ROUTES = ['', 'plan', 'history', 'progress', 'profile', 'exercises', 'exercises/squat', 'weight', 'help'];
 

@@ -1,5 +1,4 @@
-import { expect, test } from '@playwright/test';
-import { startDemo, trackErrors } from './helpers';
+import { expect, startDemo, test, trackErrors } from './helpers';
 
 test('plan → workout → record → finish → journal → progress', async ({ page }) => {
   const noErrors = trackErrors(page);

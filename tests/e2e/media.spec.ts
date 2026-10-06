@@ -1,5 +1,4 @@
-import { expect, test } from '@playwright/test';
-import { startDemo, storageCount, trackErrors } from './helpers';
+import { expect, startDemo, storageCount, test, trackErrors } from './helpers';
 
 const BUILT_IN = [
   'leg-press', 'chest-press-machine', 'pec-deck', 'lat-pulldown', 'seated-cable-row', 'chest-supported-row', 'biceps-curl-machine',

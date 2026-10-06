@@ -1,5 +1,4 @@
-import { expect, test } from '@playwright/test';
-import { trackErrors } from './helpers';
+import { expect, test, trackErrors } from './helpers';
 
 test('start fresh with own profile', async ({ page }) => {
   const noErrors = trackErrors(page);
