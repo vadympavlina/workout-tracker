@@ -94,7 +94,7 @@ export default function Dashboard() {
         </Link>
       </header>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         {/* Weekly activity rings */}
         <section aria-labelledby="activity-title" className="card relative overflow-clip p-5 sm:p-6">
           <div className="glow-blob -left-24 -top-24 h-64 w-64 bg-move/[0.08]" aria-hidden />
@@ -151,7 +151,7 @@ export default function Dashboard() {
 
       <WeekPlan />
 
-      <div className="grid gap-10 lg:grid-cols-2 lg:gap-6">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-6">
         <Section title="Останнє тренування" action={sessions.length > 0 && <SeeAll to="/history">Журнал</SeeAll>}>
           {lastSession ? (
             <Link to={`/history/${lastSession.id}`} className="card-interactive block p-5">

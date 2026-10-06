@@ -85,7 +85,7 @@ export default function ExercisesPage() {
       {list.length === 0 ? (
         <p className="card p-8 text-center text-muted">Нічого не знайдено</p>
       ) : (
-        <ul className="grid gap-2.5 md:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
           {list.map((e) => {
             const pr = records.get(e.id);
             return (

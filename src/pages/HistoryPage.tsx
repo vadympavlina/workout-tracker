@@ -81,7 +81,7 @@ export default function HistoryPage() {
     <div>
       <TopBar title="Журнал" subtitle={`${pluralWorkouts(sessions.length)} загалом`} />
 
-      <div className="grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)] lg:items-start">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[380px_minmax(0,1fr)] lg:items-start">
         <section aria-label="Календар" className="card p-4 lg:sticky lg:top-6">
           <div className="mb-3 flex items-center justify-between">
             <IconButton icon={ChevronLeft} label="Попередній місяць" size="sm" disabled={month <= firstMonth} onClick={() => shiftMonth(-1)} />

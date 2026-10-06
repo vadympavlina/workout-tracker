@@ -184,7 +184,7 @@ export default function PlanEditor() {
             <p className="mt-2 text-[13px] text-subtle">Без днів тренування збережеться як шаблон.</p>
           </fieldset>
 
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <NumberInput
               label="Тривалість, хв"
               value={plan.estimatedMinutes}

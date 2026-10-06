@@ -75,7 +75,16 @@ export default function PlanPage() {
             })}
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-2">
+          {filter === 'all' && scheduledCount === 0 && (
+            <div className="card flex items-start gap-3 p-4 text-[14px] text-muted">
+              <CalendarDays size={18} className="mt-0.5 shrink-0 text-subtle" aria-hidden />
+              <p>
+                У розкладі поки порожньо. Щоб тренування зʼявлялось у свій день, відкрий його → «Редагувати» → обери дні тижня.
+              </p>
+            </div>
+          )}
+
+          <div className={clsx('grid grid-cols-1 gap-8 lg:grid-cols-2', filter === 'all' && scheduledCount === 0 && 'hidden')}>
             {WEEKDAYS_LONG.map((dayName, d) => {
               if (filter !== 'all' && filter !== d) return null;
               const plans = byDay[d];
@@ -108,7 +117,7 @@ export default function PlanPage() {
 
           {filter === 'all' && templates.length > 0 && (
             <Section title="Шаблони без дня">
-              <div className="grid gap-3 lg:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                 {templates.map((p) => (
                   <WorkoutCard key={p.id} plan={p} />
                 ))}

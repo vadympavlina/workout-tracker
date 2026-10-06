@@ -118,7 +118,7 @@ export default function WorkoutSummary() {
         )}
       </section>
 
-      <div className="mt-auto grid gap-3 pt-8 sm:grid-cols-2">
+      <div className="mt-auto grid grid-cols-1 gap-3 pt-8 sm:grid-cols-2">
         <ButtonLink to={`/history/${session.id}`} variant="secondary" size="lg" icon={NotebookText} replace>
           Деталі в журналі
         </ButtonLink>

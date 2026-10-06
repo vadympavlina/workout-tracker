@@ -87,7 +87,7 @@ export default function ExerciseDetail() {
           <ExercisePhoto frames={photos} alt={`Техніка: ${exercise.name}`} className="aspect-[3/2] w-full rounded-card border border-white/[0.06]" />
         )}
 
-        <Card padding="lg" className="grid gap-6 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
+        <Card padding="lg" className="grid grid-cols-1 gap-6 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
           <div className="mx-auto h-56 sm:h-60">
             <MuscleMap
               primary={targets.primary}

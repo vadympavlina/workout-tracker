@@ -56,6 +56,12 @@
     letter-spacing: -0.02em;
   }
 
+  /* Grid items default to min-width: auto, so one long name (truncated or not)
+     stretches its track past the screen. Let items shrink like flex min-w-0. */
+  .grid > * {
+    min-width: 0;
+  }
+
   ::selection {
     background: rgb(var(--c-accent) / 0.35);
     color: #000;

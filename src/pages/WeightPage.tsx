@@ -50,7 +50,7 @@ export default function WeightPage() {
 
       <div className="space-y-6">
         <Card padding="lg">
-          <form onSubmit={submit} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+          <form onSubmit={submit} className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
             <NumberInput label="Вага, кг" value={weight} decimals={1} step={0.1} min={20} max={400} onChange={setWeight} />
             <Input label="Дата" type="date" value={date} max={today} onChange={(e) => setDate(e.target.value)} />
             <Button type="submit" icon={Plus} size="lg" className="h-14 sm:mb-0">

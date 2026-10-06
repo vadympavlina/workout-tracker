@@ -92,3 +92,33 @@ export const storageCount = (page: Page) =>
         };
       }),
   );
+
+/**
+ * Elements that stick out past the left/right screen edge. `body` clips
+ * horizontal overflow, so the page never scrolls sideways — content is cut off
+ * instead, which a scrollWidth check cannot see. Horizontal scrollers and
+ * decorative glows are allowed; only the outermost offender is reported.
+ */
+export function offscreenElements(page: Page) {
+  return page.evaluate(() => {
+    const vw = window.innerWidth;
+    const out = (r: DOMRect) => r.right > vw + 1 || r.left < -1;
+    const found: string[] = [];
+    for (const el of Array.from(document.querySelectorAll<HTMLElement>('body *'))) {
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height || !out(r)) continue;
+      if (el.closest('[aria-hidden="true"], .glow-blob') || /blur-3xl/.test(String(el.className))) continue;
+      let a = el.parentElement;
+      let scroller = false;
+      for (; a && a !== document.body; a = a.parentElement) {
+        const ox = getComputedStyle(a).overflowX;
+        if (ox === 'auto' || ox === 'scroll') scroller = true;
+      }
+      if (scroller) continue;
+      const parent = el.parentElement;
+      if (parent && parent !== document.body && out(parent.getBoundingClientRect())) continue;
+      found.push(`<${el.tagName.toLowerCase()}> ${Math.round(r.left)}→${Math.round(r.right)}px "${(el.innerText || '').slice(0, 50).replace(/\n/g, ' ')}"`);
+    }
+    return found;
+  });
+}

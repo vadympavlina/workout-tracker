@@ -1,17 +1,61 @@
-import { expect, startDemo, test } from './helpers';
+import type { Page } from '@playwright/test';
+import { accountPrefix, expect, offscreenElements, startDemo, test } from './helpers';
 
-const ROUTES = ['', 'plan', 'history', 'progress', 'profile', 'exercises', 'exercises/squat', 'weight', 'help'];
+const LONG_PLAN = 'СПИНА, ЗАДНЯ ДЕЛЬТА ТА БІЦЕПС — ВАЖКИЙ ДЕНЬ';
+const LONG_EXERCISE = 'Тяга верхнього блоку широким хватом до грудей з паузою';
 
-for (const width of [375, 430]) {
-  test(`no horizontal scroll at ${width}px`, async ({ page }) => {
+/** Demo data with the long names real users type (all-caps plans, wordy exercises). */
+async function seedLongNames(page: Page) {
+  const prefix = await accountPrefix(page);
+  await page.evaluate(
+    ([p, plan, exercise]) => {
+      const get = (k: string) => JSON.parse(localStorage.getItem(p + k)!);
+      const set = (k: string, v: unknown) => localStorage.setItem(p + k, JSON.stringify(v));
+      const plans = get('workout_plans');
+      plans[0].name = plan;
+      plans[1].name = `${plan} 2`;
+      plans[1].days = [];
+      set('workout_plans', plans);
+      const exercises = get('workout_exercises');
+      exercises.push({ ...exercises[0], id: 'custom-long', name: exercise, isCustom: true });
+      set('workout_exercises', exercises);
+      const sessions = get('workout_sessions');
+      sessions[0].name = plan;
+      sessions[0].exercises[0].name = exercise;
+      set('workout_sessions', sessions);
+      set('workout_user', { ...get('workout_user'), name: 'Олександра-Вікторія Костянтинівна' });
+      localStorage.setItem(`${p}workout_sync_dirty`, '1');
+      return { plan: plans[0].id as string, session: sessions[0].id as string };
+    },
+    [prefix, LONG_PLAN, LONG_EXERCISE],
+  );
+  await page.reload();
+  return page.evaluate((p) => ({
+    plan: JSON.parse(localStorage.getItem(`${p}workout_plans`)!)[0].id as string,
+    session: JSON.parse(localStorage.getItem(`${p}workout_sessions`)!)[0].id as string,
+  }), prefix);
+}
+
+for (const width of [360, 390, 430]) {
+  test(`nothing sticks out of the screen at ${width}px (long names)`, async ({ page }) => {
     await page.setViewportSize({ width, height: 844 });
     await startDemo(page);
-    for (const route of ROUTES) {
+    const ids = await seedLongNames(page);
+    const routes = ['', 'plan', `workout/${ids.plan}`, `plan/${ids.plan}/edit`, 'plan/new', 'history', `history/${ids.session}`, 'progress',
+      'exercises', 'exercises/custom-long', 'exercises/squat', 'profile', 'weight', 'help'];
+    for (const route of routes) {
       await page.goto(`./#/${route}`);
       await page.waitForLoadState('networkidle');
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-      expect(overflow, `/${route}`).toBeLessThanOrEqual(0);
+      expect(await offscreenElements(page), `/${route}`).toEqual([]);
     }
+    await page.goto('./#/exercises');
+    await page.getByRole('button', { name: 'Власна', exact: true }).click();
+    expect(await offscreenElements(page), 'new exercise form').toEqual([]);
+    await page.keyboard.press('Escape');
+    await page.goto('./#/');
+    await page.getByRole('button', { name: 'Почати тренування' }).first().click();
+    await expect(page).toHaveURL(/#\/active/);
+    expect(await offscreenElements(page), '/active').toEqual([]);
   });
 }
 

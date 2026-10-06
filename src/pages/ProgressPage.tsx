@@ -112,7 +112,7 @@ export default function ProgressPage() {
             trend={view.volumeChange != null ? { value: formatPercent(view.volumeChange), direction: view.volumeChange > 0 ? 'up' : view.volumeChange < 0 ? 'down' : 'flat' } : undefined}
           />
           <StatCard label="Годин" color="sets" value={formatHours(view.duration)} icon={Hourglass} />
-          <StatCard label="Сер. тривалість" color="sets" value={`${Math.round(view.avgDuration / 60)} хв`} icon={Timer} />
+          <StatCard label="Сер. час" color="sets" value={`${Math.round(view.avgDuration / 60)} хв`} icon={Timer} />
           <StatCard label="Вага" color="body" value={weight ? formatNumber(weight.weight, 1) : '—'} unit={weight ? 'кг' : undefined} icon={Scale} />
           <StatCard
             label="Зміна ваги"
@@ -132,7 +132,7 @@ export default function ProgressPage() {
           <ActivityHeatmap sessions={sessions} />
         </Card>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <ChartCard
             color="volume"
             title="Загальний обсяг"
@@ -185,7 +185,7 @@ export default function ProgressPage() {
           </ChartCard>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           <Section title="Прогрес вправ">
             {view.progress.length > 0 ? (
               <ul className="card divide-y divide-line">

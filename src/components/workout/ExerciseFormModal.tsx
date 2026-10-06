@@ -170,10 +170,22 @@ export function ExerciseFormModal({ open, onClose, onSave, initial }: Props) {
             options={Object.entries(EQUIPMENT).map(([value, label]) => ({ value, label }))}
           />
         </div>
+        {/* Three steppers don't fit side by side on a phone: bare numeric cells, like the plan editor. */}
         <div className="grid grid-cols-3 gap-3">
-          <NumberInput label="Підходи" value={form.defaultSets} min={1} max={10} onChange={(v) => patch({ defaultSets: v ?? 1 })} />
-          <NumberInput label="Повт. від" value={form.defaultRepsMin} min={1} max={100} onChange={(v) => patch({ defaultRepsMin: v ?? 1 })} />
-          <NumberInput label="Повт. до" value={form.defaultRepsMax} min={1} max={100} onChange={(v) => patch({ defaultRepsMax: v ?? 1 })} />
+          {(
+            [
+              ['Підходи', 'defaultSets', 10],
+              ['Повт. від', 'defaultRepsMin', 100],
+              ['Повт. до', 'defaultRepsMax', 100],
+            ] as const
+          ).map(([label, key, max]) => (
+            <div key={key}>
+              <span className="label mb-1.5 block" aria-hidden>
+                {label}
+              </span>
+              <NumberInput variant="compact" ariaLabel={label} value={form[key]} min={1} max={max} onChange={(v) => patch({ [key]: v ?? 1 })} />
+            </div>
+          ))}
         </div>
         <fieldset className="min-w-0">
           <legend className="label mb-2">Іконка</legend>
