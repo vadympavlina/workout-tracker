@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useBlocker, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
-import { ArrowDown, ArrowUp, GripVertical, ListPlus, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, GripVertical, ListPlus, Plus, Save, Timer, Trash2 } from 'lucide-react';
 import type { IconKey, PlanExercise, Weekday, WorkoutPlan } from '@/types';
 import { useData } from '@/store/DataContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -284,6 +284,30 @@ export default function PlanEditor() {
                       <NumberInput variant="compact" ariaLabel="Повторень до" value={pe.repsMax} min={1} max={100} onChange={(v) => patchExercise(i, { repsMax: v ?? 1 })} />
                     </CompactField>
                   </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <Timer size={15} className="shrink-0 text-subtle" aria-hidden />
+                    <span className="text-[13px] text-subtle">Відпочинок</span>
+                    <div className="scrollbar-none flex flex-1 gap-1 overflow-x-auto" role="radiogroup" aria-label={`Відпочинок: ${ex?.name ?? 'вправа'}`}>
+                      {REST_OPTIONS.map(({ value, label }) => {
+                        const selected = (pe.restSec ?? 0) === value;
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            role="radio"
+                            aria-checked={selected}
+                            onClick={() => patchExercise(i, { restSec: value || undefined })}
+                            className={clsx(
+                              'h-8 shrink-0 rounded-full px-2.5 text-[12px] font-medium transition',
+                              selected ? 'bg-fg text-black' : 'bg-white/[0.06] text-muted hover:text-fg',
+                            )}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </li>
               );
             })}
@@ -323,6 +347,15 @@ export default function PlanEditor() {
     </form>
   );
 }
+
+const REST_OPTIONS = [
+  { value: 0, label: 'Авто' },
+  { value: 60, label: '1 хв' },
+  { value: 90, label: '1,5' },
+  { value: 120, label: '2 хв' },
+  { value: 180, label: '3 хв' },
+  { value: 240, label: '4 хв' },
+];
 
 function CompactField({ label, children }: { label: string; children: React.ReactNode }) {
   return (

@@ -13,7 +13,7 @@ import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
 import { ExerciseCard } from '@/components/workout/ExerciseCard';
 import { addDays, weekdayOf, WEEKDAYS_SHORT } from '@/utils/date';
-import { formatDate, formatDurationWords, formatVolume, formatWeekdayDate, repsRange } from '@/utils/format';
+import { formatClock, formatDate, formatDurationWords, formatVolume, formatWeekdayDate, repsRange } from '@/utils/format';
 import { bestSet, lastPerformance, sessionVolume } from '@/utils/stats';
 import NotFound from './NotFound';
 
@@ -122,7 +122,7 @@ export default function WorkoutDetail() {
                         exercise={ex}
                         name={ex?.name ?? 'Видалена вправа'}
                         index={i + 1}
-                        scheme={`${pe.sets} × ${repsRange(pe.repsMin, pe.repsMax)}`}
+                        scheme={`${pe.sets} × ${repsRange(pe.repsMin, pe.repsMax)}${pe.restSec ? ` · відп. ${formatClock(pe.restSec)}` : ''}`}
                         previous={best ? { weight: best.weight, reps: best.reps, sets: last!.exercise.sets.length } : null}
                         actions={<ChevronRight size={18} className="text-subtle" aria-hidden />}
                       />

@@ -91,6 +91,8 @@ export interface PlanExercise {
   sets: number;
   repsMin: number;
   repsMax: number;
+  /** Rest between sets for this exercise; falls back to the global setting. */
+  restSec?: number;
 }
 
 export interface WorkoutPlan {
@@ -159,6 +161,8 @@ export interface ActiveWorkout {
 export interface ActiveExercise extends Omit<SessionExercise, 'sets'> {
   sets: ActiveSet[];
   finished: boolean;
+  /** Planned rest for this exercise (seconds), if the plan sets one. */
+  restSec?: number;
 }
 
 export interface ActiveSet {

@@ -65,6 +65,7 @@ function buildExercise(exercise: Exercise, planned: PlanExercise | null, session
     sets,
     note: '',
     finished: false,
+    restSec: planned?.restSec,
   };
 }
 
@@ -192,16 +193,17 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
         }
 
         const settings = settingsRef.current;
+        const restSec = ex.restSec ?? settings.restTimerSec;
         const allDoneAfter = done && ex.sets.every((s, i) => (i === setIndex ? true : s.done));
         set({
           ...a,
           restEndsAt:
-            done && settings.autoRestTimer && settings.restTimerSec > 0 && !allDoneAfter
-              ? Date.now() + settings.restTimerSec * 1000
+            done && settings.autoRestTimer && restSec > 0 && !allDoneAfter
+              ? Date.now() + restSec * 1000
               : done
                 ? null
                 : a.restEndsAt,
-          restTotalSec: done && settings.autoRestTimer ? settings.restTimerSec : a.restTotalSec,
+          restTotalSec: done && settings.autoRestTimer ? restSec : a.restTotalSec,
           exercises: a.exercises.map((e, i) =>
             i === exIndex
               ? { ...e, sets: e.sets.map((s, j) => (j === setIndex ? { ...s, done, weight: s.weight ?? 0 } : s)) }
@@ -276,7 +278,8 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
 
       startRest: (seconds) =>
         mutate((a) => {
-          const sec = seconds ?? (settingsRef.current.restTimerSec || 90);
+          const current = a.exercises[a.currentIndex];
+          const sec = seconds ?? (current?.restSec || settingsRef.current.restTimerSec || 90);
           return { ...a, restEndsAt: Date.now() + sec * 1000, restTotalSec: sec };
         }),
       adjustRest: (delta) =>

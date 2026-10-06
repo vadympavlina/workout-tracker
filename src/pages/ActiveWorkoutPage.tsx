@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import {
   ArrowDown, ArrowUp, Check, ChevronLeft, ChevronRight, CircleCheck, Dumbbell, Flag, History, ListPlus, Minus, NotebookPen, Plus,
-  RotateCcw, Timer, Trash2, X,
+  RotateCcw, Timer, Trash2, TrendingUp, X,
 } from 'lucide-react';
 import { IDLE_LIMIT_MS, useActiveWorkout } from '@/store/ActiveWorkoutContext';
 import { useData } from '@/store/DataContext';
@@ -23,6 +23,7 @@ import { ExerciseMediaButton } from '@/components/exercise/ExerciseMediaButton';
 import { MUSCLE_GROUPS } from '@/data/labels';
 import { formatClock, formatDurationWords, formatNumber, repsRange } from '@/utils/format';
 import { lastPerformance } from '@/utils/stats';
+import { suggestProgression } from '@/utils/progression';
 
 export default function ActiveWorkoutPage() {
   usePageTitle('Тренування');
@@ -36,6 +37,7 @@ export default function ActiveWorkoutPage() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [recordSetId, setRecordSetId] = useState<string | null>(null);
   const [noteOpen, setNoteOpen] = useState(false);
+  const [dismissedHints, setDismissedHints] = useState<string[]>([]);
   const cardRef = useRef<HTMLElement>(null);
   useWakeLock(!!active && data.settings.keepAwake);
 
@@ -79,6 +81,14 @@ export default function ActiveWorkoutPage() {
   const totalSets = active.exercises.reduce((s, e) => s + e.sets.length, 0);
   const doneSets = active.exercises.reduce((s, e) => s + e.sets.filter((x) => x.done).length, 0);
   const lastTime = current ? lastPerformance(sessions, current.exerciseId) : null;
+  const weightStep = currentEx?.equipment === 'dumbbell' || currentEx?.equipment === 'kettlebell' ? 1 : 2.5;
+  const hint =
+    current && lastTime && !current.finished
+      ? suggestProgression(lastTime.exercise.sets, current.targetRepsMin ?? 8, current.targetRepsMax ?? 12, weightStep)
+      : null;
+  const undone = current ? current.sets.filter((s) => !s.done) : [];
+  const showHint =
+    !!hint && !dismissedHints.includes(current.id) && undone.length > 0 && undone.some((s) => s.weight !== hint.weight || s.reps !== hint.reps);
 
   const toggle = (setIndex: number) => {
     const result = workout.toggleSet(idx, setIndex);
@@ -278,6 +288,31 @@ export default function ActiveWorkoutPage() {
                 )}
               </p>
 
+              {showHint && hint && (
+                <div role="status" className="relative mt-2 flex items-center gap-3 rounded-[14px] border border-accent/25 bg-accent/[0.07] py-2 pl-3 pr-2">
+                  <TrendingUp size={17} className="shrink-0 text-accent" aria-hidden />
+                  <p className="min-w-0 flex-1 text-[13px] leading-snug">
+                    <span className="font-semibold text-fg">
+                      {hint.weight > 0 ? `Час додати вагу: ${formatNumber(hint.weight, 2)} кг × ${hint.reps}` : `Спробуй ${hint.reps} повторень`}
+                    </span>
+                    <span className="block text-muted">{hint.reason}</span>
+                  </p>
+                  <Button
+                    size="sm"
+                    className="h-9 shrink-0 px-3"
+                    onClick={() => {
+                      current.sets.forEach((s, i) => {
+                        if (!s.done) workout.updateSet(idx, i, { weight: hint.weight, reps: hint.reps });
+                      });
+                      setDismissedHints((d) => [...d, current.id]);
+                    }}
+                  >
+                    Застосувати
+                  </Button>
+                  <IconButton icon={X} label="Сховати пораду" size="sm" onClick={() => setDismissedHints((d) => [...d, current.id])} />
+                </div>
+              )}
+
               {current.finished && (
                 <div className="mt-3 flex items-center justify-between gap-3 rounded-ctl border border-positive/25 bg-positive/[0.06] px-3 py-2">
                   <span className="flex items-center gap-2 text-[14px] font-medium text-positive">
@@ -293,7 +328,7 @@ export default function ActiveWorkoutPage() {
                 <SetTable
                   exercise={current}
                   isBodyweight={currentEx?.equipment === 'bodyweight'}
-                  weightStep={currentEx?.equipment === 'dumbbell' || currentEx?.equipment === 'kettlebell' ? 1 : 2.5}
+                  weightStep={weightStep}
                   recordSetId={recordSetId}
                   onChange={(setIndex, patch) => workout.updateSet(idx, setIndex, patch)}
                   onToggle={toggle}
