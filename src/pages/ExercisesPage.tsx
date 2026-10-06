@@ -8,6 +8,7 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { TopBar } from '@/components/ui/TopBar';
 import { Button } from '@/components/ui/Button';
 import { ExerciseThumb } from '@/components/exercise/ExerciseThumb';
+import { EquipmentChips, type EquipmentFilter } from '@/components/exercise/EquipmentChips';
 import { useToast } from '@/components/ui/Toast';
 import { ExerciseFormModal } from '@/components/workout/ExerciseFormModal';
 import { EQUIPMENT, MUSCLE_GROUPS } from '@/data/labels';
@@ -19,6 +20,7 @@ export default function ExercisesPage() {
   const toast = useToast();
   const [query, setQuery] = useState('');
   const [group, setGroup] = useState<MuscleGroup | 'all' | 'custom'>('all');
+  const [equipment, setEquipment] = useState<EquipmentFilter>('all');
   const [creating, setCreating] = useState(false);
 
   const groups = useMemo(() => {
@@ -31,9 +33,10 @@ export default function ExercisesPage() {
     const q = query.trim().toLowerCase();
     return data.exercises
       .filter((e) => (group === 'all' ? true : group === 'custom' ? e.isCustom : e.muscleGroup === group))
+      .filter((e) => equipment === 'all' || e.equipment === equipment)
       .filter((e) => !q || e.name.toLowerCase().includes(q))
       .sort((a, b) => a.name.localeCompare(b.name, 'uk'));
-  }, [data.exercises, query, group]);
+  }, [data.exercises, query, group, equipment]);
 
   return (
     <div>
@@ -76,6 +79,7 @@ export default function ExercisesPage() {
             </button>
           ))}
         </div>
+        <EquipmentChips exercises={data.exercises} value={equipment} onChange={setEquipment} className="-mx-4 px-4 sm:mx-0 sm:flex-wrap sm:px-0" />
       </div>
 
       {list.length === 0 ? (

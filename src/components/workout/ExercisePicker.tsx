@@ -6,6 +6,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { ExerciseThumb } from '@/components/exercise/ExerciseThumb';
 import { EQUIPMENT, MUSCLE_GROUPS } from '@/data/labels';
+import { EquipmentChips, type EquipmentFilter } from '@/components/exercise/EquipmentChips';
 import { useData } from '@/store/DataContext';
 import { ExerciseFormModal } from './ExerciseFormModal';
 
@@ -22,6 +23,7 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
   const { data, saveExercise } = useData();
   const [query, setQuery] = useState('');
   const [group, setGroup] = useState<MuscleGroup | 'all'>('all');
+  const [equipment, setEquipment] = useState<EquipmentFilter>('all');
   const [creating, setCreating] = useState(false);
   const draft = useMemo(() => (creating && query.trim() ? emptyWithName(query.trim()) : null), [creating]);
 
@@ -33,9 +35,10 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
     return data.exercises
-      .filter((e) => (group === 'all' || e.muscleGroup === group) && (!q || e.name.toLowerCase().includes(q)))
+      .filter((e) => (group === 'all' || e.muscleGroup === group) && (equipment === 'all' || e.equipment === equipment))
+      .filter((e) => !q || e.name.toLowerCase().includes(q))
       .sort((a, b) => a.name.localeCompare(b.name, 'uk'));
-  }, [data.exercises, query, group]);
+  }, [data.exercises, query, group, equipment]);
 
   return (
     <>
@@ -69,6 +72,7 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
               </button>
             ))}
           </div>
+          <EquipmentChips exercises={data.exercises} value={equipment} onChange={setEquipment} className="-mx-1 px-1" />
         </div>
 
         <ul className="space-y-1.5">

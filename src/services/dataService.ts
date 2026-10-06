@@ -1,6 +1,6 @@
 import type { ActiveWorkout, AppData, ExportFile } from '@/types';
 import { createDemoData, DEFAULT_SETTINGS, emptyUser } from '@/data/demo';
-import { DEFAULT_EXERCISES } from '@/data/exercises';
+import { withBuiltInExercises } from '@/data/exercises';
 import { ACCENTS } from '@/data/labels';
 import { createLocalAdapter, legacyLocalAdapter, STORAGE_KEYS, type StorageAdapter } from './storage';
 import { dataUrlToBlob, mediaStore } from './mediaStore';
@@ -62,7 +62,7 @@ async function loadFrom(adapter: StorageAdapter): Promise<AppData | null> {
   return {
     user: { ...emptyUser(), ...user },
     plans: plans ?? [],
-    exercises: exercises?.length ? exercises : DEFAULT_EXERCISES,
+    exercises: withBuiltInExercises(exercises),
     sessions: sessions ?? [],
     bodyWeight: bodyWeight ?? [],
     settings: normalizeSettings(settings),
@@ -251,7 +251,7 @@ export function parseImport(raw: unknown): AppData {
   return {
     user: { ...emptyUser(), ...(user as Partial<AppData['user']>) },
     plans: plans as AppData['plans'],
-    exercises: (exercises as AppData['exercises']).length ? (exercises as AppData['exercises']) : DEFAULT_EXERCISES,
+    exercises: withBuiltInExercises(exercises as AppData['exercises']),
     sessions: sessions as AppData['sessions'],
     bodyWeight: bodyWeight as AppData['bodyWeight'],
     settings: normalizeSettings(isObj(settings) ? (settings as Partial<AppData['settings']>) : null),

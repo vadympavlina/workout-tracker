@@ -9,7 +9,7 @@ test('plan → workout → record → finish → journal → progress', async ({
   await page.getByRole('link', { name: 'Створити' }).click();
   await page.getByLabel('Назва').fill('Тест Спина');
   await page.getByRole('button', { name: 'Середа' }).click();
-  for (const [query, row] of [['верхнього', /Тяга верхнього блоку/], ['Прес', /^Прес Прес/]] as const) {
+  for (const [query, row] of [['верхнього', /^Тяга верхнього блоку Спина/], ['Прес', /^Прес Прес/]] as const) {
     await page.getByRole('button', { name: 'Додати вправу' }).click();
     await page.getByPlaceholder('Пошук вправи').fill(query);
     await page.getByRole('dialog').getByRole('button', { name: row }).click();

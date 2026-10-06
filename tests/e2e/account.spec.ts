@@ -97,7 +97,7 @@ test('custom exercise photo by link', async ({ page }) => {
   await startDemo(page);
   const url = new URL('og-image.png', page.url()).href;
   await page.goto('./#/exercises');
-  await page.getByRole('button', { name: 'Власна' }).click();
+  await page.getByRole('button', { name: 'Власна', exact: true }).click();
   await page.getByLabel('Назва').fill('Тяга з посиланням');
   await page.getByLabel('Або посилання на фото').fill('ftp://nope');
   await page.getByRole('dialog').getByRole('button', { name: 'Зберегти' }).click();

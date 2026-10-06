@@ -2,7 +2,7 @@ import type {
   ActiveExercise, ActiveSet, ActiveWorkout, AppData, BodyWeightEntry, Exercise, SessionExercise, SetEntry, UserProfile, WorkoutPlan, WorkoutSession,
 } from '@/types';
 import { DEFAULT_SETTINGS, emptyUser } from '@/data/demo';
-import { DEFAULT_EXERCISES } from '@/data/exercises';
+import { withBuiltInExercises } from '@/data/exercises';
 import { ACCENTS } from '@/data/labels';
 
 /**
@@ -129,7 +129,7 @@ export function fromRemote(raw: unknown): AppData | null {
     user: user(raw.user),
     settings: settings(raw.settings),
     plans: arr(raw.plans).map(plan),
-    exercises: exercises.length ? exercises : DEFAULT_EXERCISES,
+    exercises: withBuiltInExercises(exercises),
     sessions: arr(raw.sessions).map(session),
     bodyWeight: arr(raw.bodyWeight).map(weight),
   };
