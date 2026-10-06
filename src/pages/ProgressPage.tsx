@@ -12,6 +12,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { IconBadge } from '@/components/ui/IconBadge';
 import { BarsChart, TrendChart } from '@/components/charts/Chart';
+import { ActivityHeatmap } from '@/components/charts/ActivityHeatmap';
 import { addDays, daysBetween } from '@/utils/date';
 import { formatDate, formatHours, formatNumber, formatPercent, formatSigned, formatVolume, pluralWorkouts } from '@/utils/format';
 import {
@@ -122,6 +123,14 @@ export default function ProgressPage() {
             valueClassName={weightDelta ? ((wantsGain ? weightDelta > 0 : weightDelta < 0) ? 'text-positive' : 'text-negative') : undefined}
           />
         </section>
+
+        <Card padding="lg">
+          <h2 className="eyebrow mb-4 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-move" aria-hidden />
+            Рік тренувань
+          </h2>
+          <ActivityHeatmap sessions={sessions} />
+        </Card>
 
         <div className="grid gap-4 lg:grid-cols-2">
           <ChartCard

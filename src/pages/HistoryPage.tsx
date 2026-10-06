@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
 import { ChevronLeft, ChevronRight, Clock, NotebookText, Play, X } from 'lucide-react';
 import { useData } from '@/store/DataContext';
@@ -9,7 +9,7 @@ import { TopBar } from '@/components/ui/TopBar';
 import { Button, IconButton } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { IconBadge } from '@/components/ui/IconBadge';
-import { addDays, startOfMonth, startOfWeek, toISODate, WEEKDAYS_SHORT } from '@/utils/date';
+import { addDays, fromISODate, startOfMonth, startOfWeek, toISODate, WEEKDAYS_SHORT } from '@/utils/date';
 import { formatClock, formatDate, formatMonthYear, formatVolume, pluralExercises, pluralWorkouts } from '@/utils/format';
 import { sessionVolume, sumVolume } from '@/utils/stats';
 import type { WorkoutSession } from '@/types';
@@ -18,8 +18,11 @@ export default function HistoryPage() {
   usePageTitle('Журнал');
   const { sessions } = useData();
   const openStart = useStartSheet();
-  const [month, setMonth] = useState(() => startOfMonth(new Date()));
-  const [selected, setSelected] = useState<string | null>(null);
+  // `?date=YYYY-MM-DD` (e.g. from the year heatmap) opens that day directly.
+  const [params] = useSearchParams();
+  const dateParam = /^\d{4}-\d{2}-\d{2}$/.test(params.get('date') ?? '') ? params.get('date') : null;
+  const [month, setMonth] = useState(() => startOfMonth(dateParam ? fromISODate(dateParam) : new Date()));
+  const [selected, setSelected] = useState<string | null>(dateParam);
 
   const byDate = useMemo(() => {
     const map = new Map<string, WorkoutSession[]>();

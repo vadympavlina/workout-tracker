@@ -65,3 +65,17 @@ test('plate calculator for barbell exercises', async ({ page }) => {
   await expect(sheet.getByRole('img', { name: /На кожну сторону/ })).toHaveAttribute('aria-label', 'На кожну сторону: 25 + 15 + 2.5 + 1.25 кг');
   noErrors();
 });
+
+test('year heatmap opens the journal for a day', async ({ page }) => {
+  const noErrors = trackErrors(page);
+  await startDemo(page);
+  await page.goto('./#/progress');
+  const grid = page.getByRole('grid', { name: /Тренування за рік/ });
+  await expect(grid).toBeVisible();
+  const day = grid.getByRole('gridcell', { name: /^1 жовтня: Ноги \+ Прес/ });
+  await day.click();
+  await expect(page).toHaveURL(/#\/history\?date=2026-10-01$/);
+  await expect(page.locator('section[aria-label="Тренування"] li')).toHaveCount(1);
+  await expect(page.locator('section[aria-label="Тренування"]')).toContainText('Ноги + Прес');
+  noErrors();
+});
