@@ -19,5 +19,9 @@ export default defineConfig({
   build: {
     target: 'es2020',
     chunkSizeWarningLimit: 700,
+    rollupOptions: {
+      // Firebase changes rarely: its own chunk stays cached across app releases.
+      output: { manualChunks: { firebase: ['firebase/app', 'firebase/auth', 'firebase/database'] } },
+    },
   },
 });

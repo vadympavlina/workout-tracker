@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { ImagePlus, RefreshCw, Trash2 } from 'lucide-react';
+import { ImagePlus, Link2, RefreshCw, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 import type { Equipment, Exercise, IconKey, MuscleGroup } from '@/types';
 import { Modal } from '@/components/ui/Modal';
@@ -21,6 +21,24 @@ interface Props {
   initial?: Exercise | null;
 }
 
+/** Accepts only absolute http(s) links; returns the trimmed URL or null. */
+export function normalizePhotoUrl(raw: string): string | null {
+  const value = raw.trim();
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Uploaded photos are synced through the database, so keep them small (~100–200 KB). */
+async function compressPhoto(file: File): Promise<Blob> {
+  const blob = await resizeImageToBlob(file, 900, 0.8);
+  return blob.size > 220_000 ? resizeImageToBlob(file, 700, 0.7) : blob;
+}
+
 const blank = (): Exercise => ({
   id: '',
   name: '',
@@ -40,21 +58,28 @@ export function ExerciseFormModal({ open, onClose, onSave, initial }: Props) {
   const [saving, setSaving] = useState(false);
   // Pending photo change: a new blob, `null` = remove, `undefined` = untouched.
   const [photo, setPhoto] = useState<Blob | null | undefined>(undefined);
+  const [link, setLink] = useState('');
+  const [linkError, setLinkError] = useState('');
+  const [linkBroken, setLinkBroken] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const toast = useToast();
-  const existing = useExercisePhotos(initial?.isCustom && initial.hasPhoto ? initial : undefined);
+  const existing = useExercisePhotos(initial?.isCustom && initial.hasPhoto ? { ...initial, photoUrl: undefined } : undefined);
 
   const newPreview = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo]);
   useEffect(() => () => {
     if (newPreview) URL.revokeObjectURL(newPreview);
   }, [newPreview]);
-  const preview = photo === null ? null : newPreview ?? existing[0] ?? null;
+  const linkUrl = normalizePhotoUrl(link);
+  const preview = linkUrl ?? (photo === null ? null : newPreview ?? existing[0] ?? null);
 
   useEffect(() => {
     if (open) {
       setForm(initial ?? blank());
       setError('');
       setPhoto(undefined);
+      setLink(initial?.photoUrl ?? '');
+      setLinkError('');
+      setLinkBroken(false);
       setSaving(false);
     }
   }, [open, initial]);
@@ -62,7 +87,9 @@ export function ExerciseFormModal({ open, onClose, onSave, initial }: Props) {
   const pickPhoto = async (file: File | undefined) => {
     if (!file) return;
     try {
-      setPhoto(await resizeImageToBlob(file));
+      setPhoto(await compressPhoto(file));
+      setLink('');
+      setLinkError('');
     } catch (e) {
       toast.error('Не вдалося додати фото', (e as Error).message);
     }
@@ -76,11 +103,16 @@ export function ExerciseFormModal({ open, onClose, onSave, initial }: Props) {
     if (!name) return setError('Вкажи назву вправи');
     const repsMin = Math.min(form.defaultRepsMin, form.defaultRepsMax);
     const repsMax = Math.max(form.defaultRepsMin, form.defaultRepsMax);
+    if (link.trim() && !linkUrl) return setLinkError('Посилання має починатися з https://');
     const id = form.id || `custom-${uid()}`;
     let hasPhoto = !!form.hasPhoto;
     setSaving(true);
     try {
-      if (photo) {
+      if (linkUrl) {
+        // A link replaces an uploaded photo.
+        if (hasPhoto) await mediaStore.remove(id);
+        hasPhoto = false;
+      } else if (photo) {
         await mediaStore.put(id, photo);
         hasPhoto = true;
       } else if (photo === null) {
@@ -91,7 +123,8 @@ export function ExerciseFormModal({ open, onClose, onSave, initial }: Props) {
       toast.error('Фото не збережено', 'Сховище браузера недоступне. Вправу збережено без фото.');
     }
     setSaving(false);
-    onSave({ ...form, id, name, hasPhoto, description: form.description.trim(), defaultRepsMin: repsMin, defaultRepsMax: repsMax });
+    const { photoUrl: _old, ...rest } = form;
+    onSave({ ...rest, id, name, hasPhoto, ...(linkUrl ? { photoUrl: linkUrl } : {}), description: form.description.trim(), defaultRepsMin: repsMin, defaultRepsMax: repsMax });
   };
 
   return (
@@ -169,13 +202,36 @@ export function ExerciseFormModal({ open, onClose, onSave, initial }: Props) {
         <div>
           <p className="label mb-1.5">Фото</p>
           {preview ? (
-            <div className="relative overflow-hidden rounded-[18px]">
-              <img src={preview} alt="Фото вправи" className="aspect-[3/2] w-full object-cover" />
+            <div className="relative overflow-hidden rounded-[18px] bg-white/[0.04]">
+              {linkBroken ? (
+                <div className="flex aspect-[3/2] w-full items-center justify-center px-6 text-center text-[14px] text-muted">
+                  Не вдалося завантажити зображення за цим посиланням
+                </div>
+              ) : (
+                <img
+                  src={preview}
+                  alt="Фото вправи"
+                  className="aspect-[3/2] w-full object-cover"
+                  referrerPolicy="no-referrer"
+                  onError={() => linkUrl && setLinkBroken(true)}
+                  onLoad={() => setLinkBroken(false)}
+                />
+              )}
               <div className="absolute bottom-2 right-2 flex gap-2">
                 <Button size="sm" variant="secondary" icon={RefreshCw} className="bg-black/60 backdrop-blur" onClick={() => fileInput.current?.click()}>
                   Змінити
                 </Button>
-                <Button size="sm" variant="secondary" icon={Trash2} className="bg-black/60 text-negative backdrop-blur" onClick={() => setPhoto(null)}>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  icon={Trash2}
+                  className="bg-black/60 text-negative backdrop-blur"
+                  onClick={() => {
+                    setLink('');
+                    setLinkBroken(false);
+                    setPhoto(null);
+                  }}
+                >
                   Прибрати
                 </Button>
               </div>
@@ -187,10 +243,27 @@ export function ExerciseFormModal({ open, onClose, onSave, initial }: Props) {
               className="flex h-28 w-full flex-col items-center justify-center gap-1.5 rounded-[18px] border border-dashed border-white/15 text-muted transition hover:border-accent/60 hover:text-fg"
             >
               <ImagePlus size={22} aria-hidden />
-              <span className="text-[14px] font-medium">Додати фото</span>
+              <span className="text-[14px] font-medium">Завантажити фото</span>
               <span className="text-[12px] text-subtle">Напр., тренажер у твоєму залі</span>
             </button>
           )}
+          <Input
+            className="mt-3"
+            label="Або посилання на фото"
+            type="url"
+            inputMode="url"
+            autoCapitalize="none"
+            spellCheck={false}
+            placeholder="https://…"
+            value={link}
+            suffix={<Link2 size={16} aria-hidden />}
+            error={linkError}
+            onChange={(e) => {
+              setLink(e.target.value);
+              setLinkError('');
+              setLinkBroken(false);
+            }}
+          />
           <input
             ref={fileInput}
             type="file"

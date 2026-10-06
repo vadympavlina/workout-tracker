@@ -15,24 +15,10 @@ for (const width of [375, 430]) {
   });
 }
 
-test('backup reminder: shown, cleared by export, snoozable', async ({ page }) => {
+test('no backup reminder: the cloud keeps the data', async ({ page }) => {
   await startDemo(page);
-  const banner = page.getByRole('region', { name: 'Нагадування про резервну копію' });
-  await expect(banner).toBeVisible();
-  await Promise.all([page.waitForEvent('download'), banner.getByRole('button', { name: 'Зберегти копію' }).click()]);
-  await expect(banner).toBeHidden();
-
-  await page.evaluate(() => {
-    const meta = JSON.parse(localStorage.getItem('workout_meta')!);
-    meta.lastBackupAt = new Date(Date.now() - 20 * 864e5).toISOString();
-    localStorage.setItem('workout_meta', JSON.stringify(meta));
-  });
-  await page.reload();
-  await expect(banner).toContainText('20 днів тому');
-  await banner.getByRole('button', { name: 'Пізніше' }).click();
-  await page.reload();
   await expect(page.getByRole('heading', { name: /Привіт/ })).toBeVisible();
-  await expect(banner).toBeHidden();
+  await expect(page.getByRole('region', { name: 'Нагадування про резервну копію' })).toHaveCount(0);
 });
 
 test('PWA: manifest, icons and service worker on the sub-path', async ({ page, request }) => {

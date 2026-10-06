@@ -1,7 +1,8 @@
 import { defineConfig } from '@playwright/test';
 
-// E2E tests run against the production build served from a GitHub-Pages-like
-// sub-path. Build first: `npm run test:e2e` does both.
+// E2E tests run against a production build wired to the Firebase emulators
+// (`vite build --mode emulator` → dist-e2e/), served from a GitHub-Pages-like
+// sub-path. `npm run test:e2e` builds, starts the emulators and runs the suite.
 export default defineConfig({
   testDir: 'tests/e2e',
   timeout: 60_000,
@@ -22,6 +23,7 @@ export default defineConfig({
   },
   webServer: {
     command: 'node scripts/serve-dist.mjs',
+    env: { DIST: 'dist-e2e' },
     url: 'http://localhost:4173/workout-tracker/',
     reuseExistingServer: !process.env.CI,
   },

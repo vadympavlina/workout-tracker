@@ -1,6 +1,6 @@
 /* Pulse service worker — offline support for a static GitHub Pages build.
  * Paths are resolved relative to the worker's scope, so it works from any sub-path. */
-const VERSION = 'v2';
+const VERSION = 'v3';
 const SHELL_CACHE = `pulse-shell-${VERSION}`;
 const ASSET_CACHE = `pulse-assets-${VERSION}`;
 const scopeUrl = (path) => new URL(path, self.registration.scope).toString();

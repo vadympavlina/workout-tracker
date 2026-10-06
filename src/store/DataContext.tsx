@@ -69,6 +69,27 @@ export function DataProvider({ children, fallback, onboarding }: ProviderProps) 
     });
   }, []);
 
+  // Pick up changes made on other devices: on open and whenever the app comes
+  // back to the foreground. Skipped while local edits are still uploading.
+  useEffect(() => {
+    let alive = true;
+    const pull = () => {
+      if (document.visibilityState !== 'visible' || !dataRef.current) return;
+      void dataService.refresh().then((remote) => {
+        if (alive && remote && dataRef.current) {
+          dataRef.current = remote;
+          setData(remote);
+        }
+      });
+    };
+    pull();
+    document.addEventListener('visibilitychange', pull);
+    return () => {
+      alive = false;
+      document.removeEventListener('visibilitychange', pull);
+    };
+  }, [data !== null]);
+
   // Once real data exists: load backup bookkeeping and ask the browser not to
   // evict our storage under pressure (granted silently for installed PWAs).
   useEffect(() => {

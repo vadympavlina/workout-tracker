@@ -1,4 +1,4 @@
-import { expect, startDemo, test, trackErrors } from './helpers';
+import { accountPrefix, expect, startDemo, test, trackErrors } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -64,14 +64,15 @@ test('forgotten workout does not count idle hours', async ({ page }) => {
   await page.getByRole('button', { name: 'Почати тренування' }).first().click();
   await page.getByRole('button', { name: 'Позначити підхід 1 виконаним' }).click();
   // Started 15 h ago, last action 40 min after the start, then left open.
-  await page.evaluate(() => {
-    const a = JSON.parse(localStorage.getItem('workout_active')!);
+  const prefix = await accountPrefix(page);
+  await page.evaluate((prefix) => {
+    const a = JSON.parse(localStorage.getItem(`${prefix}workout_active`)!);
     const now = Date.now();
     a.startedAt = new Date(now - 15 * 3600e3).toISOString();
     a.lastActivityAt = now - 15 * 3600e3 + 40 * 60e3;
     a.restEndsAt = null;
-    localStorage.setItem('workout_active', JSON.stringify(a));
-  });
+    localStorage.setItem(`${prefix}workout_active`, JSON.stringify(a));
+  }, prefix);
   await page.reload();
   await expect(page.getByText('Схоже, тренування не завершили вчасно')).toBeVisible();
   await page.getByRole('button', { name: 'Позначити підхід 2 виконаним' }).click();
@@ -79,9 +80,9 @@ test('forgotten workout does not count idle hours', async ({ page }) => {
   await page.getByRole('button', { name: 'Завершити тренування' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Завершити' }).click();
   await expect(page).toHaveURL(/#\/summary/);
-  const minutes = await page.evaluate(() => {
-    const sessions = JSON.parse(localStorage.getItem('workout_sessions')!) as { finishedAt: string; durationSec: number }[];
+  const minutes = await page.evaluate((prefix) => {
+    const sessions = JSON.parse(localStorage.getItem(`${prefix}workout_sessions`)!) as { finishedAt: string; durationSec: number }[];
     return Math.round(sessions.sort((a, b) => b.finishedAt.localeCompare(a.finishedAt))[0].durationSec / 60);
-  });
+  }, prefix);
   expect(minutes).toBe(40);
 });

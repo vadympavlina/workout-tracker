@@ -1,8 +1,8 @@
-import { expect, test, trackErrors } from './helpers';
+import { createUser, expect, login, test, trackErrors } from './helpers';
 
 test('start fresh with own profile', async ({ page }) => {
   const noErrors = trackErrors(page);
-  await page.goto('./');
+  await login(page, await createUser());
   await page.getByRole('button', { name: 'Почати' }).click();
   await page.getByRole('button', { name: 'Готово' }).click();
   await expect(page.getByText('Як до тебе звертатися?')).toBeVisible();
@@ -23,10 +23,25 @@ test('start fresh with own profile', async ({ page }) => {
 });
 
 test('delete all data returns to the welcome screen', async ({ page }) => {
-  await page.goto('./');
+  await login(page, await createUser());
   await page.getByRole('button', { name: 'Подивитись демо' }).click();
   await page.goto('./#/profile');
   await page.getByRole('button', { name: /Видалити всі дані/ }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Видалити все' }).click();
+  await expect(page.getByRole('button', { name: 'Подивитись демо' })).toBeVisible();
+});
+
+test('deleted data stays deleted after signing in again', async ({ page }) => {
+  const user = await createUser();
+  await login(page, user);
+  await page.getByRole('button', { name: 'Подивитись демо' }).click();
+  await page.goto('./#/profile');
+  await page.getByRole('button', { name: /Видалити всі дані/ }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Видалити все' }).click();
+  await expect(page.getByRole('button', { name: 'Подивитись демо' })).toBeVisible();
+  // Cloud copy is gone too: a fresh device sees the welcome screen.
+  await page.context().clearCookies();
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
   await expect(page.getByRole('button', { name: 'Подивитись демо' })).toBeVisible();
 });

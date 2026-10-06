@@ -2,12 +2,14 @@ import { useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 import {
-  BookOpen, Camera, ChevronRight, CircleHelp, Download, Palette, RotateCcw, Ruler, Scale, Settings as SettingsIcon, Target, Trash2,
-  Upload, UserRound, Dumbbell, type LucideIcon,
+  BookOpen, Camera, ChevronRight, CircleHelp, Cloud, CloudOff, Download, LogOut, Palette, RefreshCw, RotateCcw, Ruler, Scale,
+  Settings as SettingsIcon, Target, Trash2, TriangleAlert, Upload, UserRound, Dumbbell, type LucideIcon,
 } from 'lucide-react';
 import type { AccentKey, GoalType, Settings, UserProfile } from '@/types';
 import { useData } from '@/store/DataContext';
 import { useActiveWorkout } from '@/store/ActiveWorkoutContext';
+import { useAccount } from '@/store/AuthGate';
+import { useSyncStatus, type SyncState } from '@/services/syncStatus';
 import { useBackup } from '@/hooks/useBackup';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { TopBar } from '@/components/ui/TopBar';
@@ -37,6 +39,8 @@ export default function ProfilePage() {
   const toast = useToast();
   const confirm = useConfirm();
   const [sheet, setSheet] = useState<Sheet>(null);
+  const account = useAccount();
+  const sync = useSyncStatus();
   const photoInput = useRef<HTMLInputElement>(null);
   const importInput = useRef<HTMLInputElement>(null);
   const weight = latestWeight(data.data.bodyWeight);
@@ -96,13 +100,27 @@ export default function ProfilePage() {
   const clearAll = async () => {
     const ok = await confirm({
       title: 'Видалити всі дані?',
-      description: 'Плани, історія, вага й налаштування буде видалено з цього браузера. Дію не можна скасувати.',
+      description: 'Плани, історія, вага, фото й налаштування буде видалено з акаунта на всіх пристроях. Дію не можна скасувати.',
       confirmLabel: 'Видалити все',
     });
     if (!ok) return;
     active.discard();
     await data.clearAll();
     toast.success('Дані видалено', 'Можна почати з чистого аркуша');
+  };
+
+  const signOut = async () => {
+    const unsynced = sync.pending > 0 || sync.dirty;
+    const ok = await confirm({
+      title: 'Вийти з акаунта?',
+      description: unsynced
+        ? 'Частина змін ще не потрапила в хмару — після виходу вони будуть втрачені. Дочекайся підключення до інтернету, щоб їх зберегти.'
+        : 'Дані залишаться в хмарі й завантажаться після наступного входу. З цього пристрою їх буде видалено.',
+      confirmLabel: unsynced ? 'Все одно вийти' : 'Вийти',
+      tone: unsynced ? 'danger' : 'primary',
+    });
+    if (!ok) return;
+    await account.signOut();
   };
 
   return (
@@ -150,6 +168,11 @@ export default function ProfilePage() {
           <MenuItem icon={CircleHelp} label="Допомога" hint="Як користуватись, встановлення" to="/help" />
         </MenuGroup>
 
+        <MenuGroup title="Синхронізація">
+          <SyncRow email={account.email} sync={sync} />
+          <MenuItem icon={LogOut} label="Вийти" hint="Дані залишаться в хмарі" onClick={() => void signOut()} />
+        </MenuGroup>
+
         <MenuGroup title="Дані">
           <MenuItem icon={Download} label="Експорт даних" hint={backupHint} onClick={() => void backup.exportNow()} />
           <MenuItem icon={Upload} label="Імпорт даних" hint="Відновити з JSON-файлу" onClick={() => importInput.current?.click()} />
@@ -159,10 +182,9 @@ export default function ProfilePage() {
         </MenuGroup>
 
         <p className="pb-4 text-center text-[13px] text-subtle">
-          Pulse 1.0 · Дані зберігаються локально в цьому браузері
-          {data.backup.persisted === true && ' і захищені від автоочищення'}.
+          Pulse 1.0 · Дані зберігаються в хмарі й доступні офлайн на цьому пристрої.
           <br />
-          Регулярно роби експорт, щоб не втратити історію.
+          Експорт — це копія у файлі, яку можна зберегти окремо.
         </p>
       </div>
 
@@ -171,6 +193,32 @@ export default function ProfilePage() {
       <SettingsSheet open={sheet === 'settings'} onClose={() => setSheet(null)} settings={settings} onChange={data.updateSettings} />
       <ThemeSheet open={sheet === 'theme'} onClose={() => setSheet(null)} settings={settings} onChange={data.updateSettings} />
     </div>
+  );
+}
+
+/** Account email + where the data currently stands relative to the cloud. */
+function SyncRow({ email, sync }: { email: string; sync: SyncState }) {
+  const unsynced = sync.pending > 0 || sync.dirty;
+  const state = sync.error
+    ? { icon: TriangleAlert, tone: 'text-negative bg-negative/10', text: sync.error }
+    : !sync.online
+      ? { icon: CloudOff, tone: 'text-muted bg-white/[0.05]', text: unsynced ? 'Офлайн · зміни збережено на пристрої' : 'Офлайн · працює з копії на пристрої' }
+      : unsynced
+        ? { icon: RefreshCw, tone: 'text-accent bg-accent/10', text: 'Синхронізуємо зміни…' }
+        : { icon: Cloud, tone: 'text-accent bg-accent/10', text: 'Усе синхронізовано' };
+  const Icon = state.icon;
+  return (
+    <li className="flex min-h-[60px] items-center gap-3.5 px-4 py-2.5" data-testid="sync-status">
+      <span className={clsx('inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', state.tone)}>
+        <Icon size={19} aria-hidden />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[15px] font-medium">{email}</span>
+        <span className="block truncate text-[13px] text-subtle" role="status">
+          {state.text}
+        </span>
+      </span>
+    </li>
   );
 }
 

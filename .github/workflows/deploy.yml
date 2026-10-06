@@ -24,17 +24,30 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Cache Firebase emulators
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-${{ hashFiles('package-lock.json') }}
       - run: npm ci
       - name: Typecheck
         run: npm run typecheck
       - name: Unit tests
         run: npm test
+      - name: Security rules tests
+        run: npm run test:rules
       - name: Build
         run: npm run build
+      - name: Build for emulators
+        run: npx vite build --mode emulator --outDir dist-e2e
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: E2E tests
-        run: npx playwright test
+      - name: E2E tests (Firebase emulators)
+        run: npx firebase emulators:exec --only auth,database --project workout-tracker-91340 "npx playwright test"
       - name: Upload E2E report
         if: failure()
         uses: actions/upload-artifact@v4

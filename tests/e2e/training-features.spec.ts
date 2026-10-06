@@ -1,19 +1,21 @@
-import { expect, FIXED_NOW, startDemo, test, trackErrors } from './helpers';
+import { accountPrefix, expect, FIXED_NOW, startDemo, test, trackErrors } from './helpers';
 
 test('progression hint suggests the next weight and applies it', async ({ page }) => {
   const noErrors = trackErrors(page);
   await startDemo(page);
   // Yesterday: every set of the first exercise hit the top of its 8–12 range.
-  await page.evaluate((now) => {
-    const sessions = JSON.parse(localStorage.getItem('workout_sessions')!);
+  const prefix = await accountPrefix(page);
+  await page.evaluate(([now, prefix]) => {
+    const sessions = JSON.parse(localStorage.getItem(`${prefix}workout_sessions`)!);
     const start = new Date(new Date(now).getTime() - 86_400_000).toISOString();
     sessions.push({
       id: 'progression-seed', planId: null, name: 'Seed', icon: 'dumbbell', startedAt: start, finishedAt: start, durationSec: 3600, note: '',
       exercises: [{ id: 'e1', exerciseId: 'chest-press-machine', name: 'Жим грудей у тренажері', note: '', targetRepsMin: 8, targetRepsMax: 12,
         sets: [1, 2, 3].map((i) => ({ id: `s${i}`, weight: 60, reps: 12, done: true })) }],
     });
-    localStorage.setItem('workout_sessions', JSON.stringify(sessions));
-  }, FIXED_NOW.toISOString());
+    localStorage.setItem(`${prefix}workout_sessions`, JSON.stringify(sessions));
+    localStorage.setItem(`${prefix}workout_sync_dirty`, '1');
+  }, [FIXED_NOW.toISOString(), prefix]);
   await page.reload();
 
   await page.getByRole('button', { name: 'Почати тренування' }).first().click();

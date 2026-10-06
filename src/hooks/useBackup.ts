@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useData } from '@/store/DataContext';
 import { useToast } from '@/components/ui/Toast';
 import { dataService } from '@/services/dataService';
+import { session } from '@/services/session';
 import { downloadJson } from '@/utils/files';
 import { daysBetween, toISODate } from '@/utils/date';
 
@@ -25,8 +26,8 @@ export function useBackup() {
 
   const daysSince = lastAt ? daysBetween(lastAt, new Date()) : null;
   const snoozed = !!snoozedUntil && new Date(snoozedUntil) > new Date();
-  // Only nag once there is something worth losing.
-  const due = data.sessions.length >= 3 && !snoozed && (daysSince == null || daysSince >= BACKUP_REMINDER_DAYS);
+  // Only nag once there is something worth losing — and not when the cloud keeps it.
+  const due = !session.cloud() && data.sessions.length >= 3 && !snoozed && (daysSince == null || daysSince >= BACKUP_REMINDER_DAYS);
 
   return { exportNow, lastAt, daysSince, due, snooze: () => data.snoozeBackupReminder(7) };
 }

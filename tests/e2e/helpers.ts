@@ -25,11 +25,60 @@ export function trackErrors(page: Page) {
   return () => expect(errors, 'browser errors').toEqual([]);
 }
 
-/** Fresh browser profile → welcome screen → demo data → dashboard. */
-export async function startDemo(page: Page) {
+// ---- Firebase emulators ------------------------------------------------------
+
+const AUTH_EMULATOR = 'http://127.0.0.1:9099';
+export const PASSWORD = 'test-password-1';
+
+export interface TestUser {
+  email: string;
+  password: string;
+  uid: string;
+}
+
+/**
+ * Creates an account in the Auth emulator (sign-up is disabled for real users;
+ * the owner creates them in the console). Each test gets its own account, so
+ * tests stay independent while running in parallel.
+ */
+export async function createUser(prefix = 'user'): Promise<TestUser> {
+  const email = `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}@pulse.test`;
+  const res = await fetch(`${AUTH_EMULATOR}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=test`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: PASSWORD, returnSecureToken: true }),
+  });
+  if (!res.ok) throw new Error(`Auth emulator sign-up failed: ${res.status} ${await res.text()}`);
+  const body = (await res.json()) as { localId: string };
+  return { email, password: PASSWORD, uid: body.localId };
+}
+
+/** Login screen → signed in (the caller asserts what comes next). */
+export async function login(page: Page, user: TestUser) {
   await page.goto('./');
+  await page.getByLabel('Email').fill(user.email);
+  await page.getByLabel('Пароль', { exact: true }).fill(user.password);
+  await page.getByRole('button', { name: 'Увійти' }).click();
+}
+
+/** New account → login → welcome screen → demo data → dashboard. */
+export async function startDemo(page: Page, user?: TestUser) {
+  const account = user ?? (await createUser());
+  await login(page, account);
   await page.getByRole('button', { name: 'Подивитись демо' }).click();
   await expect(page.getByRole('heading', { name: /Привіт, Вадим/ })).toBeVisible();
+  return account;
+}
+
+/**
+ * localStorage prefix of the signed-in account (`u:{uid}:`). Tests that edit the
+ * cache directly also mark it dirty — like an edit made offline — so the app
+ * uploads it instead of replacing it with the cloud copy on the next start.
+ */
+export async function accountPrefix(page: Page) {
+  const prefix = await page.evaluate(() => Object.keys(localStorage).find((k) => /^u:[^:]+:workout_meta$/.test(k))?.replace('workout_meta', ''));
+  if (!prefix) throw new Error('No signed-in account cache');
+  return prefix;
 }
 
 export const storageCount = (page: Page) =>

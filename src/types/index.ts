@@ -81,8 +81,10 @@ export interface Exercise {
   defaultRepsMin: number;
   defaultRepsMax: number;
   isCustom: boolean;
-  /** Custom exercises only: a user photo is stored in the media store (IndexedDB). */
+  /** Custom exercises only: an uploaded photo is stored in the media store (device cache + cloud). */
   hasPhoto?: boolean;
+  /** Custom exercises only: a photo linked from the web instead of uploaded. */
+  photoUrl?: string;
 }
 
 export interface PlanExercise {

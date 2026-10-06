@@ -1,10 +1,11 @@
-// Serves dist/ under /workout-tracker/ — the same sub-path GitHub Pages uses —
-// so E2E tests exercise relative asset paths, the manifest and the service worker.
+// Serves a build (dist/, or $DIST) under /workout-tracker/ — the same sub-path
+// GitHub Pages uses — so E2E tests exercise relative asset paths, the manifest
+// and the service worker.
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 
-const ROOT = join(process.cwd(), 'dist');
+const ROOT = join(process.cwd(), process.env.DIST ?? 'dist');
 const BASE = '/workout-tracker/';
 const PORT = Number(process.env.PORT ?? 4173);
 const TYPES = {

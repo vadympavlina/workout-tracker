@@ -5,6 +5,7 @@ import { ConfirmProvider } from '@/components/ui/ConfirmDialog';
 import { PageSkeleton } from '@/components/ui/Skeleton';
 import { DataProvider, useData } from '@/store/DataContext';
 import { ActiveWorkoutProvider } from '@/store/ActiveWorkoutContext';
+import { AuthGate } from '@/store/AuthGate';
 import { AppLayout } from '@/layouts/AppLayout';
 import { FocusLayout } from '@/layouts/FocusLayout';
 import { useTheme } from '@/hooks/useTheme';
@@ -66,22 +67,24 @@ export default function App() {
   return (
     <ToastProvider>
       <ConfirmProvider>
-        <DataProvider
-          onboarding={(finish) => (
-            <Suspense fallback={null}>
-              <Onboarding finish={finish} />
-            </Suspense>
-          )}
-          fallback={
-            <div className="mx-auto max-w-[1200px] px-4 pt-8">
-              <PageSkeleton />
-            </div>
-          }
-        >
-          <ActiveWorkoutProvider>
-            <ThemedApp />
-          </ActiveWorkoutProvider>
-        </DataProvider>
+        <AuthGate>
+          <DataProvider
+            onboarding={(finish) => (
+              <Suspense fallback={null}>
+                <Onboarding finish={finish} />
+              </Suspense>
+            )}
+            fallback={
+              <div className="mx-auto max-w-[1200px] px-4 pt-8">
+                <PageSkeleton />
+              </div>
+            }
+          >
+            <ActiveWorkoutProvider>
+              <ThemedApp />
+            </ActiveWorkoutProvider>
+          </DataProvider>
+        </AuthGate>
       </ConfirmProvider>
     </ToastProvider>
   );

@@ -3,7 +3,7 @@ import type { Exercise } from '@/types';
 import { builtInPhotos } from '@/data/exerciseMedia';
 import { mediaStore } from '@/services/mediaStore';
 
-/** Photo frames for an exercise: the user's own photo, else bundled start/end frames. */
+/** Photo frames for an exercise: the user's own photo (link or upload), else bundled start/end frames. */
 export function useExercisePhotos(exercise: Exercise | undefined): string[] {
   const [custom, setCustom] = useState<string | null>(null);
   const id = exercise?.id;
@@ -37,6 +37,7 @@ export function useExercisePhotos(exercise: Exercise | undefined): string[] {
     };
   }, [id, hasPhoto]);
 
+  if (exercise?.photoUrl) return [exercise.photoUrl];
   if (custom) return [custom];
   return id ? builtInPhotos(id) : [];
 }
