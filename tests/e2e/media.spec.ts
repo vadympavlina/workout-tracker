@@ -66,3 +66,45 @@ test('kettlebell filter shows the new kettlebell exercises', async ({ page }) =>
   await expect(page.locator('main a[href*="#/exercises/"]')).toHaveCount(8);
   await expect(page.getByRole('link', { name: /Махи гирею/ })).toBeVisible();
 });
+
+test('back from an exercise keeps filters and scroll position', async ({ page }) => {
+  await startDemo(page);
+  await page.goto('./#/exercises');
+  await page.getByRole('group', { name: 'Фільтр' }).getByRole('button', { name: 'Ноги' }).click();
+  await page.getByRole('group', { name: 'Фільтр за обладнанням' }).getByRole('button', { name: 'Тренажер' }).click();
+  const rows = page.locator('main a[href*="#/exercises/"]');
+  const count = await rows.count();
+  expect(count).toBeGreaterThan(5);
+
+  const target = rows.nth(count - 1);
+  await target.scrollIntoViewIfNeeded();
+  const scrolled = await page.evaluate(() => window.scrollY);
+  expect(scrolled).toBeGreaterThan(100);
+  const name = (await target.locator('span.truncate').first().innerText()).trim();
+
+  await target.click();
+  await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
+  expect(await page.evaluate(() => window.scrollY), 'a new screen opens at the top').toBeLessThan(5);
+
+  await page.goBack();
+  await expect(page.getByRole('group', { name: 'Фільтр' }).getByRole('button', { name: 'Ноги' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('group', { name: 'Фільтр за обладнанням' }).getByRole('button', { name: 'Тренажер' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(rows).toHaveCount(count);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(scrolled - 40);
+});
+
+test('exercise picker: back from details keeps the list position', async ({ page }) => {
+  await startDemo(page);
+  await page.goto('./#/plan/new');
+  await page.getByRole('button', { name: 'Додати вправу' }).click();
+  const list = page.getByRole('dialog', { name: 'Додати вправу' });
+  const info = list.getByRole('button', { name: /^Деталі:/ });
+  await info.nth(25).scrollIntoViewIfNeeded();
+  const body = list.locator('.overflow-y-auto');
+  const before = await body.evaluate((el) => el.scrollTop);
+  expect(before).toBeGreaterThan(200);
+  await info.nth(25).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'До списку' }).click();
+  await expect(list).toBeVisible();
+  expect(Math.abs((await list.locator('.overflow-y-auto').evaluate((el) => el.scrollTop)) - before)).toBeLessThan(5);
+});

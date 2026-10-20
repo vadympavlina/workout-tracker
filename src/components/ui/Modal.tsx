@@ -11,6 +11,8 @@ interface Props {
   children: ReactNode;
   footer?: ReactNode;
   size?: 'md' | 'lg';
+  /** Key under which the content's scroll position is kept between openings (e.g. a long picker list). */
+  rememberScroll?: string;
 }
 
 const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -19,8 +21,12 @@ const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select
  * Bottom sheet on phones, centered dialog from `sm` up.
  * Handles Esc, focus trap, focus restore and body scroll lock.
  */
-export function Modal({ open, onClose, title, description, children, footer, size = 'md' }: Props) {
+/** Scroll positions of modals opened with `rememberScroll`. */
+const savedScroll = new Map<string, number>();
+
+export function Modal({ open, onClose, title, description, children, footer, size = 'md', rememberScroll }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
   const descId = useId();
   const onCloseRef = useRef(onClose);
@@ -56,6 +62,8 @@ export function Modal({ open, onClose, title, description, children, footer, siz
       }
     };
     document.addEventListener('keydown', onKey);
+    const body = bodyRef.current;
+    if (rememberScroll && body) body.scrollTop = savedScroll.get(rememberScroll) ?? 0;
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = overflow;
@@ -102,7 +110,14 @@ export function Modal({ open, onClose, title, description, children, footer, siz
             <X size={20} aria-hidden />
           </button>
         </header>
-        <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-5 pt-2 sm:px-6">{children}</div>
+        <div
+          ref={bodyRef}
+          // Saved while scrolling: on close the node is already detached and reads 0.
+          onScroll={rememberScroll ? (e) => savedScroll.set(rememberScroll, e.currentTarget.scrollTop) : undefined}
+          className="flex-1 overflow-y-auto overscroll-contain px-5 pb-5 pt-2 sm:px-6"
+        >
+          {children}
+        </div>
         {footer && (
           <footer className="flex gap-3 border-t border-white/[0.06] px-5 pt-4 sm:px-6" style={{ paddingBottom: 'calc(16px + var(--safe-bottom))' }}>
             {footer}

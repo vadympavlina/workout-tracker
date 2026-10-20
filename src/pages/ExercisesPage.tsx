@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
 import { ChevronRight, Plus, Search } from 'lucide-react';
 import type { MuscleGroup } from '@/types';
@@ -18,9 +18,27 @@ export default function ExercisesPage() {
   usePageTitle('Вправи');
   const { data, records, saveExercise } = useData();
   const toast = useToast();
-  const [query, setQuery] = useState('');
-  const [group, setGroup] = useState<MuscleGroup | 'all' | 'custom'>('all');
-  const [equipment, setEquipment] = useState<EquipmentFilter>('all');
+  // Search and filters are kept in the URL (replaced, not pushed): opening an
+  // exercise and coming back restores them together with the scroll position.
+  const [params, setParams] = useSearchParams();
+  const query = params.get('q') ?? '';
+  const groupParam = params.get('group');
+  const group: MuscleGroup | 'all' | 'custom' = groupParam && (groupParam === 'custom' || groupParam in MUSCLE_GROUPS) ? (groupParam as MuscleGroup | 'custom') : 'all';
+  const eqParam = params.get('eq');
+  const equipment: EquipmentFilter = eqParam && eqParam in EQUIPMENT ? (eqParam as EquipmentFilter) : 'all';
+  const setParam = (key: string, value: string, empty: string) =>
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value && value !== empty) next.set(key, value);
+        else next.delete(key);
+        return next;
+      },
+      { replace: true, preventScrollReset: true },
+    );
+  const setQuery = (v: string) => setParam('q', v, '');
+  const setGroup = (v: MuscleGroup | 'all' | 'custom') => setParam('group', v, 'all');
+  const setEquipment = (v: EquipmentFilter) => setParam('eq', v, 'all');
   const [creating, setCreating] = useState(false);
 
   const groups = useMemo(() => {

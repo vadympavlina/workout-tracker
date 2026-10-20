@@ -45,7 +45,7 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
 
   return (
     <>
-      <Modal open={open && !creating && !preview} onClose={onClose} title={title} size="lg">
+      <Modal open={open && !creating && !preview} onClose={onClose} title={title} size="lg" rememberScroll="exercise-picker">
         <div className="sticky -top-2 z-10 -mx-1 space-y-3 bg-surface px-1 pb-3">
           <label className="relative block">
             <span className="sr-only">Пошук вправи</span>
