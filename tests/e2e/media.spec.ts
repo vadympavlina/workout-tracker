@@ -5,7 +5,7 @@ import { expect, startDemo, storageCount, test, trackErrors } from './helpers';
 const BUILT_IN = readdirSync('public/exercises');
 
 test('every built-in exercise photo is deployed', async ({ request }) => {
-  expect(BUILT_IN.length).toBeGreaterThanOrEqual(100);
+  expect(BUILT_IN.length).toBeGreaterThanOrEqual(160);
   for (const id of BUILT_IN)
     for (const frame of [0, 1]) expect((await request.get(`exercises/${id}/${frame}.webp`)).ok(), `${id}/${frame}`).toBe(true);
 });
@@ -46,10 +46,10 @@ test('active workout shows the exercise photo', async ({ page }) => {
   await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
 });
 
-test('library: 100 exercises, filter by muscle group and equipment', async ({ page }) => {
+test('library: 160 exercises, filter by muscle group and equipment', async ({ page }) => {
   await startDemo(page);
   await page.goto('./#/exercises');
-  await expect(page.getByText('100 у бібліотеці')).toBeVisible();
+  await expect(page.getByText('160 у бібліотеці')).toBeVisible();
   await page.getByRole('group', { name: 'Фільтр' }).getByRole('button', { name: 'Спина' }).click();
   await page.getByRole('group', { name: 'Фільтр за обладнанням' }).getByRole('button', { name: 'Тренажер' }).click();
   await expect(page.getByRole('link', { name: /Т-тяга з упором у груди/ })).toBeVisible();
@@ -57,4 +57,12 @@ test('library: 100 exercises, filter by muscle group and equipment', async ({ pa
   await page.getByRole('link', { name: /Т-тяга з упором у груди/ }).click();
   const photo = page.locator('img[alt^="Техніка"]').first();
   await expect.poll(() => photo.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
+});
+
+test('kettlebell filter shows the new kettlebell exercises', async ({ page }) => {
+  await startDemo(page);
+  await page.goto('./#/exercises');
+  await page.getByRole('group', { name: 'Фільтр за обладнанням' }).getByRole('button', { name: 'Гиря' }).click();
+  await expect(page.locator('main a[href*="#/exercises/"]')).toHaveCount(8);
+  await expect(page.getByRole('link', { name: /Махи гирею/ })).toBeVisible();
 });
