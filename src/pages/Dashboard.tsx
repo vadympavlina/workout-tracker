@@ -13,7 +13,6 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { Section } from '@/components/ui/Card';
 import { StatCard } from '@/components/ui/StatCard';
 import { IconBadge } from '@/components/ui/IconBadge';
-import { ActivityRings, type Ring } from '@/components/ui/ActivityRings';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { BackupReminder } from '@/components/BackupReminder';
 import { addDays, isSameDay, startOfWeek, weekdayOf, WEEKDAYS_SHORT } from '@/utils/date';
@@ -73,11 +72,6 @@ export default function Dashboard() {
   const recentRecords = [...records.values()].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
   const target = data.user.weeklyWorkoutsTarget;
 
-  const rings: Ring[] = [
-    { label: 'Тренування', value: stats.weekCount, max: target, color: 'move' },
-    { label: 'Обсяг', value: stats.weekVolume, max: stats.avgVolume || 1, color: 'volume' },
-    { label: 'Підходи', value: stats.weekSets, max: stats.avgSets || 1, color: 'sets' },
-  ];
 
   return (
     <div className="space-y-10">
@@ -97,30 +91,14 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
         <TodayCard />
 
-        {/* Weekly activity rings */}
-        <section aria-labelledby="activity-title" className="card relative overflow-clip p-5 sm:p-6">
-          <div className="glow-blob -left-24 -top-24 h-64 w-64 bg-move/[0.08]" aria-hidden />
-          <div className="relative flex items-center justify-between">
-            <h2 id="activity-title" className="eyebrow">
-              Активність тижня
-            </h2>
-            <span className="font-mono text-[11px] text-subtle">vs середнє 4 тиж.</span>
-          </div>
-          {/* Rings beside the numbers: the week reads at a glance without taking the whole first screen. */}
-          <div className="relative mt-4 flex items-center gap-5 sm:gap-8">
-            <span className="shrink-0 sm:hidden">
-              <ActivityRings rings={rings} size={124} stroke={13} gap={3} />
-            </span>
-            <span className="hidden shrink-0 sm:block">
-              <ActivityRings rings={rings} size={176} stroke={17} gap={4} />
-            </span>
-            <dl className="grid min-w-0 flex-1 grid-cols-1 gap-2.5 sm:gap-4">
-              <RingLegend color="text-move" label="Тренування" value={String(stats.weekCount)} suffix={`/${target}`} />
-              <RingLegend color="text-volume" label="Обсяг" value={formatCompact(stats.weekVolume)} suffix="кг" />
-              <RingLegend color="text-sets" label="Підходи" value={String(stats.weekSets)} suffix={stats.avgSets ? `/${Math.round(stats.avgSets)}` : ''} />
-            </dl>
-          </div>
-        </section>
+        <WeekProgress
+          count={stats.weekCount}
+          target={target}
+          volume={stats.weekVolume}
+          avgVolume={stats.avgVolume}
+          sets={stats.weekSets}
+          avgSets={stats.avgSets}
+        />
       </div>
 
       <BackupReminder />
@@ -222,14 +200,40 @@ function formatCompact(kg: number) {
   return kg >= 100_000 ? `${formatNumber(Math.round(kg / 1000))}k` : formatNumber(Math.round(kg));
 }
 
-function RingLegend({ color, label, value, suffix }: { color: string; label: string; value: string; suffix?: string }) {
+/** This week against the weekly target and the 4-week average — plain bars, no rings. */
+function WeekProgress({ count, target, volume, avgVolume, sets, avgSets }: { count: number; target: number; volume: number; avgVolume: number; sets: number; avgSets: number }) {
   return (
-    <div className="min-w-0">
-      <dt className={clsx('font-mono text-[12px] font-medium uppercase tracking-[0.1em]', color)}>{label}</dt>
-      <dd className="metric mt-0.5 truncate text-[22px] sm:mt-1.5 sm:text-[30px]">
-        {value}
-        {suffix && <span className="ml-0.5 text-[15px] font-medium tracking-normal text-subtle">{suffix}</span>}
-      </dd>
+    <section aria-labelledby="week-title" className="card p-5 sm:p-6">
+      <h2 id="week-title" className="text-[17px] font-semibold">
+        Підсумок тижня
+      </h2>
+      <p className="mt-3 flex items-baseline gap-2">
+        <span className="metric text-[34px] leading-none">{count}</span>
+        <span className="text-[15px] text-muted">з {target} {target === 1 ? 'тренування' : 'тренувань'} на тиждень</span>
+      </p>
+      <div className="mt-3 flex gap-1.5" role="img" aria-label={`Виконано ${count} з ${target} тренувань`}>
+        {Array.from({ length: Math.max(target, count) }, (_, i) => (
+          <span key={i} className={clsx('h-2 flex-1 rounded-full', i < count ? 'bg-move' : 'bg-white/[0.08]')} />
+        ))}
+      </div>
+      <dl className="mt-5 grid grid-cols-2 gap-3">
+        <Meter label="Обсяг" value={`${formatCompact(volume)} кг`} current={volume} average={avgVolume} averageText={`${formatCompact(avgVolume)} кг`} color="bg-volume" />
+        <Meter label="Підходи" value={String(sets)} current={sets} average={avgSets} averageText={String(Math.round(avgSets))} color="bg-sets" />
+      </dl>
+    </section>
+  );
+}
+
+function Meter({ label, value, current, average, averageText, color }: { label: string; value: string; current: number; average: number; averageText: string; color: string }) {
+  const pct = average > 0 ? Math.min(100, Math.round((current / average) * 100)) : 0;
+  return (
+    <div className="min-w-0 rounded-[14px] bg-white/[0.04] p-3">
+      <dt className="text-[13px] text-muted">{label}</dt>
+      <dd className="metric mt-1 truncate text-[20px]">{value}</dd>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.08]" aria-hidden>
+        <div className={clsx('h-full rounded-full', color)} style={{ width: `${pct}%` }} />
+      </div>
+      <p className="mt-1.5 truncate text-[12px] text-subtle">{average > 0 ? `середнє ${averageText}` : 'ще немає середнього'}</p>
     </div>
   );
 }
@@ -400,7 +404,7 @@ function WeekPlan() {
   ]);
 
   return (
-    <Section title="Цей тиждень" action={<SeeAll to="/plan">План</SeeAll>}>
+    <Section title="Розклад на тиждень" action={<SeeAll to="/plan">План</SeeAll>}>
       {data.plans.length === 0 ? (
         <EmptyState
           icon={CalendarDays}
@@ -423,25 +427,16 @@ function WeekPlan() {
               return (
                 <li key={label} className="flex flex-col items-center gap-2">
                   <span className={clsx('font-mono text-[11px] font-medium uppercase', isToday ? 'text-fg' : 'text-subtle')}>{label}</span>
-                  <ActivityRings
-                    size={38}
-                    stroke={5}
-                    rings={[{ label, value: done ? 1 : 0, max: 1, color: 'move' }]}
-                    label={`${label}: ${done ? 'виконано' : plan ? (past ? 'пропущено' : 'заплановано') : 'відпочинок'}`}
-                  >
-                    {done ? (
-                      <Check size={14} strokeWidth={3} className="text-move" aria-hidden />
-                    ) : (
-                      <span
-                        className={clsx(
-                          'tabular flex h-6 w-6 items-center justify-center rounded-full text-[12px] font-semibold',
-                          isToday ? 'bg-fg text-black' : plan ? 'text-fg' : 'text-subtle',
-                        )}
-                      >
-                        {date.getDate()}
-                      </span>
+                  <span
+                    role="img"
+                    aria-label={`${label}: ${done ? 'виконано' : plan ? (past ? 'пропущено' : 'заплановано') : 'відпочинок'}`}
+                    className={clsx(
+                      'tabular flex h-[38px] w-[38px] items-center justify-center rounded-full border-2 text-[13px] font-semibold',
+                      done ? 'border-move bg-move/[0.14] text-move' : isToday ? 'border-fg bg-fg text-black' : plan ? 'border-white/20 text-fg' : 'border-transparent bg-white/[0.04] text-subtle',
                     )}
-                  </ActivityRings>
+                  >
+                    {done ? <Check size={15} strokeWidth={3} aria-hidden /> : date.getDate()}
+                  </span>
                   <span className={clsx('h-1 w-1 rounded-full', plan && !done ? (past ? 'bg-negative/70' : 'bg-accent') : 'bg-transparent')} aria-hidden />
                 </li>
               );

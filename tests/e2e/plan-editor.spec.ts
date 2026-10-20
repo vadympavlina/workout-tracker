@@ -32,3 +32,23 @@ test('drag to reorder and unsaved-changes guard', async ({ page }) => {
   await expect(page.locator('ol li h3').first()).toHaveText(before[1]);
   noErrors();
 });
+
+test('exercise picker: open details before adding', async ({ page }) => {
+  const noErrors = trackErrors(page);
+  await startDemo(page);
+  await page.goto('./#/plan/new');
+  await page.getByRole('button', { name: 'Додати вправу' }).click();
+  await page.getByPlaceholder('Пошук вправи').fill('Гак');
+  await page.getByRole('button', { name: 'Деталі: Гак-присід' }).click();
+
+  const sheet = page.getByRole('dialog', { name: 'Гак-присід' });
+  await expect(sheet.getByText('Основні мʼязи')).toBeVisible();
+  await expect(sheet.getByText('Квадрицепс')).toBeVisible();
+  await expect(sheet.locator('img[alt^="Техніка"]').first()).toBeVisible();
+  await expect(sheet.getByText(/Рекомендовано: 4 × 8–12/)).toBeVisible();
+
+  await sheet.getByRole('button', { name: 'Додати' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.locator('main').getByText('Гак-присід')).toBeVisible();
+  noErrors();
+});

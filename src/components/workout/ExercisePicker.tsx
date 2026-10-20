@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import clsx from 'clsx';
-import { Check, Plus, Search } from 'lucide-react';
+import { Check, Info, Plus, Search } from 'lucide-react';
 import type { Exercise, MuscleGroup } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { ExerciseThumb } from '@/components/exercise/ExerciseThumb';
+import { ExerciseInfo } from '@/components/exercise/ExerciseInfo';
 import { EQUIPMENT, MUSCLE_GROUPS } from '@/data/labels';
 import { EquipmentChips, type EquipmentFilter } from '@/components/exercise/EquipmentChips';
 import { useData } from '@/store/DataContext';
@@ -25,6 +26,8 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
   const [group, setGroup] = useState<MuscleGroup | 'all'>('all');
   const [equipment, setEquipment] = useState<EquipmentFilter>('all');
   const [creating, setCreating] = useState(false);
+  /** Exercise opened for a closer look before adding it. */
+  const [preview, setPreview] = useState<Exercise | null>(null);
   const draft = useMemo(() => (creating && query.trim() ? emptyWithName(query.trim()) : null), [creating]);
 
   const groups = useMemo(() => {
@@ -42,7 +45,7 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
 
   return (
     <>
-      <Modal open={open && !creating} onClose={onClose} title={title} size="lg">
+      <Modal open={open && !creating && !preview} onClose={onClose} title={title} size="lg">
         <div className="sticky -top-2 z-10 -mx-1 space-y-3 bg-surface px-1 pb-3">
           <label className="relative block">
             <span className="sr-only">Пошук вправи</span>
@@ -79,11 +82,11 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
           {list.map((e) => {
             const added = selectedIds.includes(e.id);
             return (
-              <li key={e.id}>
+              <li key={e.id} className="flex items-center gap-1">
                 <button
                   type="button"
                   onClick={() => onSelect(e)}
-                  className="flex w-full items-center gap-3 rounded-ctl p-2.5 text-left transition hover:bg-white/[0.04] active:bg-white/[0.06]"
+                  className="flex min-w-0 flex-1 items-center gap-3 rounded-ctl p-2.5 text-left transition hover:bg-white/[0.04] active:bg-white/[0.06]"
                 >
                   <ExerciseThumb exercise={e} className={added ? 'ring-1 ring-accent/50' : undefined} />
                   <span className="min-w-0 flex-1">
@@ -95,6 +98,14 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
                   </span>
                   {added ? <Check size={18} className="text-accent" aria-label="Вже додано" /> : <Plus size={18} className="text-subtle" aria-hidden />}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setPreview(e)}
+                  aria-label={`Деталі: ${e.name}`}
+                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted transition hover:bg-white/[0.06] hover:text-fg"
+                >
+                  <Info size={19} aria-hidden />
+                </button>
               </li>
             );
           })}
@@ -104,6 +115,41 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
         <Button variant="secondary" block icon={Plus} className="mt-4" onClick={() => setCreating(true)}>
           Створити власну вправу
         </Button>
+      </Modal>
+
+      <Modal
+        open={open && !!preview}
+        onClose={() => setPreview(null)}
+        title={preview?.name ?? ''}
+        description={preview ? `${MUSCLE_GROUPS[preview.muscleGroup]} · ${EQUIPMENT[preview.equipment]}` : undefined}
+        size="lg"
+        footer={
+          preview && (
+            <>
+              <Button variant="secondary" block onClick={() => setPreview(null)}>
+                До списку
+              </Button>
+              {selectedIds.includes(preview.id) ? (
+                <Button block icon={Check} disabled>
+                  Вже додано
+                </Button>
+              ) : (
+                <Button
+                  block
+                  icon={Plus}
+                  onClick={() => {
+                    onSelect(preview);
+                    setPreview(null);
+                  }}
+                >
+                  Додати
+                </Button>
+              )}
+            </>
+          )
+        }
+      >
+        {preview && <ExerciseInfo exercise={preview} compact />}
       </Modal>
 
       <ExerciseFormModal

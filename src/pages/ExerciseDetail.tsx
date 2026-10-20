@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import type { Muscle } from '@/types';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ChevronRight, Pencil, Trash2, Trophy } from 'lucide-react';
 import { useData } from '@/store/DataContext';
@@ -14,12 +13,9 @@ import { useToast } from '@/components/ui/Toast';
 import { TrendChart } from '@/components/charts/Chart';
 import { ExerciseFormModal } from '@/components/workout/ExerciseFormModal';
 import { EQUIPMENT, MUSCLE_GROUPS } from '@/data/labels';
-import { formatDate, formatNumber, formatSigned, formatVolume, repsRange } from '@/utils/format';
+import { formatDate, formatNumber, formatSigned, formatVolume } from '@/utils/format';
 import { exerciseHistory } from '@/utils/stats';
-import { ExercisePhoto } from '@/components/exercise/ExercisePhoto';
-import { MuscleMap } from '@/components/exercise/MuscleMap';
-import { MUSCLE_LABELS, muscleTargets } from '@/data/exerciseMedia';
-import { useExercisePhotos } from '@/hooks/useExercisePhotos';
+import { ExerciseInfo } from '@/components/exercise/ExerciseInfo';
 import NotFound from './NotFound';
 
 type Metric = 'weight' | 'e1rm' | 'volume';
@@ -33,7 +29,6 @@ export default function ExerciseDetail() {
   const [metric, setMetric] = useState<Metric>('weight');
   const [editing, setEditing] = useState(false);
   const exercise = exerciseById(id);
-  const photos = useExercisePhotos(exercise);
   usePageTitle(exercise?.name ?? 'Вправа');
 
   const history = useMemo(() => exerciseHistory(data.sessions, id), [data.sessions, id]);
@@ -41,7 +36,6 @@ export default function ExerciseDetail() {
   if (!exercise) return <NotFound />;
 
   const pr = records.get(id);
-  const targets = muscleTargets(exercise);
   const first = history[0];
   const last = history[history.length - 1];
   const delta = first && last && history.length > 1 ? last.bestWeight - first.bestWeight : null;
@@ -83,27 +77,7 @@ export default function ExerciseDetail() {
       />
 
       <div className="space-y-6">
-        {photos.length > 0 && (
-          <ExercisePhoto frames={photos} alt={`Техніка: ${exercise.name}`} className="aspect-[3/2] w-full rounded-card border border-white/[0.06]" />
-        )}
-
-        <Card padding="lg" className="grid grid-cols-1 gap-6 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
-          <div className="mx-auto h-56 sm:h-60">
-            <MuscleMap
-              primary={targets.primary}
-              secondary={targets.secondary}
-              label={`Основні мʼязи: ${targets.primary.map((m) => MUSCLE_LABELS[m]).join(', ') || '—'}`}
-            />
-          </div>
-          <div className="min-w-0 space-y-4">
-            <MuscleList title="Основні мʼязи" tone="bg-accent" muscles={targets.primary} />
-            {targets.secondary.length > 0 && <MuscleList title="Допоміжні" tone="bg-accent/45" muscles={targets.secondary} />}
-            <p className="text-[14px] text-muted">
-              Рекомендовано: <span className="tabular font-semibold text-fg">{exercise.defaultSets} × {repsRange(exercise.defaultRepsMin, exercise.defaultRepsMax)}</span>
-            </p>
-            {exercise.description && <p className="text-[15px] leading-relaxed">{exercise.description}</p>}
-          </div>
-        </Card>
+        <ExerciseInfo exercise={exercise} />
 
         {history.length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <StatCard label="Рекорд" icon={Trophy} value={pr ? `${formatNumber(pr.weight, 2)}` : '—'} unit={pr ? `кг × ${pr.reps}` : undefined} />
@@ -188,20 +162,3 @@ export default function ExerciseDetail() {
   );
 }
 
-function MuscleList({ title, tone, muscles }: { title: string; tone: string; muscles: Muscle[] }) {
-  return (
-    <div>
-      <p className="eyebrow mb-2 flex items-center gap-2">
-        <span className={`h-2 w-2 rounded-full ${tone}`} aria-hidden />
-        {title}
-      </p>
-      <ul className="flex flex-wrap gap-1.5">
-        {muscles.map((m) => (
-          <li key={m} className="rounded-full bg-white/[0.07] px-3 py-1.5 text-[13px] font-medium">
-            {MUSCLE_LABELS[m]}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
