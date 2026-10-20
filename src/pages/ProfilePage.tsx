@@ -408,6 +408,16 @@ function SettingsSheet({ open, onClose, settings, onChange }: { open: boolean; o
           onChange={(v) => onChange({ keepAwake: v })}
         />
       </div>
+      <p className="label mb-2 mt-5">Фігура на схемах мʼязів</p>
+      <SegmentedControl
+        label="Фігура на схемах мʼязів"
+        value={settings.bodyType === 'female' ? 'female' : 'male'}
+        onChange={(v) => onChange({ bodyType: v })}
+        options={[
+          { value: 'male', label: 'Чоловіча' },
+          { value: 'female', label: 'Жіноча' },
+        ]}
+      />
     </Modal>
   );
 }

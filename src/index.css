@@ -152,3 +152,20 @@
     @apply pointer-events-none absolute rounded-full blur-3xl;
   }
 }
+
+/* Anatomy drawing (components/exercise/Anatomy.tsx) */
+.anat-muscle {
+  fill: #2b2d34;
+}
+.anat-skin {
+  fill: #353740;
+}
+.anat-hair {
+  fill: #1f2026;
+}
+.anat-outline {
+  fill: none;
+  stroke: #3d4049;
+  stroke-width: 1.5;
+  pointer-events: none;
+}

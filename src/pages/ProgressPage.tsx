@@ -8,6 +8,7 @@ import { TopBar } from '@/components/ui/TopBar';
 import { Card, Section } from '@/components/ui/Card';
 import { StatCard } from '@/components/ui/StatCard';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { MuscleWeekCard } from '@/components/charts/MuscleWeekCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { IconBadge } from '@/components/ui/IconBadge';
@@ -123,6 +124,8 @@ export default function ProgressPage() {
             valueClassName={weightDelta ? ((wantsGain ? weightDelta > 0 : weightDelta < 0) ? 'text-positive' : 'text-negative') : undefined}
           />
         </section>
+
+        <MuscleWeekCard />
 
         <Card padding="lg">
           <h2 className="eyebrow mb-4 flex items-center gap-2">

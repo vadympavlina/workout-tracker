@@ -10,6 +10,7 @@ export const DEFAULT_SETTINGS: Settings = {
   autoRestTimer: true,
   vibration: true,
   keepAwake: true,
+  bodyType: 'male',
 };
 
 export function emptyUser(): UserProfile {

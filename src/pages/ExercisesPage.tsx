@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
-import { ChevronRight, Plus, Search } from 'lucide-react';
-import type { MuscleGroup } from '@/types';
+import { ChevronRight, PersonStanding, Plus, Search, X } from 'lucide-react';
+import type { Exercise, Muscle, MuscleGroup } from '@/types';
 import { useData } from '@/store/DataContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { TopBar } from '@/components/ui/TopBar';
@@ -13,6 +13,9 @@ import { useToast } from '@/components/ui/Toast';
 import { ExerciseFormModal } from '@/components/workout/ExerciseFormModal';
 import { EQUIPMENT, MUSCLE_GROUPS } from '@/data/labels';
 import { formatNumber, repsRange } from '@/utils/format';
+import { ACCENT, BodyFigure, slugsOf } from '@/components/exercise/Anatomy';
+import { MUSCLE_LABELS, muscleTargets } from '@/data/exerciseMedia';
+import { SLUG_MUSCLE, type Slug } from '@/data/anatomyTypes';
 
 export default function ExercisesPage() {
   usePageTitle('Вправи');
@@ -39,7 +42,15 @@ export default function ExercisesPage() {
   const setQuery = (v: string) => setParam('q', v, '');
   const setGroup = (v: MuscleGroup | 'all' | 'custom') => setParam('group', v, 'all');
   const setEquipment = (v: EquipmentFilter) => setParam('eq', v, 'all');
+  const muscleParam = params.get('m');
+  const muscle = muscleParam && muscleParam in MUSCLE_LABELS ? (muscleParam as Muscle) : null;
+  const setMuscle = (m: Muscle | null) => setParam('m', m ?? '', '');
+  const [bodyOpen, setBodyOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const pick = (slug: Slug) => {
+    const m = SLUG_MUSCLE[slug];
+    if (m) setMuscle(m === muscle ? null : m);
+  };
 
   const groups = useMemo(() => {
     const present = new Set(data.exercises.map((e) => e.muscleGroup));
@@ -49,12 +60,21 @@ export default function ExercisesPage() {
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
+    // A muscle picked on the body replaces the group chips: exercises that hit it
+    // as the main target come first, then those where it only assists.
+    const rank = (e: Exercise) => {
+      if (!muscle) return 0;
+      const t = muscleTargets(e);
+      return t.primary.includes(muscle) ? 0 : t.secondary.includes(muscle) ? 1 : 2;
+    };
     return data.exercises
-      .filter((e) => (group === 'all' ? true : group === 'custom' ? e.isCustom : e.muscleGroup === group))
+      .filter((e) => (muscle ? rank(e) < 2 : group === 'all' ? true : group === 'custom' ? e.isCustom : e.muscleGroup === group))
       .filter((e) => equipment === 'all' || e.equipment === equipment)
       .filter((e) => !q || e.name.toLowerCase().includes(q))
-      .sort((a, b) => a.name.localeCompare(b.name, 'uk'));
-  }, [data.exercises, query, group, equipment]);
+      .sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, 'uk'));
+  }, [data.exercises, query, group, equipment, muscle]);
+  const picked: Partial<Record<Slug, string>> = {};
+  if (muscle) for (const s of slugsOf([muscle])) picked[s] = ACCENT;
 
   return (
     <div>
@@ -70,17 +90,59 @@ export default function ExercisesPage() {
       />
 
       <div className="mb-5 space-y-3">
-        <label className="relative block max-w-xl">
-          <span className="sr-only">Пошук вправи</span>
-          <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-subtle" aria-hidden />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Пошук вправи"
-            className="h-12 w-full rounded-ctl border border-line bg-surface pl-11 pr-4 text-[16px] placeholder:text-subtle focus:border-accent/60 focus:outline-none"
-          />
-        </label>
+        <div className="flex max-w-xl gap-2">
+          <label className="relative block min-w-0 flex-1">
+            <span className="sr-only">Пошук вправи</span>
+            <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-subtle" aria-hidden />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Пошук вправи"
+              className="h-12 w-full rounded-ctl border border-line bg-surface pl-11 pr-4 text-[16px] placeholder:text-subtle focus:border-accent/60 focus:outline-none"
+            />
+          </label>
+          <button
+            type="button"
+            aria-expanded={bodyOpen}
+            aria-controls="muscle-picker"
+            onClick={() => setBodyOpen((o) => !o)}
+            className={clsx(
+              'flex h-12 shrink-0 items-center gap-2 rounded-ctl border px-3.5 text-[14px] font-medium transition',
+              bodyOpen || muscle ? 'border-accent/40 bg-accent/15 text-accent' : 'border-line text-muted hover:text-fg',
+            )}
+          >
+            <PersonStanding size={18} aria-hidden />
+            Мʼяз
+          </button>
+        </div>
+        {bodyOpen && (
+          <div id="muscle-picker" className="card max-w-xl p-4">
+            <p className="text-[13px] text-subtle">Торкнись мʼяза, щоб побачити вправи для нього.</p>
+            <div className="mt-3 grid h-72 grid-cols-2 gap-2">
+              {(['front', 'back'] as const).map((v) => (
+                <figure key={v} className="m-0 flex min-h-0 flex-col items-center">
+                  <BodyFigure view={v} colors={picked} onPick={pick} className="h-full min-h-0 w-auto flex-1" />
+                  <figcaption className="mt-1 text-[11px] text-subtle">{v === 'front' ? 'Спереду' : 'Ззаду'}</figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        )}
+        {muscle ? (
+          <div className="flex items-center gap-2 text-[14px]">
+            <span className="text-muted">Мʼяз:</span>
+            <button
+              type="button"
+              onClick={() => setMuscle(null)}
+              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-accent/40 bg-accent/15 pl-3.5 pr-2.5 font-medium text-accent"
+              aria-label={`Прибрати фільтр: ${MUSCLE_LABELS[muscle]}`}
+            >
+              {MUSCLE_LABELS[muscle]}
+              <X size={15} aria-hidden />
+            </button>
+          </div>
+        ) : (
         <div className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0" role="group" aria-label="Фільтр">
           {(['all', ...(hasCustom ? (['custom'] as const) : []), ...groups] as const).map((g) => (
             <button
@@ -97,6 +159,7 @@ export default function ExercisesPage() {
             </button>
           ))}
         </div>
+        )}
         <EquipmentChips exercises={data.exercises} value={equipment} onChange={setEquipment} className="-mx-4 px-4 sm:mx-0 sm:flex-wrap sm:px-0" />
       </div>
 

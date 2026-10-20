@@ -38,6 +38,7 @@ export type Muscle =
   | 'glutes'
   | 'quads'
   | 'hamstrings'
+  | 'adductors'
   | 'calves';
 
 export type Equipment = 'machine' | 'cable' | 'barbell' | 'dumbbell' | 'bodyweight' | 'kettlebell' | 'other';
@@ -194,6 +195,8 @@ export interface Settings {
   vibration: boolean;
   /** Keep the screen on during an active workout. */
   keepAwake: boolean;
+  /** Figure used in muscle drawings. */
+  bodyType: 'male' | 'female';
 }
 
 export interface AppData {

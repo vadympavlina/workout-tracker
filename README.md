@@ -79,7 +79,7 @@ src/
 
 ## Фото вправ
 
-Фото стандартних вправ — [Free Exercise DB](https://github.com/yuhonas/free-exercise-db) (Unlicense / суспільне надбання), по два кадри (початок/кінець руху), перекодовані у WebP: `public/exercises/<id>/{0,1}.webp`. Мапінг вправ і цільових мʼязів — `src/data/exerciseMedia.ts`. Фото власних вправ: або посилання на картинку (`photoUrl`), або завантажене фото — стискається до ~100–200 КБ, зберігається в `users/{uid}/media` і кешується в IndexedDB (`services/mediaStore.ts`); включається в JSON-експорт.
+Фото стандартних вправ — [Free Exercise DB](https://github.com/yuhonas/free-exercise-db) (Unlicense / суспільне надбання), по два кадри (початок/кінець руху), перекодовані у WebP: `public/exercises/<id>/{0,1}.webp`. Мапінг вправ і цільових мʼязів — `src/data/exerciseMedia.ts`. Анатомічні схеми (чоловіча/жіноча фігура, спереду/ззаду) — з [react-native-body-highlighter](https://github.com/HichamELBSI/react-native-body-highlighter) (MIT), `src/data/anatomy.ts`; малюються один раз як SVG-спрайт і підключаються через `<use>`. Фото власних вправ: або посилання на картинку (`photoUrl`), або завантажене фото — стискається до ~100–200 КБ, зберігається в `users/{uid}/media` і кешується в IndexedDB (`services/mediaStore.ts`); включається в JSON-експорт.
 
 ## Дані
 
