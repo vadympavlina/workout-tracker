@@ -29,7 +29,7 @@ export function SetTable({ exercise, isBodyweight, weightStep, recordSetId, onCh
 
   return (
     <div role="table" aria-label={`Підходи: ${exercise.name}`} className="relative">
-      <div role="row" className={clsx(GRID, 'px-1 pb-2 font-mono text-[10.5px] font-medium uppercase tracking-[0.12em] text-subtle')}>
+      <div role="row" className={clsx(GRID, 'px-1 pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted')}>
         <span role="columnheader" className="text-center">
           #
         </span>
@@ -159,7 +159,7 @@ function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange
             onClick={() => bump(-1)}
             disabled={(set.weight ?? 0) <= 0}
             aria-label={`Мінус ${formatNumber(weightStep, 2)} кг, підхід ${index + 1}`}
-            className="inline-flex h-12 w-8 shrink-0 items-center justify-center rounded-[12px] bg-white/[0.04] text-muted transition hover:bg-white/[0.08] hover:text-fg active:scale-90 disabled:opacity-30 sm:w-10"
+            className="inline-flex h-12 w-10 shrink-0 items-center justify-center rounded-[12px] bg-white/[0.04] text-muted transition hover:bg-white/[0.08] hover:text-fg active:scale-90 disabled:opacity-30"
           >
             <Minus size={15} aria-hidden />
           </button>
@@ -179,7 +179,7 @@ function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange
             type="button"
             onClick={() => bump(1)}
             aria-label={`Плюс ${formatNumber(weightStep, 2)} кг, підхід ${index + 1}`}
-            className="inline-flex h-12 w-8 shrink-0 items-center justify-center rounded-[12px] bg-white/[0.04] text-muted transition hover:bg-white/[0.08] hover:text-fg active:scale-90 sm:w-10"
+            className="inline-flex h-12 w-10 shrink-0 items-center justify-center rounded-[12px] bg-white/[0.04] text-muted transition hover:bg-white/[0.08] hover:text-fg active:scale-90"
           >
             <Plus size={15} aria-hidden />
           </button>

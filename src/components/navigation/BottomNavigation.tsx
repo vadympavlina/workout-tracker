@@ -20,7 +20,7 @@ export function BottomNavigation() {
               aria-label={label}
               className={({ isActive }) =>
                 clsx(
-                  'flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-full text-[10.5px] font-medium transition-all duration-300',
+                  'flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium transition-all duration-300',
                   isActive ? 'bg-white/[0.1] text-fg' : 'text-subtle hover:text-muted active:scale-95',
                 )
               }

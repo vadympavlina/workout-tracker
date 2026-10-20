@@ -87,14 +87,16 @@ export default function Dashboard() {
           <h1 className="mt-2 text-[34px] font-bold leading-[1.05] tracking-[-0.04em] sm:text-[44px]">
             {firstName ? `Привіт, ${firstName}` : 'Привіт'}
           </h1>
-          <p className="mt-2 text-[15px] text-muted">Твій прогрес — результат регулярності.</p>
         </div>
         <Link to="/profile" aria-label="Профіль" className="shrink-0 rounded-full lg:hidden">
           <Avatar name={data.user.name} src={data.user.avatar} size={48} />
         </Link>
       </header>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+      {/* What to do today comes first; the week summary follows. */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+        <TodayCard />
+
         {/* Weekly activity rings */}
         <section aria-labelledby="activity-title" className="card relative overflow-clip p-5 sm:p-6">
           <div className="glow-blob -left-24 -top-24 h-64 w-64 bg-move/[0.08]" aria-hidden />
@@ -104,17 +106,21 @@ export default function Dashboard() {
             </h2>
             <span className="font-mono text-[11px] text-subtle">vs середнє 4 тиж.</span>
           </div>
-          <div className="relative mt-5 flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
-            <ActivityRings rings={rings} size={176} stroke={17} gap={4} />
-            <dl className="grid w-full grid-cols-3 gap-3 sm:grid-cols-1 sm:gap-4">
+          {/* Rings beside the numbers: the week reads at a glance without taking the whole first screen. */}
+          <div className="relative mt-4 flex items-center gap-5 sm:gap-8">
+            <span className="shrink-0 sm:hidden">
+              <ActivityRings rings={rings} size={124} stroke={13} gap={3} />
+            </span>
+            <span className="hidden shrink-0 sm:block">
+              <ActivityRings rings={rings} size={176} stroke={17} gap={4} />
+            </span>
+            <dl className="grid min-w-0 flex-1 grid-cols-1 gap-2.5 sm:gap-4">
               <RingLegend color="text-move" label="Тренування" value={String(stats.weekCount)} suffix={`/${target}`} />
               <RingLegend color="text-volume" label="Обсяг" value={formatCompact(stats.weekVolume)} suffix="кг" />
               <RingLegend color="text-sets" label="Підходи" value={String(stats.weekSets)} suffix={stats.avgSets ? `/${Math.round(stats.avgSets)}` : ''} />
             </dl>
           </div>
         </section>
-
-        <TodayCard />
       </div>
 
       <BackupReminder />
@@ -219,8 +225,8 @@ function formatCompact(kg: number) {
 function RingLegend({ color, label, value, suffix }: { color: string; label: string; value: string; suffix?: string }) {
   return (
     <div className="min-w-0">
-      <dt className={clsx('font-mono text-[11px] font-medium uppercase tracking-[0.12em]', color)}>{label}</dt>
-      <dd className="metric mt-1.5 truncate text-[26px] sm:text-[30px]">
+      <dt className={clsx('font-mono text-[12px] font-medium uppercase tracking-[0.1em]', color)}>{label}</dt>
+      <dd className="metric mt-0.5 truncate text-[22px] sm:mt-1.5 sm:text-[30px]">
         {value}
         {suffix && <span className="ml-0.5 text-[15px] font-medium tracking-normal text-subtle">{suffix}</span>}
       </dd>
@@ -322,7 +328,7 @@ function TodayCard() {
   return (
     <section
       aria-label="Сьогоднішнє тренування"
-      className="relative flex min-h-[300px] flex-col justify-between overflow-hidden rounded-card border border-white/[0.08] p-5 sm:p-6"
+      className="relative flex flex-col justify-between overflow-hidden rounded-card border border-white/[0.08] p-5 sm:p-6"
       style={{
         background:
           mood === 'rest'

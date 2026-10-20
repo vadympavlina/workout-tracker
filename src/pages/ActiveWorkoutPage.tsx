@@ -43,6 +43,8 @@ export default function ActiveWorkoutPage() {
   const cardRef = useRef<HTMLElement>(null);
   useWakeLock(!!active && data.settings.keepAwake);
 
+  const allDone = !!active && active.exercises.length > 0 && active.exercises.every((e) => e.finished);
+
   // Rest timer completion.
   const restLeft = active?.restEndsAt ? Math.ceil((active.restEndsAt - now) / 1000) : null;
   const resting = restLeft != null && restLeft > 0;
@@ -464,14 +466,15 @@ export default function ActiveWorkoutPage() {
               </button>
               <IconButton icon={Minus} label="Мінус 15 секунд відпочинку" variant="secondary" className="h-14 w-12" onClick={() => workout.adjustRest(-15)} />
               <IconButton icon={Plus} label="Плюс 15 секунд відпочинку" variant="secondary" className="h-14 w-12" onClick={() => workout.adjustRest(15)} />
-              <Button size="lg" icon={Flag} className="w-14 shrink-0 px-0" onClick={finishWorkout} aria-label="Завершити тренування" title="Завершити тренування" />
+              <Button size="lg" variant={allDone ? 'primary' : 'secondary'} icon={Flag} className="w-14 shrink-0 !px-0" onClick={finishWorkout} aria-label="Завершити тренування" title="Завершити тренування" />
             </>
           ) : (
             <>
               {active.exercises.length > 0 && (
                 <IconButton icon={Timer} label="Почати відпочинок" variant="secondary" className="h-14 w-14" onClick={() => workout.startRest()} />
               )}
-              <Button size="lg" block icon={Flag} onClick={finishWorkout}>
+              {/* Secondary until every exercise is done, so it never competes with "Завершити вправу". */}
+              <Button size="lg" block variant={allDone ? 'primary' : 'secondary'} icon={Flag} onClick={finishWorkout}>
                 Завершити тренування
               </Button>
             </>
