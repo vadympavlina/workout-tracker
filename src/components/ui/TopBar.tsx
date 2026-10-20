@@ -27,6 +27,33 @@ export function TopBar({ title, subtitle, back, actions, large = true, className
     if (canGoBack) navigate(-1);
     else navigate(typeof back === 'string' ? back : '/');
   };
+  const heading = (
+    <div className="min-w-0 flex-1 pt-1">
+      <h1 className={clsx('break-words font-bold tracking-[-0.035em] [text-wrap:balance]', large ? titleSize(title) : 'text-xl')}>{title}</h1>
+      {subtitle && <div className="mt-2 text-[15px] text-muted">{subtitle}</div>}
+    </div>
+  );
+
+  // Detail screens: navigation and actions share the top row, so a long name
+  // gets the full width instead of wrapping beside the buttons.
+  if (back)
+    return (
+      <header className={clsx('mb-6', className)}>
+        <div className="flex min-h-[44px] items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={goBack}
+            aria-label="Назад"
+            className="-ml-1 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-fg transition hover:bg-white/[0.1]"
+          >
+            <ChevronLeft size={22} aria-hidden />
+          </button>
+          {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
+        </div>
+        <div className="mt-3">{heading}</div>
+      </header>
+    );
+
   return (
     <header className={clsx('mb-6 flex items-start gap-2', className)}>
       {back && (
@@ -39,10 +66,7 @@ export function TopBar({ title, subtitle, back, actions, large = true, className
           <ChevronLeft size={22} aria-hidden />
         </button>
       )}
-      <div className="min-w-0 flex-1 pt-1">
-        <h1 className={clsx('break-words font-bold tracking-[-0.035em] [text-wrap:balance]', large ? titleSize(title) : 'text-xl')}>{title}</h1>
-        {subtitle && <div className="mt-2 text-[15px] text-muted">{subtitle}</div>}
-      </div>
+      {heading}
       {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
     </header>
   );

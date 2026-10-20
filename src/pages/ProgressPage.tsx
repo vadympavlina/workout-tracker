@@ -141,7 +141,8 @@ export default function ProgressPage() {
           >
             <TrendChart
               tone="volume"
-              data={view.buckets.map((b) => ({ label: b.label, value: Math.round(b.volume) }))}
+              // An empty current week would draw a cliff to zero at the end of the trend.
+              data={(view.buckets[view.buckets.length - 1]?.volume ? view.buckets : view.buckets.slice(0, -1)).map((b) => ({ label: b.label, value: Math.round(b.volume) }))}
               formatValue={(v) => `${formatNumber(v)} кг`}
               ariaLabel={`Обсяг по тижнях, загалом ${formatVolume(view.volume)}`}
             />

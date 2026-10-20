@@ -153,6 +153,7 @@ test('offline edits are merged on reconnect — nothing from another device is l
   await login(tablet, user);
   await tablet.goto('./#/weight');
   const records = tablet.getByRole('region', { name: 'Записи' });
+  await records.getByRole('button', { name: /Показати всі/ }).click(); // older weigh-ins are collapsed
   await expect(records).toContainText('70,1');
   await expect(records).toContainText('70,2');
   await Promise.all([phone2.close(), laptop.close(), tablet.close(), phoneCtx.close()]);

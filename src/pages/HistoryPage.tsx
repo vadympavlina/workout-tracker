@@ -119,7 +119,7 @@ export default function HistoryPage() {
                   aria-label={`${formatDate(d)}${has ? `, ${byDate.get(key)!.length} трен.` : ''}`}
                   onClick={() => setSelected(isSel ? null : key)}
                   className={clsx(
-                    'tabular relative flex aspect-square min-h-[40px] flex-col items-center justify-center rounded-xl text-[14px] transition',
+                    'tabular relative flex h-11 flex-col items-center justify-center rounded-xl text-[14px] transition',
                     !inMonth && 'opacity-30',
                     has ? 'font-semibold text-fg hover:bg-white/[0.06]' : 'text-subtle',
                     isSel && 'bg-accent text-black hover:bg-accent',

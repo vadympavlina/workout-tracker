@@ -77,6 +77,7 @@ export default function LoginPage() {
             type="email"
             inputMode="email"
             autoComplete="username"
+            placeholder="name@gmail.com"
             autoCapitalize="none"
             spellCheck={false}
             value={email}

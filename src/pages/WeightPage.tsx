@@ -16,6 +16,9 @@ import { fromISODate, toISODate } from '@/utils/date';
 import { formatDate, formatNumber, formatSigned } from '@/utils/format';
 import { latestWeight, sortWeights, weightSeries } from '@/utils/stats';
 
+/** Weigh-ins shown before "Показати всі". */
+const RECENT = 8;
+
 export default function WeightPage() {
   usePageTitle('Вага тіла');
   const { data, saveWeight, deleteWeight } = useData();
@@ -23,6 +26,7 @@ export default function WeightPage() {
   const confirm = useConfirm();
   const latest = latestWeight(data.bodyWeight);
   const [date, setDate] = useState(toISODate(new Date()));
+  const [showAll, setShowAll] = useState(false);
   const [weight, setWeight] = useState<number | null>(latest?.weight ?? null);
   const today = toISODate(new Date());
 
@@ -87,9 +91,12 @@ export default function WeightPage() {
               )}
             </Card>
 
-            <Section title="Записи">
+            <Section
+              title="Записи"
+              action={entries.length > RECENT && <span className="text-[13px] text-subtle">{entries.length}</span>}
+            >
               <ul className="card divide-y divide-line overflow-hidden">
-                {entries.map((e, i) => {
+                {(showAll ? entries : entries.slice(0, RECENT)).map((e, i) => {
                   const prev = entries[i + 1];
                   const delta = prev ? Math.round((e.weight - prev.weight) * 10) / 10 : null;
                   return (
@@ -127,6 +134,11 @@ export default function WeightPage() {
                   );
                 })}
               </ul>
+              {entries.length > RECENT && (
+                <button type="button" onClick={() => setShowAll((v) => !v)} className="mt-1 h-11 w-full rounded-ctl text-[14px] font-medium text-muted transition hover:bg-white/[0.04] hover:text-fg">
+                  {showAll ? 'Згорнути' : `Показати всі (${entries.length})`}
+                </button>
+              )}
             </Section>
           </>
         )}

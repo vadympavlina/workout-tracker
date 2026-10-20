@@ -122,9 +122,9 @@ test('swipe to delete in journal, weight and plan lists, with undo', async ({ pa
   await page.goto('./#/weight');
   const weights = page.getByRole('region', { name: 'Записи' }).locator('li');
   await expect(weights.first()).toBeVisible();
-  const w = await weights.count();
+  const newest = await weights.first().innerText();
   await swipeLeft(page, weights.first().locator('span').first(), 1.5); // the date span is narrower than the row
-  await expect(weights).toHaveCount(w - 1);
+  await expect(weights.first()).not.toHaveText(newest);
 
   // Plans.
   await page.goto('./#/plan');

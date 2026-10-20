@@ -105,7 +105,7 @@ export default function ExerciseDetail() {
           </div>
         </Card>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {history.length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <StatCard label="Рекорд" icon={Trophy} value={pr ? `${formatNumber(pr.weight, 2)}` : '—'} unit={pr ? `кг × ${pr.reps}` : undefined} />
           <StatCard
             label="Прогрес ваги"
@@ -114,7 +114,7 @@ export default function ExerciseDetail() {
             valueClassName={delta ? (delta > 0 ? 'text-positive' : 'text-negative') : undefined}
           />
           <StatCard label="Тренувань" value={history.length} className="col-span-2 sm:col-span-1" />
-        </div>
+        </div>}
 
         {history.length >= 2 && (
           <Card padding="lg">
