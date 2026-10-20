@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import clsx from 'clsx';
-import { Clock, Copy, Dumbbell, Layers, Pencil, Play, Plus, Save, Trash2, TrendingDown, TrendingUp, Trophy, Weight, X } from 'lucide-react';
+import {
+  ClipboardCopy, Clock, Copy, Dumbbell, Layers, MoreHorizontal, Pencil, Play, Plus, Save, Share2, Trash2, TrendingDown, TrendingUp, Trophy, Weight, X,
+  type LucideIcon,
+} from 'lucide-react';
 import type { WorkoutPlan, WorkoutSession } from '@/types';
 import { useData } from '@/store/DataContext';
 import { useStartWorkout } from '@/hooks/useStartWorkout';
@@ -16,6 +19,9 @@ import { useToast } from '@/components/ui/Toast';
 import { formatClock, formatNumber, formatPercent, formatSigned, formatTime, formatVolume, formatWeekdayDate } from '@/utils/format';
 import { bestSet, exerciseVolume, percentChange, previousPerformance, sessionRecords, sessionSetCount, sessionVolume } from '@/utils/stats';
 import { uid } from '@/utils/id';
+import { sessionToText } from '@/utils/sessionText';
+import { copyText } from '@/utils/clipboard';
+import { Modal } from '@/components/ui/Modal';
 import NotFound from './NotFound';
 
 export default function SessionDetail() {
@@ -27,6 +33,7 @@ export default function SessionDetail() {
   const toast = useToast();
   const session = sessions.find((s) => s.id === id);
   const [draft, setDraft] = useState<WorkoutSession | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   usePageTitle(session?.name ?? 'Тренування');
 
   const info = useMemo(() => {
@@ -53,6 +60,25 @@ export default function SessionDetail() {
     deleteSession(session.id);
     toast.success('Тренування видалено');
     navigate('/history', { replace: true });
+  };
+
+  const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+  const copyWorkout = async () => {
+    setMenuOpen(false);
+    try {
+      await copyText(sessionToText(session));
+      toast.success('Тренування скопійовано', 'Встав у нотатки чи повідомлення');
+    } catch {
+      toast.error('Не вдалося скопіювати', 'Спробуй «Поділитися»');
+    }
+  };
+  const shareWorkout = async () => {
+    setMenuOpen(false);
+    try {
+      await navigator.share({ title: session.name, text: sessionToText(session) });
+    } catch {
+      /* closed the share sheet */
+    }
   };
 
   const saveAsTemplate = () => {
@@ -125,13 +151,34 @@ export default function SessionDetail() {
           editing ? (
             <IconButton icon={X} label="Скасувати редагування" onClick={() => setDraft(null)} />
           ) : (
-            <>
-              <IconButton icon={Pencil} label="Редагувати" onClick={() => setDraft(JSON.parse(JSON.stringify(session)) as WorkoutSession)} />
-              <IconButton icon={Trash2} label="Видалити" variant="danger" onClick={remove} />
-            </>
+            <IconButton icon={MoreHorizontal} label="Дії з тренуванням" variant="secondary" onClick={() => setMenuOpen(true)} />
           )
         }
       />
+
+      <Modal open={menuOpen} onClose={() => setMenuOpen(false)} title="Тренування">
+        <ul className="-mx-2 space-y-1">
+          <MenuAction icon={ClipboardCopy} label="Скопіювати як текст" hint="Вправи, підходи, вага й повторення" onClick={() => void copyWorkout()} />
+          {canShare && <MenuAction icon={Share2} label="Поділитися" hint="Telegram, нотатки, повідомлення" onClick={() => void shareWorkout()} />}
+          <MenuAction
+            icon={Pencil}
+            label="Редагувати"
+            onClick={() => {
+              setMenuOpen(false);
+              setDraft(JSON.parse(JSON.stringify(session)) as WorkoutSession);
+            }}
+          />
+          <MenuAction
+            icon={Trash2}
+            label="Видалити"
+            danger
+            onClick={() => {
+              setMenuOpen(false);
+              void remove();
+            }}
+          />
+        </ul>
+      </Modal>
 
       <div className="space-y-6">
         <Card padding="none" className="grid grid-cols-2 gap-px overflow-hidden bg-line bg-none sm:grid-cols-4">
@@ -288,5 +335,25 @@ export default function SessionDetail() {
         )}
       </div>
     </div>
+  );
+}
+
+function MenuAction({ icon: Icon, label, hint, danger, onClick }: { icon: LucideIcon; label: string; hint?: string; danger?: boolean; onClick: () => void }) {
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex min-h-[56px] w-full items-center gap-3.5 rounded-ctl px-2 py-2 text-left transition hover:bg-white/[0.04] active:bg-white/[0.06]"
+      >
+        <span className={clsx('inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', danger ? 'bg-negative/10 text-negative' : 'bg-white/[0.06] text-fg')}>
+          <Icon size={19} aria-hidden />
+        </span>
+        <span className="min-w-0">
+          <span className={clsx('block text-[15px] font-medium', danger && 'text-negative')}>{label}</span>
+          {hint && <span className="block text-[13px] text-subtle">{hint}</span>}
+        </span>
+      </button>
+    </li>
   );
 }

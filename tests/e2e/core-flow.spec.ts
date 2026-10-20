@@ -63,3 +63,24 @@ test('export and re-import keep all data', async ({ page }) => {
   await expect(page.getByText('Дані імпортовано')).toBeVisible();
   noErrors();
 });
+
+test('copy a finished workout as text from the journal', async ({ page, context }) => {
+  const noErrors = trackErrors(page);
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await startDemo(page);
+  await page.goto('./#/history');
+  await page.locator('main a[href*="#/history/"]').first().click();
+  const name = (await page.getByRole('heading', { level: 1 }).innerText()).trim();
+
+  await page.getByRole('button', { name: 'Дії з тренуванням' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: /Скопіювати як текст/ }).click();
+  await expect(page.getByText('Тренування скопійовано')).toBeVisible();
+
+  const text = await page.evaluate(() => navigator.clipboard.readText());
+  const lines = text.split('\n');
+  expect(lines[0]).toBe(name);
+  expect(lines[2]).toMatch(/^Тривалість \d+:\d\d:\d\d · \d+ впр/);
+  // Every exercise block: "Назва — N підходів" followed by numbered "кг × повт" lines.
+  expect(text).toMatch(/\n\n.+ — \d+ підх\S*\n1\. [\d,]+ кг × \d+/);
+  noErrors();
+});
