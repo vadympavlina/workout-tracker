@@ -70,6 +70,9 @@ async function loadFrom(adapter: StorageAdapter): Promise<AppData | null> {
 }
 
 export function createDataService(adapter: StorageAdapter) {
+  /** A local write failed (storage full): the UI holds edits the cache does not. */
+  let unsavedLocal = false;
+
   /** Writes the full data set to the local cache only. */
   async function writeLocal(data: AppData) {
     await Promise.all((Object.keys(KEY_FOR) as CollectionKey[]).map((k) => adapter.write(KEY_FOR[k], data[k])));
@@ -104,7 +107,9 @@ export function createDataService(adapter: StorageAdapter) {
       const cloud = session.cloud();
       const local = await loadFrom(adapter);
       if (local) {
-        if (cloud?.isDirty()) void cloud.pushAll(local, await adapter.read<ActiveWorkout>(STORAGE_KEYS.active));
+        // Deliver exactly the edits an earlier (offline) session could not send.
+        if (cloud?.hasOutbox()) cloud.replayOutbox();
+        else if (cloud?.hasLegacyDirty()) void cloud.mergeUp(local).catch(() => {});
         return 'ready';
       }
       if (!cloud) return 'empty';
@@ -121,8 +126,10 @@ export function createDataService(adapter: StorageAdapter) {
 
     /** Fresh cloud copy when it is safe to take (no unsynced local edits); null otherwise. */
     async refresh(): Promise<AppData | null> {
+      const owner = session.get();
       const cloud = session.cloud();
-      const safe = () => cloud && !cloud.isDirty() && !cloud.hasPending();
+      // Same account still signed in, nothing unsent, no failed local write.
+      const safe = () => cloud && session.get() === owner && !session.isClosing() && !cloud.isDirty() && !cloud.hasPending() && !unsavedLocal;
       if (!safe()) return null;
       try {
         const remote = await cloud!.pull(8000);
@@ -137,7 +144,13 @@ export function createDataService(adapter: StorageAdapter) {
 
     async save<K extends CollectionKey>(key: K, value: AppData[K]): Promise<void> {
       const prev = await adapter.read<AppData[K]>(KEY_FOR[key]);
-      await adapter.write(KEY_FOR[key], value);
+      try {
+        await adapter.write(KEY_FOR[key], value);
+      } catch (error) {
+        // The edit lives only in memory now: never let a cloud pull replace it.
+        unsavedLocal = true;
+        throw error;
+      }
       const cloud = session.cloud();
       if (!cloud) return;
       if (key === 'user' || key === 'settings') void cloud.writeDoc(key, value);
@@ -216,6 +229,9 @@ export const dataService = createDataService(createLocalAdapter(session.prefix))
 
 // ---- Import validation ------------------------------------------------------
 
+/** Ids become Realtime Database keys: non-empty, no `. # $ [ ] /`, bounded length. */
+export const isValidId = (id: unknown): id is string => typeof id === 'string' && /^[^.#$[\]/]{1,120}$/.test(id);
+
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const isArr = Array.isArray;
 
@@ -223,7 +239,7 @@ const isArr = Array.isArray;
 export function parseImportMedia(raw: unknown): Record<string, string> {
   if (!isObj(raw) || !isObj(raw.media)) return {};
   return Object.fromEntries(
-    Object.entries(raw.media).filter((e): e is [string, string] => typeof e[1] === 'string' && e[1].startsWith('data:image/')),
+    Object.entries(raw.media).filter((e): e is [string, string] => isValidId(e[0]) && typeof e[1] === 'string' && e[1].startsWith('data:image/') && e[1].length < 400_000),
   );
 }
 
@@ -239,7 +255,7 @@ export function parseImport(raw: unknown): AppData {
     throw new Error('Файл пошкоджений: відсутні обовʼязкові розділи.');
 
   const allHaveIds = [plans, exercises, sessions, bodyWeight].every((list) =>
-    (list as unknown[]).every((item) => isObj(item) && typeof item.id === 'string'),
+    (list as unknown[]).every((item) => isObj(item) && isValidId(item.id)),
   );
   if (!allHaveIds) throw new Error('Файл пошкоджений: некоректні записи.');
 

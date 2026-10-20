@@ -109,3 +109,51 @@ test('custom exercise photo by link', async ({ page }) => {
   await expect(page.locator('img[alt^="Техніка"]').first()).toHaveAttribute('src', url);
   noErrors();
 });
+
+test('offline edits are merged on reconnect — nothing from another device is lost', async ({ browser }) => {
+  const fixed = new Date('2026-10-05T12:00:00');
+  const phoneCtx = await browser.newContext();
+  const phone = await phoneCtx.newPage();
+  await phone.clock.setFixedTime(fixed);
+  const user = await startDemo(phone);
+  await phone.goto('./#/profile');
+  await expect(phone.getByTestId('sync-status')).toContainText('Усе синхронізовано');
+
+  // Phone loses the network (page, service worker and database socket) and logs a weigh-in.
+  await phoneCtx.setOffline(true);
+  await phoneCtx.route('**/*', (route) => route.abort('internetdisconnected'));
+  await phone.goto('./#/weight');
+  await phone.getByLabel('Дата').fill('2026-09-01');
+  await phone.getByRole('textbox', { name: 'Вага, кг' }).fill('70,1');
+  await phone.getByRole('button', { name: 'Записати' }).click();
+  await phone.close(); // closed before reconnecting
+
+  // Meanwhile a laptop adds a different weigh-in.
+  const laptop = await browser.newPage();
+  await laptop.clock.setFixedTime(fixed);
+  await login(laptop, user);
+  await laptop.goto('./#/weight');
+  await laptop.getByLabel('Дата').fill('2026-09-02');
+  await laptop.getByRole('textbox', { name: 'Вага, кг' }).fill('70,2');
+  await laptop.getByRole('button', { name: 'Записати' }).click();
+  await laptop.goto('./#/profile');
+  await expect(laptop.getByTestId('sync-status')).toContainText('Усе синхронізовано');
+
+  // The phone comes back online and reopens the app: only its own edit is sent.
+  await phoneCtx.unrouteAll();
+  await phoneCtx.setOffline(false);
+  const phone2 = await phoneCtx.newPage();
+  await phone2.clock.setFixedTime(fixed);
+  await phone2.goto('./#/profile');
+  await expect(phone2.getByTestId('sync-status')).toContainText('Усе синхронізовано');
+
+  // A fresh device sees both weigh-ins.
+  const tablet = await browser.newPage();
+  await tablet.clock.setFixedTime(fixed);
+  await login(tablet, user);
+  await tablet.goto('./#/weight');
+  const records = tablet.getByRole('region', { name: 'Записи' });
+  await expect(records).toContainText('70,1');
+  await expect(records).toContainText('70,2');
+  await Promise.all([phone2.close(), laptop.close(), tablet.close(), phoneCtx.close()]);
+});

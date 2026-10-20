@@ -174,7 +174,8 @@ export function DataProvider({ children, fallback, onboarding }: ProviderProps) 
         );
       },
 
-      addSession: (session) => commit('sessions', (list) => [...list, session]),
+      // Idempotent by id: an undo tapped twice must not duplicate the session.
+      addSession: (session) => commit('sessions', (list) => (list.some((s) => s.id === session.id) ? list : [...list, session])),
       updateSession: (session) => commit('sessions', (list) => list.map((s) => (s.id === session.id ? session : s))),
       deleteSession: (id) => commit('sessions', (list) => list.filter((s) => s.id !== id)),
 

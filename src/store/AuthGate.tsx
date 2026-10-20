@@ -1,4 +1,4 @@
-import { createContext, lazy, Suspense, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, Suspense, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { CloudOff, Dumbbell, RotateCw, Upload } from 'lucide-react';
 import type { AppData } from '@/types';
 import { Button } from '@/components/ui/Button';
@@ -14,9 +14,10 @@ import { syncStatus } from '@/services/syncStatus';
 import { useTheme } from '@/hooks/useTheme';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { DEFAULT_SETTINGS } from '@/data/demo';
+import { lazyPage } from '@/pwa/chunkReload';
 import { pluralWorkouts } from '@/utils/format';
 
-const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
+const LoginPage = lazyPage(() => import('@/pages/auth/LoginPage'));
 
 interface Account {
   email: string;
@@ -60,7 +61,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
         }
         if (session.get()?.uid !== user.uid) {
           const prefix = `u:${user.uid}:`;
-          session.set({ uid: user.uid, cloud: createCloudSync(db, user.uid, prefix + STORAGE_KEYS.syncDirty) });
+          session.set({ uid: user.uid, cloud: createCloudSync(db, user.uid, prefix + STORAGE_KEYS.syncOutbox, prefix + STORAGE_KEYS.syncDirty) });
         }
         // Ignore repeat notifications for the account that is already open.
         setPhase((p) => (p.kind === 'ready' && p.user.uid === user.uid ? p : { kind: 'booting', user }));
@@ -89,6 +90,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   }, [bootUser, attempt]);
 
   const signOut = useCallback(async () => {
+    session.beginClose();
     await dataService.clearLocal();
     session.set(null);
     syncStatus.set({ pending: 0, dirty: false, error: null, lastSyncedAt: null });

@@ -15,7 +15,10 @@ export const STORAGE_KEYS = {
   settings: 'workout_settings',
   active: 'workout_active',
   meta: 'workout_meta',
+  /** Pre-outbox versions: "1" when unsynced changes existed. Read once for upgrade. */
   syncDirty: 'workout_sync_dirty',
+  /** Data patches not yet acknowledged by the server (see cloudSync). */
+  syncOutbox: 'workout_sync_outbox',
 } as const;
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];

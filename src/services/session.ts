@@ -11,13 +11,20 @@ interface Session {
 }
 
 let current: Session | null = null;
+let closing = false;
 
 export const session = {
   get: () => current,
   set(next: Session | null) {
     current?.cloud?.dispose();
     current = next;
+    closing = false;
   },
+  /** Sign-out has started: async work in flight must not write the cache back. */
+  beginClose() {
+    closing = true;
+  },
+  isClosing: () => closing,
   /** Prefix for localStorage keys and media cache entries. '' = pre-account (legacy) data. */
   prefix: () => (current ? `u:${current.uid}:` : ''),
   cloud: () => current?.cloud ?? null,

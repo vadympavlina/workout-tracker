@@ -128,10 +128,11 @@ export function fromRemote(raw: unknown): AppData | null {
   return {
     user: user(raw.user),
     settings: settings(raw.settings),
-    plans: arr(raw.plans).map(plan),
+    // The server returns records sorted by key (a random id): restore creation order.
+    plans: arr(raw.plans).map(plan).sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
     exercises: withBuiltInExercises(exercises),
     sessions: arr(raw.sessions).map(session),
-    bodyWeight: arr(raw.bodyWeight).map(weight),
+    bodyWeight: arr(raw.bodyWeight).map(weight).sort((a, b) => a.date.localeCompare(b.date)),
   };
 }
 

@@ -126,7 +126,7 @@ export default function SessionDetail() {
             <IconButton icon={X} label="Скасувати редагування" onClick={() => setDraft(null)} />
           ) : (
             <>
-              <IconButton icon={Pencil} label="Редагувати" onClick={() => setDraft(structuredClone(session))} />
+              <IconButton icon={Pencil} label="Редагувати" onClick={() => setDraft(JSON.parse(JSON.stringify(session)) as WorkoutSession)} />
               <IconButton icon={Trash2} label="Видалити" variant="danger" onClick={remove} />
             </>
           )

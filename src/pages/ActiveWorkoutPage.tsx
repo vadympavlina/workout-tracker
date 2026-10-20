@@ -48,7 +48,7 @@ export default function ActiveWorkoutPage() {
   const resting = restLeft != null && restLeft > 0;
   useEffect(() => {
     if (restLeft != null && restLeft <= 0) {
-      workout.stopRest();
+      workout.expireRest();
       if (data.settings.vibration) navigator.vibrate?.([180, 80, 180]);
       toast.info('Відпочинок завершено', 'Час для наступного підходу');
     }

@@ -3,6 +3,10 @@ import { defineConfig } from '@playwright/test';
 // E2E tests run against a production build wired to the Firebase emulators
 // (`vite build --mode emulator` → dist-e2e/), served from a GitHub-Pages-like
 // sub-path. `npm run test:e2e` builds, starts the emulators and runs the suite.
+// Lets context.route() see requests made by the service worker, so offline
+// tests can cut the network for the worker too (setOffline alone does not).
+process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = '1';
+
 export default defineConfig({
   testDir: 'tests/e2e',
   timeout: 60_000,

@@ -52,6 +52,7 @@ export function SwipeToDelete({ children, onDelete, label, className, surfaceCla
 
   const width = () => root.current?.offsetWidth ?? 360;
   const remove = () => {
+    if (removing) return; // a second tap during the slide-out must not delete twice
     setRemoving(true);
     navigator.vibrate?.(10);
     window.setTimeout(onDelete, 180);

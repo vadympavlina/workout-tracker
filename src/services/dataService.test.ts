@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseImport, parseImportMedia, SCHEMA_VERSION } from './dataService';
+import { isValidId, parseImport, parseImportMedia, SCHEMA_VERSION } from './dataService';
 import { createDemoData } from '@/data/demo';
 
 const valid = () => ({ app: 'pulse-workout-tracker', schemaVersion: SCHEMA_VERSION, exportedAt: '2026-10-05T10:00:00Z', ...createDemoData() });
@@ -34,5 +34,25 @@ describe('parseImport', () => {
   it('only keeps image data URLs from the media section', () => {
     expect(parseImportMedia({ media: { a: 'data:image/jpeg;base64,AAA', b: 'javascript:alert(1)', c: 42 } })).toEqual({ a: 'data:image/jpeg;base64,AAA' });
     expect(parseImportMedia({})).toEqual({});
+  });
+});
+
+describe('import ids are valid database keys', () => {
+  it('accepts uuids and slugs, rejects forbidden characters and empties', () => {
+    for (const ok of ['6a57cae2-0788-4bbb-8a95-74605c719c68', 'leg-press', 'custom-abc_1']) expect(isValidId(ok), ok).toBe(true);
+    for (const bad of ['', 'a.b', 'a/b', 'a#b', 'a$b', 'a[b]', 5, null, 'x'.repeat(121)]) expect(isValidId(bad), String(bad)).toBe(false);
+  });
+
+  it('rejects an export whose records would break sync', () => {
+    const file = JSON.parse(JSON.stringify(createDemoData(new Date('2026-10-05T12:00:00'))));
+    const raw = { app: 'pulse-workout-tracker', schemaVersion: 1, ...file };
+    expect(() => parseImport(raw)).not.toThrow();
+    raw.sessions[0].id = 'bad.id';
+    expect(() => parseImport(raw)).toThrow(/некоректні записи/);
+  });
+
+  it('drops photos with bad keys or oversized data', () => {
+    const media = { ok: 'data:image/jpeg;base64,AAAA', 'b/ad': 'data:image/jpeg;base64,AAAA', big: `data:image/jpeg;base64,${'A'.repeat(400_000)}` };
+    expect(Object.keys(parseImportMedia({ media }))).toEqual(['ok']);
   });
 });

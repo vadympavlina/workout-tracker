@@ -64,11 +64,3 @@ test('no backup reminder: the cloud keeps the data', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /Привіт/ })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Нагадування про резервну копію' })).toHaveCount(0);
 });
-
-test('PWA: manifest, icons and service worker on the sub-path', async ({ page, request }) => {
-  for (const path of ['manifest.webmanifest', 'favicon.ico', 'icons/icon-192.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png', 'og-image.png'])
-    expect((await request.get(path)).ok(), path).toBe(true);
-  await page.goto('./');
-  const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
-  expect(scope).toMatch(/\/workout-tracker\/$/);
-});

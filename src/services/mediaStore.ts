@@ -58,12 +58,15 @@ export const mediaStore = {
   async get(id: string): Promise<Blob | undefined> {
     const cached = await run<Blob | undefined>('readonly', (s) => s.get(key(id))).catch(() => undefined);
     if (cached) return cached;
+    const owner = session.get();
     const cloud = session.cloud();
     if (!cloud) return undefined;
     const dataUrl = await cloud.getMedia(id).catch(() => null);
     if (!dataUrl) return undefined;
     const blob = await dataUrlToBlob(dataUrl);
-    await run('readwrite', (s) => s.put(blob, key(id))).catch(() => {});
+    // Cache under the account that asked — never under another (or no) account
+    // if the user signed out while the download was running.
+    if (session.get() === owner && !session.isClosing()) await run('readwrite', (s) => s.put(blob, key(id))).catch(() => {});
     return blob;
   },
   async put(id: string, blob: Blob) {

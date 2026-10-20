@@ -24,7 +24,13 @@ createServer(async (req, res) => {
   if (!file.startsWith(ROOT)) return void res.writeHead(403).end();
   try {
     if ((await stat(file)).isDirectory()) file = join(file, 'index.html');
-    res.writeHead(200, { 'Content-Type': TYPES[extname(file)] ?? 'application/octet-stream' }).end(await readFile(file));
+    let body = await readFile(file);
+    // Test hook: a browser context with this cookie gets sw.js with another build
+    // id — a "new deploy" for that context only (Playwright cannot route the
+    // worker's own script request).
+    const build = /(?:^|;\s*)pulse-test-build=(\w+)/.exec(req.headers.cookie ?? '')?.[1];
+    if (build && file.endsWith('sw.js')) body = body.toString().replace(/const BUILD = "[^"]+"/, `const BUILD = "${build}"`);
+    res.writeHead(200, { 'Content-Type': TYPES[extname(file)] ?? 'application/octet-stream' }).end(body);
   } catch {
     res.writeHead(404).end('Not found');
   }

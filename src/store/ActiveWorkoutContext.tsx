@@ -26,6 +26,8 @@ interface ActiveApi {
   startRest: (seconds?: number) => void;
   adjustRest: (deltaSec: number) => void;
   stopRest: () => void;
+  /** The rest timer ran out by itself — not a user action, so idle time is not reset. */
+  expireRest: () => void;
   /** Saves completed sets as a session. Returns null when nothing was completed. */
   finish: () => WorkoutSession | null;
   discard: () => void;
@@ -83,9 +85,9 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const set = useCallback((input: ActiveWorkout | null) => {
+  const set = useCallback((input: ActiveWorkout | null, userAction = true) => {
     let next = input;
-    if (input) {
+    if (input && userAction) {
       const now = Date.now();
       const prev = activeRef.current;
       const gap = prev && prev.id === input.id && prev.lastActivityAt ? now - prev.lastActivityAt : 0;
@@ -289,6 +291,10 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
             : a,
         ),
       stopRest: () => mutate((a) => ({ ...a, restEndsAt: null })),
+      expireRest: () => {
+        const a = activeRef.current;
+        if (a?.restEndsAt) set({ ...a, restEndsAt: null }, false);
+      },
 
       finish: () => {
         const a = activeRef.current;
