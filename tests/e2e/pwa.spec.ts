@@ -66,21 +66,19 @@ test('opens offline after one visit: signed in, data and never-opened screens', 
   await expect(page.getByRole('region', { name: 'Записи' }).locator('li').first()).toContainText('81,3');
 });
 
-test('a missing chunk (app updated while open) reloads instead of a blank screen', async ({ page }) => {
-  await startDemo(page);
-  // Simulate a deploy that removed the old file names: every lazy chunk 404s once.
-  let failed = 0;
-  await page.route(/assets\/HelpPage-.*\.js$/, (route) => (failed++ === 0 ? route.fulfill({ status: 404, body: '' }) : route.continue()));
-  await page.evaluate(async () => {
-    for (const k of await caches.keys()) await caches.delete(k);
-    for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister();
+test.describe('without a service worker (every chunk comes from the network)', () => {
+  test.use({ serviceWorkers: 'block' });
+
+  test('a missing chunk (app updated while open) reloads instead of a blank screen', async ({ page }) => {
+    await startDemo(page);
+    // Simulate a deploy that removed the old file names: the chunk 404s once.
+    let failed = 0;
+    await page.route(/assets\/HelpPage-.*\.js$/, (route) => (failed++ === 0 ? route.fulfill({ status: 404, body: '' }) : route.continue()));
+    await page.goto('./#/help');
+    // One automatic reload fetched the chunk again and the screen opened.
+    await expect(page.getByRole('heading', { name: 'Допомога', level: 1 })).toBeVisible();
+    expect(failed).toBe(2);
   });
-  await page.reload();
-  await expect(page.getByRole('heading', { name: /Привіт/ })).toBeVisible();
-  await page.goto('./#/help');
-  await expect(page.getByRole('heading', { name: 'Допомога', level: 1 })).toBeVisible();
-  // The 404 happened and the app recovered by itself (one automatic reload).
-  expect(failed).toBeGreaterThanOrEqual(1);
 });
 
 test('a new deploy waits, offers "Оновити", then switches version', async ({ page, context, request }) => {
