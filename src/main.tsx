@@ -6,6 +6,7 @@ import './index.css';
 import App from './App';
 import { registerSW } from './pwa/registerSW';
 import { installPreloadErrorHandler } from './pwa/chunkReload';
+import { disableZoom } from './pwa/noZoom';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -16,4 +17,5 @@ createRoot(document.getElementById('root')!).render(
 // Offline support / installability. Registered relative to the page so it
 // works from a GitHub Pages sub-path; dev server is skipped to avoid stale caches.
 installPreloadErrorHandler();
+disableZoom();
 if (import.meta.env.PROD) registerSW();

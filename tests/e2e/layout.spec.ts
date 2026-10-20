@@ -64,3 +64,33 @@ test('no backup reminder: the cloud keeps the data', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /Привіт/ })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Нагадування про резервну копію' })).toHaveCount(0);
 });
+
+test('no zoom: viewport locked and every field ≥16px (iOS auto-zoom)', async ({ page }) => {
+  const smallFields = () =>
+    page.evaluate(() =>
+      Array.from(document.querySelectorAll<HTMLElement>('input, textarea, select'))
+        .filter((e) => e.offsetParent !== null && parseFloat(getComputedStyle(e).fontSize) < 16)
+        .map((e) => e.getAttribute('aria-label') ?? e.getAttribute('placeholder') ?? e.id),
+    );
+  await page.goto('./');
+  const viewport = await page.locator('meta[name=viewport]').getAttribute('content');
+  expect(viewport).toContain('maximum-scale=1');
+  expect(viewport).toContain('user-scalable=no');
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).touchAction)).toBe('pan-x pan-y');
+  expect(await smallFields(), 'login').toEqual([]);
+
+  await startDemo(page);
+  for (const route of ['', 'plan/new', 'history', 'exercises', 'profile', 'weight']) {
+    await page.goto(`./#/${route}`);
+    await page.waitForLoadState('networkidle');
+    expect(await smallFields(), `/${route}`).toEqual([]);
+  }
+  await page.goto('./#/exercises');
+  await page.getByRole('button', { name: 'Власна', exact: true }).click();
+  expect(await smallFields(), 'new exercise').toEqual([]);
+  await page.keyboard.press('Escape');
+  await page.goto('./#/');
+  await page.getByRole('button', { name: 'Почати тренування' }).first().click();
+  await expect(page).toHaveURL(/#\/active/);
+  expect(await smallFields(), 'active workout').toEqual([]);
+});
