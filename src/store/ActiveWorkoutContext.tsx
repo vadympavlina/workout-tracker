@@ -8,7 +8,7 @@ import { uid } from '@/utils/id';
 interface ActiveApi {
   active: ActiveWorkout | null;
   start: (plan: WorkoutPlan | null) => ActiveWorkout;
-  updateSet: (exIndex: number, setIndex: number, patch: Partial<Pick<ActiveSet, 'weight' | 'reps'>>) => void;
+  updateSet: (exIndex: number, setIndex: number, patch: Partial<Pick<ActiveSet, 'weight' | 'reps' | 'rir'>>) => void;
   /** Toggles a set; returns `record` when the completed set beats the personal record. */
   toggleSet: (exIndex: number, setIndex: number) => { ok: boolean; record: boolean; reason?: string };
   addSet: (exIndex: number) => void;
@@ -21,6 +21,12 @@ interface ActiveApi {
   reopenExercise: (exIndex: number) => void;
   goTo: (exIndex: number) => void;
   addExercise: (exercise: Exercise) => void;
+  /**
+   * Swaps an exercise for another one with the same targets (sets, reps, rest).
+   * If sets were already done they are kept: the old exercise is finished and the
+   * new one goes right after it.
+   */
+  replaceExercise: (exIndex: number, exercise: Exercise) => void;
   removeExercise: (exIndex: number) => void;
   moveExercise: (exIndex: number, dir: -1 | 1) => void;
   startRest: (seconds?: number) => void;
@@ -208,7 +214,7 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
           restTotalSec: done && settings.autoRestTimer ? restSec : a.restTotalSec,
           exercises: a.exercises.map((e, i) =>
             i === exIndex
-              ? { ...e, sets: e.sets.map((s, j) => (j === setIndex ? { ...s, done, weight: s.weight ?? 0 } : s)) }
+              ? { ...e, sets: e.sets.map((s, j) => (j === setIndex ? { ...s, done, weight: s.weight ?? 0, rir: done ? s.rir : null } : s)) }
               : e,
           ),
         });
@@ -223,7 +229,7 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
             finished: false,
             sets: [
               ...e.sets,
-              { id: uid(), weight: last?.weight ?? null, reps: last?.reps ?? e.targetRepsMax ?? null, done: false, prevWeight: null, prevReps: null },
+              { id: uid(), weight: last?.weight ?? null, reps: last?.reps ?? e.targetRepsMax ?? null, done: false, prevWeight: null, prevReps: null, rir: null },
             ],
           };
         }),
@@ -261,6 +267,29 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
           exercises: [...a.exercises, buildExercise(exercise, null, sessions)],
           currentIndex: a.exercises.length,
         })),
+
+      replaceExercise: (exIndex, exercise) =>
+        mutate((a) => {
+          const old = a.exercises[exIndex];
+          if (!old) return a;
+          const planned: PlanExercise = {
+            id: uid(),
+            exerciseId: exercise.id,
+            sets: Math.max(1, old.sets.filter((s) => !s.done).length || old.sets.length),
+            repsMin: old.targetRepsMin ?? exercise.defaultRepsMin,
+            repsMax: old.targetRepsMax ?? exercise.defaultRepsMax,
+            restSec: old.restSec,
+          };
+          const next = buildExercise(exercise, planned, sessions);
+          const exercises = [...a.exercises];
+          if (old.sets.some((s) => s.done)) {
+            exercises[exIndex] = { ...old, finished: true, sets: old.sets.filter((s) => s.done) };
+            exercises.splice(exIndex + 1, 0, next);
+            return { ...a, exercises, currentIndex: exIndex + 1, restEndsAt: null };
+          }
+          exercises[exIndex] = next;
+          return { ...a, exercises, currentIndex: exIndex };
+        }),
 
       removeExercise: (exIndex) =>
         mutate((a) => {
@@ -309,7 +338,7 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
             note: e.note.trim(),
             sets: e.sets
               .filter((s) => s.done)
-              .map((s) => ({ id: s.id, weight: s.weight ?? 0, reps: s.reps ?? 0, done: true })),
+              .map((s) => ({ id: s.id, weight: s.weight ?? 0, reps: s.reps ?? 0, done: true, ...(s.rir != null ? { rir: s.rir } : {}) })),
           }))
           .filter((e) => e.sets.length > 0);
         if (exercises.length === 0) return null;

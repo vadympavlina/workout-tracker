@@ -54,7 +54,10 @@ export function toRemote(data: AppData): RemoteData {
 
 const set = (raw: unknown): SetEntry => {
   const s = isObj(raw) ? raw : {};
-  return { id: str(s.id), weight: num(s.weight), reps: num(s.reps), done: s.done !== false };
+  const out: SetEntry = { id: str(s.id), weight: num(s.weight), reps: num(s.reps), done: s.done !== false };
+  const rir = numOrNull(s.rir);
+  if (rir != null) out.rir = rir;
+  return out;
 };
 
 const sessionExercise = (raw: unknown): SessionExercise => {
@@ -145,6 +148,7 @@ const activeSet = (raw: unknown): ActiveSet => {
     done: s.done === true,
     prevWeight: numOrNull(s.prevWeight),
     prevReps: numOrNull(s.prevReps),
+    ...(typeof s.rir === 'number' ? { rir: s.rir } : {}),
   };
 };
 

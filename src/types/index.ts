@@ -116,6 +116,8 @@ export interface SetEntry {
   weight: number;
   reps: number;
   done: boolean;
+  /** Reps in reserve: how many more reps were left (0 = failure, 4 = 4 or more). */
+  rir?: number;
 }
 
 export interface SessionExercise {
@@ -176,6 +178,7 @@ export interface ActiveSet {
   /** Values from the previous time this exercise was performed (for the hint column). */
   prevWeight: number | null;
   prevReps: number | null;
+  rir?: number | null;
 }
 
 export interface BodyWeightEntry {

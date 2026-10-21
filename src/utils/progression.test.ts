@@ -28,3 +28,22 @@ describe('suggestProgression', () => {
     expect(suggestProgression([s(60, 12, false)], 8, 12, 2.5)).toBeNull();
   });
 });
+
+describe('suggestProgression with reps in reserve', () => {
+  const r = (weight: number, reps: number, rir: number): SetEntry => ({ ...s(weight, reps), rir });
+  it('adds two steps when the top of the range was still easy', () => {
+    expect(suggestProgression([r(50, 12, 3), r(50, 12, 4)], 8, 12, 2.5)).toMatchObject({ kind: 'up', weight: 55, reps: 8 });
+  });
+  it('adds one step at the top of the range when close to failure', () => {
+    expect(suggestProgression([r(50, 12, 1), r(50, 12, 0)], 8, 12, 2.5)).toMatchObject({ kind: 'up', weight: 52.5 });
+  });
+  it('adds weight below the top when every set had 3+ reps left', () => {
+    expect(suggestProgression([r(50, 9, 3), r(50, 9, 4)], 8, 12, 2.5)).toMatchObject({ kind: 'up', weight: 52.5, reps: 9 });
+  });
+  it('does not call it easy when only some sets were rated', () => {
+    expect(suggestProgression([r(50, 9, 4), s(50, 9)], 8, 12, 2.5)).toBeNull();
+  });
+  it('takes weight off after failing below the range', () => {
+    expect(suggestProgression([r(60, 8, 1), r(60, 6, 0)], 8, 12, 2.5)).toMatchObject({ kind: 'down', weight: 57.5, reps: 8 });
+  });
+});

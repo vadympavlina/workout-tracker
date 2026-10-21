@@ -15,7 +15,8 @@ const sets = (n: number) => `${n} ${plural(n, ['підхід', 'підходи',
  *   1. 107,5 кг × 11
  *   …
  *
- * Only completed sets are listed; sets without weight (bodyweight) show reps only.
+ * Only completed sets are listed; sets without weight (bodyweight) show reps only,
+ * and a logged reps-in-reserve rating follows as "(запас 2)".
  */
 export function sessionToText(session: WorkoutSession): string {
   const exercises = session.exercises
@@ -37,7 +38,11 @@ export function sessionToText(session: WorkoutSession): string {
 
   for (const e of exercises) {
     lines.push('', `${e.name} — ${sets(e.sets.length)}`);
-    e.sets.forEach((s, i) => lines.push(`${i + 1}. ${s.weight > 0 ? `${formatNumber(s.weight, 2)} кг × ${s.reps}` : `${s.reps} повт.`}`));
+    e.sets.forEach((s, i) =>
+      lines.push(
+        `${i + 1}. ${s.weight > 0 ? `${formatNumber(s.weight, 2)} кг × ${s.reps}` : `${s.reps} повт.`}${s.rir != null ? ` (запас ${s.rir >= 4 ? '4+' : s.rir})` : ''}`,
+      ),
+    );
     if (e.note.trim()) lines.push(`Нотатка: ${e.note.trim()}`);
   }
   if (session.note.trim()) lines.push('', `Нотатка: ${session.note.trim()}`);

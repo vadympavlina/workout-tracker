@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import {
-  ArrowDown, ArrowUp, Check, ChevronLeft, ChevronRight, CircleCheck, Disc3, Dumbbell, Flag, History, ListPlus, Minus, NotebookPen, Plus,
-  RotateCcw, Timer, Trash2, TrendingUp, X,
+  ArrowDown, ArrowLeftRight, ArrowUp, Check, ChevronLeft, ChevronRight, CircleCheck, Disc3, Dumbbell, Flag, History, ListPlus, Minus, NotebookPen, Plus,
+  RotateCcw, Timer, Trash2, TrendingDown, TrendingUp, X,
 } from 'lucide-react';
 import { IDLE_LIMIT_MS, useActiveWorkout } from '@/store/ActiveWorkoutContext';
 import { useData } from '@/store/DataContext';
@@ -20,6 +20,8 @@ import { SetTable } from '@/components/workout/SetTable';
 import { PlateCalculator } from '@/components/workout/PlateCalculator';
 import { ActivityRings } from '@/components/ui/ActivityRings';
 import { ExercisePicker } from '@/components/workout/ExercisePicker';
+import { SwapExerciseModal } from '@/components/workout/SwapExerciseModal';
+import { WarmupPanel } from '@/components/workout/WarmupPanel';
 import { ExerciseMediaButton } from '@/components/exercise/ExerciseMediaButton';
 import { MUSCLE_GROUPS } from '@/data/labels';
 import { formatClock, formatDurationWords, formatNumber, repsRange } from '@/utils/format';
@@ -40,6 +42,7 @@ export default function ActiveWorkoutPage() {
   const [noteOpen, setNoteOpen] = useState(false);
   const [dismissedHints, setDismissedHints] = useState<string[]>([]);
   const [platesOpen, setPlatesOpen] = useState(false);
+  const [swapOpen, setSwapOpen] = useState(false);
   const cardRef = useRef<HTMLElement>(null);
   useWakeLock(!!active && data.settings.keepAwake);
 
@@ -91,6 +94,8 @@ export default function ActiveWorkoutPage() {
       ? suggestProgression(lastTime.exercise.sets, current.targetRepsMin ?? 8, current.targetRepsMax ?? 12, weightStep)
       : null;
   const undone = current ? current.sets.filter((s) => !s.done) : [];
+  // Warm-up targets the heaviest planned set (sets often ramp to a top weight).
+  const workingWeight = current ? Math.max(0, ...current.sets.map((s) => s.weight ?? 0)) || null : null;
   const showHint =
     !!hint && !dismissedHints.includes(current.id) && undone.length > 0 && undone.some((s) => s.weight !== hint.weight || s.reps !== hint.reps);
 
@@ -268,15 +273,26 @@ export default function ActiveWorkoutPage() {
                   <p className="mt-1 text-[14px] text-muted">
                     Ціль: <span className="tabular font-semibold text-fg">{current.sets.length} × {repsRange(current.targetRepsMin ?? 8, current.targetRepsMax ?? 12)}</span>
                   </p>
-                  {currentEx?.equipment === 'barbell' && (
-                    <button
-                      type="button"
-                      onClick={() => setPlatesOpen(true)}
-                      className="mt-2 inline-flex h-8 items-center gap-1.5 rounded-full bg-white/[0.07] px-3 text-[12.5px] font-medium text-fg transition hover:bg-white/[0.12]"
-                    >
-                      <Disc3 size={14} aria-hidden /> Диски
-                    </button>
-                  )}
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {currentEx?.equipment === 'barbell' && (
+                      <button
+                        type="button"
+                        onClick={() => setPlatesOpen(true)}
+                        className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white/[0.07] px-3 text-[12.5px] font-medium text-fg transition hover:bg-white/[0.12]"
+                      >
+                        <Disc3 size={14} aria-hidden /> Диски
+                      </button>
+                    )}
+                    {currentEx && !current.finished && (
+                      <button
+                        type="button"
+                        onClick={() => setSwapOpen(true)}
+                        className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white/[0.07] px-3 text-[12.5px] font-medium text-fg transition hover:bg-white/[0.12]"
+                      >
+                        <ArrowLeftRight size={14} aria-hidden /> Замінити
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="-mr-1 flex">
                   <IconButton icon={ChevronLeft} label="Попередня вправа" size="sm" disabled={idx === 0} onClick={() => workout.goTo(idx - 1)} />
@@ -303,10 +319,18 @@ export default function ActiveWorkoutPage() {
 
               {showHint && hint && (
                 <div role="status" className="relative mt-2 flex items-center gap-3 rounded-[14px] border border-accent/25 bg-accent/[0.07] py-2 pl-3 pr-2">
-                  <TrendingUp size={17} className="shrink-0 text-accent" aria-hidden />
+                  {hint.kind === 'down' ? (
+                    <TrendingDown size={17} className="shrink-0 text-warning" aria-hidden />
+                  ) : (
+                    <TrendingUp size={17} className="shrink-0 text-accent" aria-hidden />
+                  )}
                   <p className="min-w-0 flex-1 text-[13px] leading-snug">
                     <span className="font-semibold text-fg">
-                      {hint.weight > 0 ? `Час додати вагу: ${formatNumber(hint.weight, 2)} кг × ${hint.reps}` : `Спробуй ${hint.reps} повторень`}
+                      {hint.kind === 'reps'
+                        ? `Спробуй ${hint.reps} повторень`
+                        : hint.kind === 'down'
+                          ? `Трохи легше: ${formatNumber(hint.weight, 2)} кг × ${hint.reps}`
+                          : `Час додати вагу: ${formatNumber(hint.weight, 2)} кг × ${hint.reps}`}
                     </span>
                     <span className="block text-muted">{hint.reason}</span>
                   </p>
@@ -324,6 +348,10 @@ export default function ActiveWorkoutPage() {
                   </Button>
                   <IconButton icon={X} label="Сховати пораду" size="sm" onClick={() => setDismissedHints((d) => [...d, current.id])} />
                 </div>
+              )}
+
+              {currentEx && !current.finished && !current.sets.some((s) => s.done) && (
+                <WarmupPanel key={current.id} id={current.id} working={workingWeight} equipment={currentEx.equipment} />
               )}
 
               {current.finished && (
@@ -345,6 +373,7 @@ export default function ActiveWorkoutPage() {
                   recordSetId={recordSetId}
                   onChange={(setIndex, patch) => workout.updateSet(idx, setIndex, patch)}
                   onToggle={toggle}
+                  onRir={(setIndex, rir) => workout.updateSet(idx, setIndex, { rir })}
                   onRemove={(setIndex) => {
                     const removed = workout.removeSet(idx, setIndex);
                     if (removed)
@@ -489,6 +518,20 @@ export default function ActiveWorkoutPage() {
           initialWeight={(current.sets.find((x) => !x.done) ?? current.sets[current.sets.length - 1])?.weight ?? null}
         />
       )}
+
+      <SwapExerciseModal
+        open={swapOpen}
+        onClose={() => setSwapOpen(false)}
+        original={currentEx}
+        excludeIds={active.exercises.map((e) => e.exerciseId)}
+        hasDoneSets={!!current?.sets.some((s) => s.done)}
+        onSelect={(ex) => {
+          const from = current.name;
+          workout.replaceExercise(idx, ex);
+          setSwapOpen(false);
+          toast.success('Вправу замінено', `${from} → ${ex.name}`);
+        }}
+      />
 
       <ExercisePicker
         open={pickerOpen}

@@ -1,4 +1,4 @@
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { Fragment, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import clsx from 'clsx';
 import { Check, Minus, Plus, Trash2, Trophy } from 'lucide-react';
 import type { ActiveExercise, ActiveSet } from '@/types';
@@ -14,7 +14,12 @@ interface Props {
   onChange: (setIndex: number, patch: Partial<Pick<ActiveSet, 'weight' | 'reps'>>) => void;
   onToggle: (setIndex: number) => void;
   onRemove: (setIndex: number) => void;
+  /** Reps in reserve for a done set (null clears it). */
+  onRir: (setIndex: number, rir: number | null) => void;
 }
+
+const RIR_OPTIONS = [0, 1, 2, 3, 4] as const;
+const rirLabel = (n: number) => (n >= 4 ? '4+' : String(n));
 
 const GRID = 'grid grid-cols-[28px_minmax(0,1fr)_64px_46px] items-center gap-1.5 sm:grid-cols-[40px_minmax(0,1fr)_96px_52px] sm:gap-2.5';
 const REVEAL = 88;
@@ -24,8 +29,13 @@ const REVEAL = 88;
  * Last time's values sit as tiny captions inside the inputs. Swipe a row left —
  * or tap its number — to reveal "Delete".
  */
-export function SetTable({ exercise, isBodyweight, weightStep, recordSetId, onChange, onToggle, onRemove }: Props) {
+export function SetTable({ exercise, isBodyweight, weightStep, recordSetId, onChange, onToggle, onRemove, onRir }: Props) {
   const [openId, setOpenId] = useState<string | null>(null);
+  // The effort question follows the latest completed set; earlier answers stay as a badge.
+  let lastDone = -1;
+  exercise.sets.forEach((s, i) => {
+    if (s.done) lastDone = i;
+  });
 
   return (
     <div role="table" aria-label={`Підходи: ${exercise.name}`} className="relative">
@@ -47,8 +57,8 @@ export function SetTable({ exercise, isBodyweight, weightStep, recordSetId, onCh
 
       <div role="rowgroup" className="space-y-1.5">
         {exercise.sets.map((set, i) => (
+          <Fragment key={set.id}>
           <SetRow
-            key={set.id}
             set={set}
             index={i}
             weightStep={weightStep}
@@ -62,6 +72,8 @@ export function SetTable({ exercise, isBodyweight, weightStep, recordSetId, onCh
               onRemove(i);
             }}
           />
+          {i === lastDone && !exercise.finished && <RirPicker index={i} value={set.rir ?? null} onChange={(v) => onRir(i, v)} />}
+          </Fragment>
         ))}
       </div>
       {exercise.sets.length > 0 && (
@@ -151,6 +163,14 @@ function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange
           >
             {index + 1}
           </button>
+          {set.done && set.rir != null && (
+            <span
+              className="tabular pointer-events-none absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-white/[0.08] px-1 text-[9.5px] font-semibold leading-[14px] text-muted"
+              title={`Запас: ${rirLabel(set.rir)} повт.`}
+            >
+              <span className="sr-only">Запас </span>+{rirLabel(set.rir)}
+            </span>
+          )}
         </span>
 
         <span role="cell" className="relative flex items-center gap-1">
@@ -227,6 +247,33 @@ function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange
           </span>
         )}
       </div>
+    </div>
+  );
+}
+
+function RirPicker({ index, value, onChange }: { index: number; value: number | null; onChange: (v: number | null) => void }) {
+  return (
+    <div role="row">
+    <div role="cell" className="block">
+    <div role="group" aria-label={`Скільки ще повторень міг би зробити, підхід ${index + 1}`} className="flex animate-pop items-center gap-1.5 px-1 py-1">
+      <span className="min-w-0 flex-1 text-[12.5px] leading-tight text-muted">Скільки ще міг би?</span>
+      {RIR_OPTIONS.map((n) => (
+        <button
+          key={n}
+          type="button"
+          aria-pressed={value === n}
+          aria-label={n === 0 ? 'Нуль — до відмови' : `Ще ${rirLabel(n)}`}
+          onClick={() => onChange(value === n ? null : n)}
+          className={clsx(
+            'tabular inline-flex h-9 min-w-[38px] items-center justify-center rounded-full px-2 text-[13px] font-semibold transition active:scale-90',
+            value === n ? 'bg-accent text-black' : 'bg-white/[0.06] text-muted hover:text-fg',
+          )}
+        >
+          {rirLabel(n)}
+        </button>
+      ))}
+    </div>
+    </div>
     </div>
   );
 }

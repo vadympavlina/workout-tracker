@@ -276,6 +276,11 @@ export default function SessionDetail() {
                         >
                           <span className="mr-1.5 text-subtle">{si + 1}</span>
                           {formatNumber(s.weight, 2)} кг × {s.reps}
+                          {s.rir != null && (
+                            <span className="ml-1.5 text-subtle" title="Запас повторень">
+                              <span className="sr-only">запас </span>+{s.rir >= 4 ? '4+' : s.rir}
+                            </span>
+                          )}
                         </li>
                       ))}
                     </ul>
