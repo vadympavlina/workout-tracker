@@ -5,7 +5,7 @@ import { expect, startDemo, storageCount, test, trackErrors } from './helpers';
 const BUILT_IN = readdirSync('public/exercises');
 
 test('every built-in exercise photo is deployed', async ({ request }) => {
-  expect(BUILT_IN.length).toBeGreaterThanOrEqual(284);
+  expect(BUILT_IN.length).toBeGreaterThanOrEqual(282);
   for (const id of BUILT_IN)
     for (const frame of [0, 1]) expect((await request.get(`exercises/${id}/${frame}.webp`)).ok(), `${id}/${frame}`).toBe(true);
 });
@@ -107,4 +107,41 @@ test('exercise picker: back from details keeps the list position', async ({ page
   await page.getByRole('dialog').getByRole('button', { name: 'До списку' }).click();
   await expect(list).toBeVisible();
   expect(Math.abs((await list.locator('.overflow-y-auto').evaluate((el) => el.scrollTop)) - before)).toBeLessThan(5);
+});
+
+test('photos: hide one that does not match, broken links and mismatches show no photo block', async ({ page }) => {
+  const noErrors = trackErrors(page);
+  await startDemo(page);
+  const photo = page.locator('img[alt^="Техніка"]');
+
+  // The user hides a photo; it stays hidden after a reload and can be shown again.
+  await page.goto('./#/exercises/bench-press');
+  await expect(photo.first()).toBeVisible();
+  await page.getByRole('button', { name: 'Сховати фото' }).click();
+  await expect(photo).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Показати фото' })).toBeVisible();
+  await expect(photo).toHaveCount(0);
+  await page.getByRole('button', { name: 'Показати фото' }).click();
+  await expect(photo.first()).toBeVisible();
+
+  // A built-in exercise whose source photo shows another movement has no photo block.
+  await page.goto('./#/exercises/flutter-kicks');
+  await expect(page.getByRole('heading', { level: 1, name: 'Ножиці' })).toBeVisible();
+  await expect(photo).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /фото/ })).toHaveCount(0);
+  noErrors();
+});
+
+test('a custom photo link that fails to load leaves no empty frame', async ({ page }) => {
+  await startDemo(page);
+  await page.goto('./#/exercises');
+  await page.getByRole('button', { name: 'Власна', exact: true }).click();
+  await page.getByLabel('Назва').fill('Битий лінк');
+  await page.getByLabel('Або посилання на фото').fill(new URL('no-such-photo.png', page.url()).href);
+  await page.getByRole('dialog').getByRole('button', { name: 'Зберегти' }).click();
+  await page.getByRole('link', { name: /Битий лінк/ }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Битий лінк' })).toBeVisible();
+  await expect(page.locator('img[alt^="Техніка"]')).toHaveCount(0);
+  await expect(page.getByText('Основні мʼязи')).toBeVisible();
 });

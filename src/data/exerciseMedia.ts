@@ -341,7 +341,10 @@ export function muscleTargets(exercise: Pick<Exercise, 'id' | 'muscleGroup'> | u
 }
 
 /** Bundled start/end photos for built-in exercises (relative to the app root). */
+/** Built-in exercises whose source photo shows a different movement — shown without a photo. */
+export const PHOTO_MISMATCH: ReadonlySet<string> = new Set(['cable-russian-twist', 'flutter-kicks']);
+
 export function builtInPhotos(exerciseId: string): string[] {
-  if (!(exerciseId in BUILT_IN)) return [];
+  if (!(exerciseId in BUILT_IN) || PHOTO_MISMATCH.has(exerciseId)) return [];
   return [0, 1].map((i) => `${import.meta.env.BASE_URL}exercises/${exerciseId}/${i}.webp`);
 }

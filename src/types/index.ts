@@ -200,6 +200,8 @@ export interface Settings {
   keepAwake: boolean;
   /** Figure used in muscle drawings. */
   bodyType: 'male' | 'female';
+  /** Exercises whose photo the user hid (e.g. it does not match the exercise). */
+  hiddenPhotos: string[];
 }
 
 export interface AppData {

@@ -22,6 +22,7 @@ export const SCHEMA_VERSION = 1;
 function normalizeSettings(raw: Partial<AppData['settings']> | null | undefined): AppData['settings'] {
   const merged = { ...DEFAULT_SETTINGS, ...raw };
   if (!(merged.accent in ACCENTS)) merged.accent = DEFAULT_SETTINGS.accent;
+  if (!Array.isArray(merged.hiddenPhotos)) merged.hiddenPhotos = [];
   return merged;
 }
 

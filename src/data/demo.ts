@@ -11,6 +11,7 @@ export const DEFAULT_SETTINGS: Settings = {
   vibration: true,
   keepAwake: true,
   bodyType: 'male',
+  hiddenPhotos: [],
 };
 
 export function emptyUser(): UserProfile {

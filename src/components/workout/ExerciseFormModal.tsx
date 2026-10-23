@@ -63,7 +63,7 @@ export function ExerciseFormModal({ open, onClose, onSave, initial }: Props) {
   const [linkBroken, setLinkBroken] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const toast = useToast();
-  const existing = useExercisePhotos(initial?.isCustom && initial.hasPhoto ? { ...initial, photoUrl: undefined } : undefined);
+  const existing = useExercisePhotos(initial?.isCustom && initial.hasPhoto ? { ...initial, photoUrl: undefined } : undefined, true);
 
   const newPreview = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo]);
   useEffect(() => () => {

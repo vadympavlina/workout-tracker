@@ -2,9 +2,14 @@ import { useEffect, useState } from 'react';
 import type { Exercise } from '@/types';
 import { builtInPhotos } from '@/data/exerciseMedia';
 import { mediaStore } from '@/services/mediaStore';
+import { useData } from '@/store/DataContext';
 
-/** Photo frames for an exercise: the user's own photo (link or upload), else bundled start/end frames. */
-export function useExercisePhotos(exercise: Exercise | undefined): string[] {
+/**
+ * Photo frames for an exercise: the user's own photo (link or upload), else bundled
+ * start/end frames. Empty when the user hid the photo, unless `includeHidden`.
+ */
+export function useExercisePhotos(exercise: Exercise | undefined, includeHidden = false): string[] {
+  const { data } = useData();
   const [custom, setCustom] = useState<string | null>(null);
   const id = exercise?.id;
   const hasPhoto = !!exercise?.hasPhoto;
@@ -37,6 +42,7 @@ export function useExercisePhotos(exercise: Exercise | undefined): string[] {
     };
   }, [id, hasPhoto]);
 
+  if (!includeHidden && id && data.settings.hiddenPhotos.includes(id)) return [];
   if (exercise?.photoUrl) return [exercise.photoUrl];
   if (custom) return [custom];
   return id ? builtInPhotos(id) : [];

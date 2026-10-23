@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import clsx from 'clsx';
 import { Pause, Play } from 'lucide-react';
 
@@ -9,17 +9,27 @@ interface Props {
   /** Milliseconds per frame when animating start ↔ end position. */
   interval?: number;
   showControl?: boolean;
+  /** Shown instead when no frame can be loaded (broken link, offline). Default: nothing. */
+  fallback?: ReactNode;
 }
 
 /**
  * Crossfades between start/end photos like a slow GIF. Animates only while
- * on screen and never when the user prefers reduced motion.
+ * on screen and never when the user prefers reduced motion. Frames that fail
+ * to load are dropped; with none left the whole block disappears.
  */
-export function ExercisePhoto({ frames, alt, className, interval = 1100, showControl = true }: Props) {
+export function ExercisePhoto({ frames: all, alt, className, interval = 1100, showControl = true, fallback = null }: Props) {
   const ref = useRef<HTMLDivElement>(null);
+  const [failed, setFailed] = useState<string[]>([]);
   const [frame, setFrame] = useState(0);
   const [visible, setVisible] = useState(false);
   const [paused, setPaused] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const key = all.join('|');
+  useEffect(() => {
+    setFailed([]);
+    setFrame(0);
+  }, [key]);
+  const frames = all.filter((src) => !failed.includes(src));
   const animated = frames.length > 1;
 
   useEffect(() => {
@@ -36,6 +46,9 @@ export function ExercisePhoto({ frames, alt, className, interval = 1100, showCon
     return () => window.clearInterval(id);
   }, [animated, visible, paused, frames.length, interval]);
 
+  if (frames.length === 0) return <>{fallback}</>;
+  const current = frame % frames.length;
+
   return (
     <div ref={ref} className={clsx('relative overflow-hidden bg-white/[0.04]', className)}>
       {frames.map((src, i) => (
@@ -43,13 +56,14 @@ export function ExercisePhoto({ frames, alt, className, interval = 1100, showCon
           key={src}
           src={src}
           alt={i === 0 ? alt : ''}
+          onError={() => setFailed((f) => (f.includes(src) ? f : [...f, src]))}
           aria-hidden={i === 0 ? undefined : true}
           loading="lazy"
           decoding="async"
           draggable={false}
           className={clsx(
             'absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-in-out',
-            i === frame ? 'opacity-100' : 'opacity-0',
+            i === current ? 'opacity-100' : 'opacity-0',
           )}
         />
       ))}

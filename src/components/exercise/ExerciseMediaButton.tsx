@@ -33,7 +33,14 @@ export function ExerciseMediaButton({ exercise, className }: Props) {
         className={clsx('group relative shrink-0 overflow-hidden rounded-[16px] transition active:scale-95', className)}
       >
         {photos.length > 0 ? (
-          <ExercisePhoto frames={photos} alt="" showControl={false} interval={1300} className="h-[68px] w-[92px]" />
+          <ExercisePhoto
+            frames={photos}
+            alt=""
+            showControl={false}
+            interval={1300}
+            className="h-[68px] w-[92px]"
+            fallback={<ExerciseThumb exercise={exercise} size="lg" />}
+          />
         ) : (
           <ExerciseThumb exercise={exercise} size="lg" />
         )}

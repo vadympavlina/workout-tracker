@@ -121,6 +121,7 @@ export function user(raw: unknown): UserProfile {
 export function settings(raw: unknown): AppData['settings'] {
   const merged = { ...DEFAULT_SETTINGS, ...(isObj(raw) ? (raw as Partial<AppData['settings']>) : {}) };
   if (!(merged.accent in ACCENTS)) merged.accent = DEFAULT_SETTINGS.accent;
+  merged.hiddenPhotos = arr(merged.hiddenPhotos).filter((x): x is string => typeof x === 'string');
   return merged;
 }
 
