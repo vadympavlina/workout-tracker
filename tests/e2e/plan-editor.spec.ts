@@ -39,9 +39,9 @@ test('exercise picker: open details before adding', async ({ page }) => {
   await page.goto('./#/plan/new');
   await page.getByRole('button', { name: 'Додати вправу' }).click();
   await page.getByPlaceholder('Пошук вправи').fill('Гак');
-  await page.getByRole('button', { name: 'Деталі: Гак-присід' }).click();
+  await page.getByRole('button', { name: 'Деталі: Гак-присід', exact: true }).click();
 
-  const sheet = page.getByRole('dialog', { name: 'Гак-присід' });
+  const sheet = page.getByRole('dialog', { name: 'Гак-присід', exact: true });
   await expect(sheet.getByText('Основні мʼязи')).toBeVisible();
   await expect(sheet.getByText('Квадрицепс')).toBeVisible();
   await expect(sheet.locator('img[alt^="Техніка"]').first()).toBeVisible();
@@ -49,6 +49,6 @@ test('exercise picker: open details before adding', async ({ page }) => {
 
   await sheet.getByRole('button', { name: 'Додати' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  await expect(page.locator('main').getByText('Гак-присід')).toBeVisible();
+  await expect(page.locator('main').getByText('Гак-присід', { exact: true })).toBeVisible();
   noErrors();
 });
