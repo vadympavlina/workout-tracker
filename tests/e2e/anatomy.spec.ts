@@ -38,7 +38,7 @@ test('library: tap a muscle on the body to filter exercises', async ({ page }) =
   const rows = page.locator('main a[href*="#/exercises/"]');
   const count = await rows.count();
   expect(count).toBeGreaterThan(5);
-  expect(count).toBeLessThan(160);
+  expect(count).toBeLessThan(175);
   // Exercises that train the muscle as the main target come before assisting ones.
   await expect(rows.first()).toContainText(/біцепс|згинання/i);
 
@@ -49,7 +49,7 @@ test('library: tap a muscle on the body to filter exercises', async ({ page }) =
   await page.getByRole('button', { name: 'Прибрати фільтр: Прес' }).click();
   await expect(page).not.toHaveURL(/m=/);
   await expect(page.getByRole('group', { name: 'Фільтр', exact: true })).toBeVisible();
-  await expect(rows).toHaveCount(160);
+  await expect(rows).toHaveCount(175);
 });
 
 test('body type setting switches the figure on muscle maps', async ({ page }) => {

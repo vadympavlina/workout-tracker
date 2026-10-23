@@ -177,6 +177,21 @@ const BUILT_IN: Record<string, MuscleTargets> = {
   'barbell-curl': { primary: ['biceps'], secondary: ['forearms'] },
   'front-squat': { primary: ['quads'], secondary: ['glutes', 'abs'] },
   'hip-thrust': { primary: ['glutes'], secondary: ['hamstrings'] },
+  'lever-chest-press': { primary: ['chest'], secondary: ['shoulders', 'triceps'] },
+  'smith-decline-press': { primary: ['chest'], secondary: ['triceps', 'shoulders'] },
+  'cable-iron-cross': { primary: ['chest'], secondary: ['shoulders'] },
+  'decline-bench-press': { primary: ['chest'], secondary: ['triceps', 'shoulders'] },
+  'wide-bench-press': { primary: ['chest'], secondary: ['shoulders', 'triceps'] },
+  'decline-db-fly': { primary: ['chest'], secondary: ['shoulders'] },
+  'single-arm-db-press': { primary: ['chest'], secondary: ['triceps', 'shoulders', 'abs'] },
+  'neutral-db-press': { primary: ['chest'], secondary: ['triceps', 'shoulders'] },
+  'bent-arm-pullover': { primary: ['chest', 'lats'], secondary: ['triceps'] },
+  'svend-press': { primary: ['chest'], secondary: ['shoulders', 'triceps'] },
+  'chest-dips': { primary: ['chest'], secondary: ['triceps', 'shoulders'] },
+  'incline-push-up': { primary: ['chest'], secondary: ['triceps', 'shoulders'] },
+  'decline-push-up': { primary: ['chest'], secondary: ['shoulders', 'triceps'] },
+  'wide-push-up': { primary: ['chest'], secondary: ['shoulders', 'triceps'] },
+  'kb-floor-press': { primary: ['chest'], secondary: ['triceps'] },
 };
 
 const BY_GROUP: Record<MuscleGroup, MuscleTargets> = {
