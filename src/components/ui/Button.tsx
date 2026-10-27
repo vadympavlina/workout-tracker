@@ -95,7 +95,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
         'inline-flex shrink-0 items-center justify-center rounded-full transition duration-200 active:scale-95 disabled:pointer-events-none disabled:opacity-30',
         size === 'md' ? 'h-11 w-11' : 'h-9 w-9',
         variant === 'ghost' && 'text-muted hover:bg-white/[0.06] hover:text-fg',
-        variant === 'secondary' && 'bg-white/[0.08] text-fg hover:bg-white/[0.12]',
+        variant === 'secondary' && 'glass glass-press text-fg',
         variant === 'danger' && 'text-negative hover:bg-negative/10',
         className,
       )}

@@ -188,7 +188,7 @@ export default function ActiveWorkoutPage() {
     <div className="mx-auto max-w-2xl" style={{ paddingBottom: 'calc(120px + var(--safe-bottom))' }}>
       {/* Header */}
       <header
-        className="sticky top-0 z-30 border-b border-white/[0.06] bg-bg/80 px-2 pb-3 backdrop-blur-2xl sm:px-4"
+        className="glass sticky top-0 z-30 rounded-b-[28px] px-2 pb-3 sm:px-4"
         style={{ paddingTop: 'calc(8px + var(--safe-top))' }}
       >
         <div className="flex items-center gap-1">
@@ -473,7 +473,7 @@ export default function ActiveWorkoutPage() {
       </div>
 
       {/* Bottom action bar — the rest timer lives here so it never covers content. */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.06] bg-bg/95 backdrop-blur-2xl" style={{ paddingBottom: 'var(--safe-bottom)' }}>
+      <div className="glass fixed inset-x-0 bottom-0 z-40 rounded-t-[28px]" style={{ paddingBottom: 'var(--safe-bottom)' }}>
         <div className="mx-auto flex max-w-2xl items-center gap-2 px-4 py-3">
           {resting ? (
             <>

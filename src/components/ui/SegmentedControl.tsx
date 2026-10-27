@@ -8,9 +8,16 @@ interface Props<T extends string> {
   className?: string;
 }
 
+/** Glass track with a lens that glides to the selected option. */
 export function SegmentedControl<T extends string>({ value, onChange, options, label, className }: Props<T>) {
+  const index = Math.max(0, options.findIndex((o) => o.value === value));
   return (
-    <div role="radiogroup" aria-label={label} className={clsx('flex rounded-full bg-white/[0.06] p-1', className)}>
+    <div role="radiogroup" aria-label={label} className={clsx('glass relative flex rounded-full p-1', className)}>
+      <span
+        className="glass-thumb pointer-events-none absolute inset-y-1 left-1 rounded-full transition-transform duration-[420ms] ease-[cubic-bezier(0.3,1.25,0.5,1)]"
+        style={{ width: `calc((100% - 8px) / ${options.length})`, transform: `translateX(${index * 100}%)` }}
+        aria-hidden
+      />
       {options.map((o) => {
         const active = o.value === value;
         return (
@@ -21,8 +28,8 @@ export function SegmentedControl<T extends string>({ value, onChange, options, l
             aria-checked={active}
             onClick={() => onChange(o.value)}
             className={clsx(
-              'h-9 flex-1 rounded-full px-3 text-[13px] font-semibold transition duration-200',
-              active ? 'bg-fg text-black shadow-card' : 'text-muted hover:text-fg',
+              'glass-press relative h-9 min-w-0 flex-1 truncate rounded-full px-2 text-[13px] font-semibold transition-colors duration-200',
+              active ? 'text-fg' : 'text-muted hover:text-fg',
             )}
           >
             {o.label}

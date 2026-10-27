@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import clsx from 'clsx';
+import { Switch as GlassSwitch } from 'glisse';
 
 interface Props {
   checked: boolean;
@@ -18,24 +18,7 @@ export function Switch({ checked, onChange, label, description }: Props) {
         </label>
         {description && <p className="text-[13px] text-subtle">{description}</p>}
       </div>
-      <button
-        id={id}
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
-        className={clsx(
-          'relative inline-flex h-[30px] w-[50px] shrink-0 items-center rounded-full transition duration-200',
-          checked ? 'bg-accent' : 'bg-white/[0.12]',
-        )}
-      >
-        <span
-          className={clsx(
-            'inline-block h-[24px] w-[24px] rounded-full bg-white shadow transition-transform duration-200',
-            checked ? 'translate-x-[23px]' : 'translate-x-[3px]',
-          )}
-        />
-      </button>
+      <GlassSwitch id={id} checked={checked} onCheckedChange={onChange} className="shrink-0" />
     </div>
   );
 }

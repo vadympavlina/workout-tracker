@@ -21,7 +21,7 @@ export function ActiveWorkoutPill() {
     >
       <Link
         to="/active"
-        className="flex w-full max-w-md animate-slide-up items-center gap-3 rounded-card border border-accent/30 bg-elevated/95 p-2.5 pl-3 shadow-glow backdrop-blur-xl transition hover:border-accent/50"
+        className="glass glass-press flex w-full max-w-md animate-slide-up items-center gap-3 rounded-card p-2.5 pl-3 ring-1 ring-inset ring-accent/25 transition hover:ring-accent/45"
       >
         <span className="relative flex h-2.5 w-2.5 shrink-0" aria-hidden>
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />

@@ -1,40 +1,42 @@
-import { NavLink } from 'react-router-dom';
-import clsx from 'clsx';
+import { forwardRef, type AnchorHTMLAttributes } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { TabBar } from 'glisse';
 import { NAV_ITEMS } from './navItems';
 
-/** Floating glass tab bar (phones/tablets). */
+/** glisse renders tabs with `href` through this, so they stay router links. */
+const RouterLink = forwardRef<HTMLAnchorElement, AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }>(({ href, ...props }, ref) => (
+  <Link ref={ref} to={href} {...props} />
+));
+
+/** Floating Liquid Glass tab bar (phones/tablets); the lens follows the finger. */
 export function BottomNavigation() {
+  const { pathname } = useLocation();
+  const current = NAV_ITEMS.find((i) => (i.end ? pathname === i.to : pathname.startsWith(i.to)))?.to ?? null;
   return (
     <nav
       aria-label="Основна навігація"
       className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-3 lg:hidden"
       style={{ paddingBottom: 'calc(10px + var(--safe-bottom))' }}
     >
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-bg via-bg/80 to-transparent" aria-hidden />
-      <ul className="pointer-events-auto relative flex w-full max-w-md items-stretch justify-between rounded-full border border-white/[0.08] bg-[rgb(22_22_25/0.78)] p-1.5 shadow-[0_16px_40px_-12px_rgb(0_0_0/0.9)] backdrop-blur-2xl">
-        {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
-          <li key={to} className="flex-1">
-            <NavLink
-              to={to}
-              end={end}
-              aria-label={label}
-              className={({ isActive }) =>
-                clsx(
-                  'flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium transition-all duration-300',
-                  isActive ? 'bg-white/[0.1] text-fg' : 'text-subtle hover:text-muted active:scale-95',
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <Icon size={21} strokeWidth={isActive ? 2.3 : 1.8} className={isActive ? 'text-accent' : ''} aria-hidden />
-                  <span>{label}</span>
-                </>
-              )}
-            </NavLink>
-          </li>
-        ))}
-      </ul>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-bg via-bg/70 to-transparent" aria-hidden />
+      <TabBar
+        aria-label="Розділи"
+        className="pointer-events-auto"
+        // glisse tabs have a fixed width: share the bar (max 448px) between the five sections.
+        style={{ ['--lg-tab-height' as string]: '56px', ['--lg-tab-width' as string]: 'calc((min(100vw - 24px, 448px) - 8px) / 5)' }}
+        link={RouterLink}
+        value={current}
+        items={NAV_ITEMS.map(({ to, label, icon: Icon }) => ({
+          value: to,
+          href: to,
+          label: (
+            <span className="flex flex-col items-center gap-0.5 text-[11px] font-medium">
+              <Icon size={21} strokeWidth={current === to ? 2.3 : 1.8} className={current === to ? 'text-accent' : undefined} aria-hidden />
+              {label}
+            </span>
+          ),
+        }))}
+      />
     </nav>
   );
 }
