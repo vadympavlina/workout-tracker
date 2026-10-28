@@ -26,7 +26,7 @@ export function EquipmentChips({ exercises, value, onChange, className }: Props)
           onClick={() => onChange(k)}
           className={clsx(
             'h-8 shrink-0 rounded-full px-3 text-[13px] font-medium transition',
-            value === k ? 'bg-white/[0.12] text-fg' : 'text-subtle hover:text-fg',
+            value === k ? 'lg-glass text-fg' : 'text-subtle hover:text-fg',
           )}
         >
           {k === 'all' ? 'Будь-яке обладнання' : EQUIPMENT[k]}

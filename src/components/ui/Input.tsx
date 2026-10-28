@@ -1,8 +1,9 @@
 import { forwardRef, useId, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react';
 import clsx from 'clsx';
 
+/** Glass field in glisse's palette (same fill and edge as its controls). */
 const fieldBase =
-  'w-full rounded-ctl border border-white/[0.06] bg-white/[0.05] px-4 text-[16px] text-fg placeholder:text-subtle transition duration-200 hover:border-white/[0.12] focus:border-accent/70 focus:bg-white/[0.07] focus:outline-none focus:ring-4 focus:ring-accent/10';
+  'lg-glass w-full rounded-[22px] px-4 text-[16px] text-fg placeholder:text-subtle transition duration-200 focus:bg-[var(--lg-glass-active)] focus:outline-none focus:ring-2 focus:ring-accent/50';
 
 interface FieldProps {
   label?: string;
@@ -33,7 +34,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           id={inputId}
           aria-invalid={!!error || undefined}
           aria-describedby={describedBy}
-          className={clsx(fieldBase, 'h-12', suffix && 'pr-12', error && 'border-negative/60')}
+          className={clsx(fieldBase, 'h-12', suffix && 'pr-12', error && 'ring-2 ring-negative/60')}
           {...rest}
         />
         {suffix && <span className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-[15px] text-subtle">{suffix}</span>}

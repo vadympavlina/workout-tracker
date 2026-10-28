@@ -82,7 +82,7 @@ export function NumberInput({
     return (
       <div
         className={clsx(
-          'relative rounded-[14px] border border-transparent bg-white/[0.06] transition focus-within:border-accent/70 focus-within:bg-accent/[0.06]',
+          'lg-glass relative rounded-[14px] transition focus-within:bg-[var(--lg-glass-active)] focus-within:ring-2 focus-within:ring-accent/50',
           className,
         )}
       >
@@ -103,7 +103,7 @@ export function NumberInput({
           {label}
         </label>
       )}
-      <div className="flex items-center gap-1 rounded-ctl border border-white/[0.06] bg-white/[0.05] p-1 focus-within:border-accent/70">
+      <div className="lg-glass flex items-center gap-1 rounded-[22px] p-1 focus-within:bg-[var(--lg-glass-active)] focus-within:ring-2 focus-within:ring-accent/50">
         <button
           type="button"
           onClick={() => bump(-1)}

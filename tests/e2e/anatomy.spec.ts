@@ -17,7 +17,7 @@ test('week muscle map on Progress and Home: load, recovery and ranking', async (
   await expect(ranking.getByRole('listitem')).toHaveCount(15);
   await expect(ranking.getByRole('listitem').first()).not.toContainText(/(^|\D)0 підх\./);
 
-  await page.getByRole('radio', { name: 'Відновлення' }).click();
+  await page.getByRole('tab', { name: 'Відновлення' }).click();
   await expect(page.getByRole('img', { name: /^Відновлення:/ })).toBeVisible();
   await expect(page.getByText('до 24 год').first()).toBeVisible();
   noErrors();
@@ -60,7 +60,7 @@ test('body type setting switches the figure on muscle maps', async ({ page }) =>
 
   await page.goto('./#/profile');
   await page.getByRole('button', { name: /Налаштування/ }).click();
-  await page.getByRole('radio', { name: 'Жіноча' }).click();
+  await page.getByRole('tab', { name: 'Жіноча' }).click();
   await page.keyboard.press('Escape');
 
   await page.goto('./#/exercises');

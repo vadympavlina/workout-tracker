@@ -73,7 +73,7 @@ test('copy a finished workout as text from the journal', async ({ page, context 
   const name = (await page.getByRole('heading', { level: 1 }).innerText()).trim();
 
   await page.getByRole('button', { name: 'Дії з тренуванням' }).click();
-  await page.getByRole('dialog').getByRole('button', { name: /Скопіювати як текст/ }).click();
+  await page.getByRole('menuitem', { name: /Скопіювати як текст/ }).click();
   await expect(page.getByText('Тренування скопійовано')).toBeVisible();
 
   const text = await page.evaluate(() => navigator.clipboard.readText());

@@ -51,7 +51,7 @@ export function PlateCalculator({ open, onClose, initialWeight }: Props) {
                 { value: '15', label: '15' },
                 { value: '10', label: '10' },
               ]}
-              className="h-[54px] items-center"
+              className="h-[54px] w-[156px]"
             />
           </div>
         </div>

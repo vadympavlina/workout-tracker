@@ -2,8 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import clsx from 'clsx';
 import {
-  ClipboardCopy, Clock, Copy, Dumbbell, Layers, MoreHorizontal, Pencil, Play, Plus, Save, Share2, Trash2, TrendingDown, TrendingUp, Trophy, Weight, X,
-  type LucideIcon,
+  ClipboardCopy, Clock, Copy, Dumbbell, Layers, Pencil, Play, Plus, Save, Share2, Trash2, TrendingDown, TrendingUp, Trophy, Weight, X,
 } from 'lucide-react';
 import type { WorkoutPlan, WorkoutSession } from '@/types';
 import { useData } from '@/store/DataContext';
@@ -21,7 +20,7 @@ import { bestSet, exerciseVolume, percentChange, previousPerformance, sessionRec
 import { uid } from '@/utils/id';
 import { sessionToText } from '@/utils/sessionText';
 import { copyText } from '@/utils/clipboard';
-import { Modal } from '@/components/ui/Modal';
+import { Menu } from 'glisse';
 import NotFound from './NotFound';
 
 export default function SessionDetail() {
@@ -33,7 +32,6 @@ export default function SessionDetail() {
   const toast = useToast();
   const session = sessions.find((s) => s.id === id);
   const [draft, setDraft] = useState<WorkoutSession | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
   usePageTitle(session?.name ?? 'Тренування');
 
   const info = useMemo(() => {
@@ -64,7 +62,6 @@ export default function SessionDetail() {
 
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   const copyWorkout = async () => {
-    setMenuOpen(false);
     try {
       await copyText(sessionToText(session));
       toast.success('Тренування скопійовано', 'Встав у нотатки чи повідомлення');
@@ -73,7 +70,6 @@ export default function SessionDetail() {
     }
   };
   const shareWorkout = async () => {
-    setMenuOpen(false);
     try {
       await navigator.share({ title: session.name, text: sessionToText(session) });
     } catch {
@@ -151,34 +147,20 @@ export default function SessionDetail() {
           editing ? (
             <IconButton icon={X} label="Скасувати редагування" onClick={() => setDraft(null)} />
           ) : (
-            <IconButton icon={MoreHorizontal} label="Дії з тренуванням" variant="secondary" onClick={() => setMenuOpen(true)} />
+            <Menu
+              aria-label="Дії з тренуванням"
+              items={[
+                { label: 'Скопіювати як текст', icon: <ClipboardCopy size={18} />, onSelect: () => void copyWorkout() },
+                ...(canShare ? [{ label: 'Поділитися', icon: <Share2 size={18} />, onSelect: () => void shareWorkout() }] : []),
+                { label: 'Редагувати', icon: <Pencil size={18} />, onSelect: () => setDraft(JSON.parse(JSON.stringify(session)) as WorkoutSession) },
+                'separator',
+                { label: 'Видалити', icon: <Trash2 size={18} />, destructive: true, onSelect: () => void remove() },
+              ]}
+            />
           )
         }
       />
 
-      <Modal open={menuOpen} onClose={() => setMenuOpen(false)} title="Тренування">
-        <ul className="-mx-2 space-y-1">
-          <MenuAction icon={ClipboardCopy} label="Скопіювати як текст" hint="Вправи, підходи, вага й повторення" onClick={() => void copyWorkout()} />
-          {canShare && <MenuAction icon={Share2} label="Поділитися" hint="Telegram, нотатки, повідомлення" onClick={() => void shareWorkout()} />}
-          <MenuAction
-            icon={Pencil}
-            label="Редагувати"
-            onClick={() => {
-              setMenuOpen(false);
-              setDraft(JSON.parse(JSON.stringify(session)) as WorkoutSession);
-            }}
-          />
-          <MenuAction
-            icon={Trash2}
-            label="Видалити"
-            danger
-            onClick={() => {
-              setMenuOpen(false);
-              void remove();
-            }}
-          />
-        </ul>
-      </Modal>
 
       <div className="space-y-6">
         <Card padding="none" className="grid grid-cols-2 gap-px overflow-hidden bg-line bg-none sm:grid-cols-4">
@@ -343,22 +325,3 @@ export default function SessionDetail() {
   );
 }
 
-function MenuAction({ icon: Icon, label, hint, danger, onClick }: { icon: LucideIcon; label: string; hint?: string; danger?: boolean; onClick: () => void }) {
-  return (
-    <li>
-      <button
-        type="button"
-        onClick={onClick}
-        className="flex min-h-[56px] w-full items-center gap-3.5 rounded-ctl px-2 py-2 text-left transition hover:bg-white/[0.04] active:bg-white/[0.06]"
-      >
-        <span className={clsx('inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', danger ? 'bg-negative/10 text-negative' : 'bg-white/[0.06] text-fg')}>
-          <Icon size={19} aria-hidden />
-        </span>
-        <span className="min-w-0">
-          <span className={clsx('block text-[15px] font-medium', danger && 'text-negative')}>{label}</span>
-          {hint && <span className="block text-[13px] text-subtle">{hint}</span>}
-        </span>
-      </button>
-    </li>
-  );
-}

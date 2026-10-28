@@ -94,3 +94,28 @@ test('no zoom: viewport locked and every field ≥16px (iOS auto-zoom)', async (
   await expect(page).toHaveURL(/#\/active/);
   expect(await smallFields(), 'active workout').toEqual([]);
 });
+
+test('no accidental selection, callouts or dragging — fields stay editable', async ({ page }) => {
+  await startDemo(page);
+  await page.goto('./#/exercises');
+  // A double tap/click on text selects nothing; text in a field still selects.
+  await page.locator('h1').first().dblclick();
+  expect(await page.evaluate(() => window.getSelection()?.toString() ?? '')).toBe('');
+  const search = page.getByRole('searchbox', { name: 'Пошук вправи' });
+  await search.fill('жим лежачи');
+  await search.selectText();
+  expect(await search.evaluate((el: HTMLInputElement) => el.value.slice(el.selectionStart ?? 0, el.selectionEnd ?? 0))).toBe('жим лежачи');
+  await search.fill('');
+
+  const prevented = (sel: string, type: string) =>
+    page.locator(sel).first().evaluate((el, type) => !el.dispatchEvent(new Event(type, { bubbles: true, cancelable: true })), type);
+  expect(await prevented('h1', 'contextmenu')).toBe(true);
+  expect(await prevented('h1', 'selectstart')).toBe(true);
+  expect(await prevented('main a', 'dragstart')).toBe(true);
+  expect(await prevented('input[type="search"]', 'contextmenu')).toBe(false);
+
+  // Typing and the search clear button still work.
+  await page.getByRole('searchbox', { name: 'Пошук вправи' }).fill('жим');
+  await page.getByRole('button', { name: 'Очистити пошук' }).click();
+  await expect(page.getByRole('searchbox', { name: 'Пошук вправи' })).toHaveValue('');
+});

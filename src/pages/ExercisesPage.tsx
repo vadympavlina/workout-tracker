@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
-import { ChevronRight, PersonStanding, Plus, Search, X } from 'lucide-react';
+import { ChevronRight, PersonStanding, Plus, X } from 'lucide-react';
 import type { Exercise, Muscle, MuscleGroup } from '@/types';
 import { useData } from '@/store/DataContext';
+import { SearchBox } from '@/components/ui/SearchBox';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { TopBar } from '@/components/ui/TopBar';
 import { Button } from '@/components/ui/Button';
@@ -91,26 +92,14 @@ export default function ExercisesPage() {
 
       <div className="mb-5 space-y-3">
         <div className="flex max-w-xl gap-2">
-          <label className="relative block min-w-0 flex-1">
-            <span className="sr-only">Пошук вправи</span>
-            <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-subtle" aria-hidden />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Пошук вправи"
-              className="h-12 w-full rounded-ctl border border-line bg-surface pl-11 pr-4 text-[16px] placeholder:text-subtle focus:border-accent/60 focus:outline-none"
-            />
-          </label>
+          <SearchBox label="Пошук вправи" placeholder="Пошук вправи" value={query} onChange={setQuery} className="min-w-0 flex-1" />
           <button
             type="button"
             aria-expanded={bodyOpen}
             aria-controls="muscle-picker"
             onClick={() => setBodyOpen((o) => !o)}
-            className={clsx(
-              'flex h-12 shrink-0 items-center gap-2 rounded-ctl border px-3.5 text-[14px] font-medium transition',
-              bodyOpen || muscle ? 'border-accent/40 bg-accent/15 text-accent' : 'border-line text-muted hover:text-fg',
-            )}
+            data-variant={bodyOpen || muscle ? 'filled' : undefined}
+            className="lg-glass lg-button h-12 shrink-0 rounded-full px-4 text-[14px] font-medium"
           >
             <PersonStanding size={18} aria-hidden />
             Мʼяз
@@ -135,7 +124,8 @@ export default function ExercisesPage() {
             <button
               type="button"
               onClick={() => setMuscle(null)}
-              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-accent/40 bg-accent/15 pl-3.5 pr-2.5 font-medium text-accent"
+              data-variant="filled"
+              className="lg-glass lg-button h-9 rounded-full pl-3.5 pr-2.5 text-[14px] font-medium"
               aria-label={`Прибрати фільтр: ${MUSCLE_LABELS[muscle]}`}
             >
               {MUSCLE_LABELS[muscle]}
@@ -150,10 +140,8 @@ export default function ExercisesPage() {
               type="button"
               aria-pressed={group === g}
               onClick={() => setGroup(g)}
-              className={clsx(
-                'h-10 shrink-0 rounded-full border px-4 text-[14px] font-medium transition',
-                group === g ? 'border-accent/40 bg-accent/15 text-accent' : 'border-line text-muted hover:text-fg',
-              )}
+              data-variant={group === g ? 'filled' : undefined}
+              className={clsx('lg-glass lg-button h-10 shrink-0 rounded-full px-4 text-[14px] font-medium', group !== g && 'text-muted')}
             >
               {g === 'all' ? 'Усі' : g === 'custom' ? 'Власні' : MUSCLE_GROUPS[g]}
             </button>

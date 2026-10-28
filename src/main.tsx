@@ -7,6 +7,7 @@ import App from './App';
 import { registerSW } from './pwa/registerSW';
 import { installPreloadErrorHandler } from './pwa/chunkReload';
 import { disableZoom } from './pwa/noZoom';
+import { guardInteractions } from './utils/guardInteractions';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -18,4 +19,5 @@ createRoot(document.getElementById('root')!).render(
 // works from a GitHub Pages sub-path; dev server is skipped to avoid stale caches.
 installPreloadErrorHandler();
 disableZoom();
+guardInteractions();
 if (import.meta.env.PROD) registerSW();

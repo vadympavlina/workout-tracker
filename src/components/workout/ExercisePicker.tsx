@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import clsx from 'clsx';
-import { Check, Info, Plus, Search } from 'lucide-react';
+import { Check, Info, Plus } from 'lucide-react';
 import type { Exercise, MuscleGroup } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -9,6 +9,7 @@ import { ExerciseInfo } from '@/components/exercise/ExerciseInfo';
 import { EQUIPMENT, MUSCLE_GROUPS } from '@/data/labels';
 import { EquipmentChips, type EquipmentFilter } from '@/components/exercise/EquipmentChips';
 import { useData } from '@/store/DataContext';
+import { SearchBox } from '@/components/ui/SearchBox';
 import { ExerciseFormModal } from './ExerciseFormModal';
 
 interface Props {
@@ -46,19 +47,8 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
   return (
     <>
       <Modal open={open && !creating && !preview} onClose={onClose} title={title} size="lg" rememberScroll="exercise-picker">
-        <div className="sticky -top-2 z-10 -mx-1 space-y-3 bg-surface px-1 pb-3">
-          <label className="relative block">
-            <span className="sr-only">Пошук вправи</span>
-            <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-subtle" aria-hidden />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Пошук вправи"
-              data-autofocus
-              className="h-12 w-full rounded-ctl border border-line bg-elevated pl-11 pr-4 text-[16px] placeholder:text-subtle focus:border-accent/60 focus:outline-none"
-            />
-          </label>
+        <div className="sticky -top-2 z-10 -mx-1 space-y-3 bg-[rgb(26_26_29/0.94)] px-1 pb-3 backdrop-blur-xl">
+          <SearchBox label="Пошук вправи" placeholder="Пошук вправи" value={query} onChange={setQuery} autoFocus />
           <div className="scrollbar-none -mx-1 flex gap-2 overflow-x-auto px-1" role="group" aria-label="Фільтр за групою мʼязів">
             {(['all', ...groups] as const).map((g) => (
               <button
@@ -66,10 +56,8 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
                 type="button"
                 aria-pressed={group === g}
                 onClick={() => setGroup(g)}
-                className={clsx(
-                  'h-9 shrink-0 rounded-full border px-3.5 text-[13px] font-medium transition',
-                  group === g ? 'border-accent/40 bg-accent/15 text-accent' : 'border-line text-muted hover:text-fg',
-                )}
+                data-variant={group === g ? 'filled' : undefined}
+                className={clsx('lg-glass lg-button h-9 shrink-0 rounded-full px-3.5 text-[13px] font-medium', group !== g && 'text-muted')}
               >
                 {g === 'all' ? 'Усі' : MUSCLE_GROUPS[g]}
               </button>

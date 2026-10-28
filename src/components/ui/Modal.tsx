@@ -84,7 +84,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
         aria-describedby={description ? descId : undefined}
         tabIndex={-1}
         className={clsx(
-          'relative flex max-h-[92dvh] w-full flex-col overflow-hidden border border-white/[0.08] bg-[rgb(18_18_20)] shadow-2xl focus:outline-none',
+          'sheet-glass relative flex max-h-[92dvh] w-full flex-col overflow-hidden focus:outline-none',
           'animate-sheet-up rounded-t-[30px] sm:animate-slide-up sm:rounded-[28px]',
           size === 'md' ? 'sm:max-w-lg' : 'sm:max-w-2xl',
         )}
@@ -105,7 +105,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
             type="button"
             onClick={onClose}
             aria-label="Закрити"
-            className="-mr-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.07] text-muted transition hover:bg-white/[0.12] hover:text-fg"
+            className="lg-glass lg-button -mr-1 !h-10 !w-10 shrink-0 !rounded-full !p-0 text-muted hover:text-fg"
           >
             <X size={20} aria-hidden />
           </button>

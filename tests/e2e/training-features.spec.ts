@@ -63,7 +63,7 @@ test('plate calculator for barbell exercises', async ({ page }) => {
   await sheet.getByRole('textbox', { name: 'Вага на штанзі, кг' }).fill('102,5');
   await expect(sheet.getByRole('img', { name: /На кожну сторону/ })).toHaveAttribute('aria-label', 'На кожну сторону: 25 + 15 + 1.25 кг');
   await expect(sheet).toContainText('Разом: 102,5 кг');
-  await sheet.getByRole('radio', { name: '15' }).click();
+  await sheet.getByRole('tab', { name: '15' }).click();
   await expect(sheet.getByRole('img', { name: /На кожну сторону/ })).toHaveAttribute('aria-label', 'На кожну сторону: 25 + 15 + 2.5 + 1.25 кг');
   noErrors();
 });
