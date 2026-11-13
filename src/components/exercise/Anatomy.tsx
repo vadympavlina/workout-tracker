@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import type { Muscle } from '@/types';
 import { MUSCLE_SLUGS, NON_MUSCLE, SLUG_MUSCLE, type Anatomy, type BodyType, type BodyView, type Slug } from '@/data/anatomyTypes';
 import { MUSCLE_LABELS } from '@/data/exerciseMedia';
-import { useData } from '@/store/DataContext';
+import { useOptionalData } from '@/store/DataContext';
 
 // ---- Data -------------------------------------------------------------------
 
@@ -113,8 +113,8 @@ interface FigureProps {
 
 export function BodyFigure({ view, colors, crop, onPick, label, className }: FigureProps) {
   const anatomy = useAnatomy();
-  const { data } = useData();
-  const sex: BodyType = data.settings.bodyType === 'female' ? 'female' : 'male';
+  const store = useOptionalData();
+  const sex: BodyType = store?.data.settings.bodyType === 'female' ? 'female' : 'male';
   if (!anatomy) return <svg viewBox="0 0 724 1448" className={className} aria-hidden />;
   const v = anatomy[sex][view];
   const viewBox = (crop && cropBox(anatomy, sex, view, crop)) || v.viewBox;
@@ -181,7 +181,7 @@ export function MuscleMap({ primary, secondary = [], view = 'both', className, l
       {views.map((v) => (
         <figure key={v} className="m-0 flex h-full flex-col items-center">
           <BodyFigure view={v} colors={colors} className="h-full min-h-0 w-auto flex-1" />
-          {view === 'both' && <figcaption className="mt-1 text-[11px] text-subtle">{v === 'front' ? 'Спереду' : 'Ззаду'}</figcaption>}
+          {view === 'both' && <figcaption className="mt-1 text-[11px] text-muted">{v === 'front' ? 'Спереду' : 'Ззаду'}</figcaption>}
         </figure>
       ))}
     </div>

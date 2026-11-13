@@ -100,15 +100,14 @@ export function ActivityHeatmap({ sessions, weeks = 53 }: Props) {
               <span key={d}>{i % 2 === 0 ? d : ''}</span>
             ))}
           </div>
-          <div className="flex gap-[3px]" role="grid" aria-label={`Тренування за рік: ${pluralWorkouts(total)}`}>
+          <div className="flex gap-[3px]" role="group" aria-label={`Тренування за рік: ${pluralWorkouts(total)}`}>
             {columns.map((col, w) => (
-              <div key={w} role="row" className="grid grid-rows-7 gap-[3px]">
+              <div key={w} className="grid grid-rows-7 gap-[3px]">
                 {col.map((day) =>
                   day.names.length ? (
                     <button
                       key={day.key}
                       type="button"
-                      role="gridcell"
                       aria-label={describe(day)}
                       title={describe(day)}
                       onMouseEnter={() => setFocus(day)}
@@ -119,7 +118,6 @@ export function ActivityHeatmap({ sessions, weeks = 53 }: Props) {
                   ) : (
                     <span
                       key={day.key}
-                      role="gridcell"
                       aria-hidden
                       className={clsx('h-3 w-3 rounded-[3px]', day.future ? 'bg-transparent' : LEVEL_CLASS[0])}
                     />

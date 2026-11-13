@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatClock, formatPercent, formatSigned, parseDecimal, plural, pluralWorkouts, repsRange } from './format';
+import { formatClock, formatPercent, formatSet, formatSigned, parseDecimal, plural, pluralWorkouts, repsRange } from './format';
 import { startOfWeek, toISODate, weekdayOf } from './date';
 
 describe('Ukrainian plurals', () => {
@@ -40,5 +40,13 @@ describe('dates', () => {
   });
   it('keeps late-evening local times on the same calendar day', () => {
     expect(toISODate(new Date(2026, 9, 5, 23, 59))).toBe('2026-10-05');
+  });
+});
+
+describe('formatSet', () => {
+  it('shows weight × reps, or reps only without load', () => {
+    expect(formatSet(60, 12)).toBe('60 кг × 12');
+    expect(formatSet(52.5, 8)).toBe('52,5 кг × 8');
+    expect(formatSet(0, 17)).toBe('17 повт.');
   });
 });

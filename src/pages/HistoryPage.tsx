@@ -60,6 +60,7 @@ export default function HistoryPage() {
       <div>
         <TopBar title="Журнал" subtitle="Історія твоїх тренувань" />
         <EmptyState
+          level={2}
           icon={NotebookText}
           title="Поки що немає тренувань"
           description="Заверши перше тренування — і воно зʼявиться тут з усіма підходами."
@@ -98,9 +99,9 @@ export default function HistoryPage() {
             </div>
             <IconButton icon={ChevronRight} label="Наступний місяць" size="sm" disabled={isCurrentMonth} onClick={() => shiftMonth(1)} />
           </div>
-          <div className="grid grid-cols-7 gap-1 text-center" role="grid">
+          <div className="grid grid-cols-7 gap-1 text-center" role="group" aria-label="Календар місяця">
             {WEEKDAYS_SHORT.map((d) => (
-              <span key={d} className="pb-1 text-[11px] font-semibold uppercase text-subtle" role="columnheader">
+              <span key={d} className="pb-1 text-[11px] font-semibold uppercase text-subtle" aria-hidden>
                 {d}
               </span>
             ))}
@@ -113,7 +114,6 @@ export default function HistoryPage() {
                 <button
                   key={key}
                   type="button"
-                  role="gridcell"
                   disabled={!has}
                   aria-pressed={isSel}
                   aria-label={`${formatDate(d)}${has ? `, ${byDate.get(key)!.length} трен.` : ''}`}

@@ -220,6 +220,11 @@ export function DataProvider({ children, fallback, onboarding }: ProviderProps) 
   return <DataContext.Provider value={api}>{children}</DataContext.Provider>;
 }
 
+/** Data when it is already loaded — null on screens shown before it (onboarding). */
+export function useOptionalData() {
+  return useContext(DataContext);
+}
+
 export function useData() {
   const ctx = useContext(DataContext);
   if (!ctx) throw new Error('useData must be used inside DataProvider');

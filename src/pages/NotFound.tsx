@@ -7,6 +7,7 @@ export default function NotFound() {
     <div className="mx-auto max-w-xl pt-10">
       <EmptyState
         icon={SearchX}
+        level={1}
         title="Сторінку не знайдено"
         description="Можливо, запис було видалено або посилання застаріло."
         action={

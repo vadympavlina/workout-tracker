@@ -62,7 +62,8 @@ export function TrendChart({ data, height = 180, formatValue, ariaLabel, tone = 
             axisLine={false}
             width={44}
             domain={domain ?? [0, 'auto']}
-            tickFormatter={(v: number) => (v >= 10000 ? `${Math.round(v / 1000)}k` : String(Math.round(v * 10) / 10))}
+            // One unit per axis: thousands as "9,5 т"-style compact numbers, no mix of "38k" and "9500".
+            tickFormatter={(v: number) => (v >= 1000 ? `${(Math.round(v / 100) / 10).toLocaleString('uk-UA')}k` : String(Math.round(v * 10) / 10).replace('.', ','))}
           />
           <Tooltip
             cursor={{ stroke: 'rgb(255 255 255 / 0.15)', strokeWidth: 1 }}

@@ -7,6 +7,7 @@ import { useStartWorkout } from '@/hooks/useStartWorkout';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { TopBar } from '@/components/ui/TopBar';
 import { Button, ButtonLink, IconButton } from '@/components/ui/Button';
+import { Menu } from 'glisse';
 import { Card, Section } from '@/components/ui/Card';
 import { IconBadge } from '@/components/ui/IconBadge';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
@@ -83,9 +84,15 @@ export default function WorkoutDetail() {
         }
         actions={
           <>
-            <IconButton icon={Pencil} label="Редагувати" onClick={() => navigate(`/plan/${plan.id}/edit`)} />
-            <IconButton icon={Copy} label="Дублювати" onClick={duplicate} />
-            <IconButton icon={Trash2} label="Видалити" variant="danger" onClick={remove} />
+            <IconButton icon={Pencil} label="Редагувати" variant="secondary" onClick={() => navigate(`/plan/${plan.id}/edit`)} />
+            <Menu
+              aria-label="Дії з планом"
+              items={[
+                { label: 'Дублювати', icon: <Copy size={18} />, onSelect: duplicate },
+                'separator',
+                { label: 'Видалити', icon: <Trash2 size={18} />, destructive: true, onSelect: () => void remove() },
+              ]}
+            />
           </>
         }
       />

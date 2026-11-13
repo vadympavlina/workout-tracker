@@ -80,7 +80,7 @@ export default function ExerciseDetail() {
         <ExerciseInfo exercise={exercise} />
 
         {history.length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <StatCard label="Рекорд" icon={Trophy} value={pr ? `${formatNumber(pr.weight, 2)}` : '—'} unit={pr ? `кг × ${pr.reps}` : undefined} />
+          <StatCard label="Рекорд" icon={Trophy} value={pr ? (pr.weight > 0 ? formatNumber(pr.weight, 2) : String(pr.reps)) : '—'} unit={pr ? (pr.weight > 0 ? `кг × ${pr.reps}` : 'повт.') : undefined} />
           <StatCard
             label="Прогрес ваги"
             value={delta != null ? formatSigned(delta) : '—'}

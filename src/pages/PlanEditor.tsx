@@ -169,12 +169,10 @@ export default function PlanEditor() {
                     key={label}
                     type="button"
                     aria-pressed={selected}
-                    aria-label={WEEKDAYS_LONG[d]}
+                    aria-label={`${label} — ${WEEKDAYS_LONG[d].toLowerCase()}`}
                     onClick={() => toggleDay(d as Weekday)}
-                    className={clsx(
-                      'h-12 rounded-ctl border text-[14px] font-semibold transition',
-                      selected ? 'border-accent/50 bg-accent/15 text-accent' : 'border-line bg-elevated text-muted hover:text-fg',
-                    )}
+                    data-variant={selected ? 'filled' : undefined}
+                    className={clsx('lg-glass lg-button !h-12 !rounded-[16px] !px-0 text-[14px] font-semibold', !selected && 'text-muted')}
                   >
                     {label}
                   </button>
@@ -257,7 +255,7 @@ export default function PlanEditor() {
                       <GripVertical size={18} aria-hidden />
                     </button>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[15px] font-semibold">{ex?.name ?? 'Видалена вправа'}</p>
+                      <p className="line-clamp-2 text-[15px] font-semibold leading-snug">{ex?.name ?? 'Видалена вправа'}</p>
                       <p className="text-[13px] text-subtle">
                         <span className="tabular font-mono">{i + 1}</span>
                         {ex && ` · ${MUSCLE_GROUPS[ex.muscleGroup]}`}
@@ -284,10 +282,12 @@ export default function PlanEditor() {
                       <NumberInput variant="compact" ariaLabel="Повторень до" value={pe.repsMax} min={1} max={100} onChange={(v) => patchExercise(i, { repsMax: v ?? 1 })} />
                     </CompactField>
                   </div>
-                  <div className="mt-2 flex items-center gap-2">
-                    <Timer size={15} className="shrink-0 text-subtle" aria-hidden />
-                    <span className="text-[13px] text-subtle">Відпочинок</span>
-                    <div className="scrollbar-none flex flex-1 gap-1 overflow-x-auto" role="radiogroup" aria-label={`Відпочинок: ${ex?.name ?? 'вправа'}`}>
+                  <div className="mt-3">
+                    <span className="mb-1.5 flex items-center gap-1.5 text-[13px] text-subtle">
+                      <Timer size={14} className="shrink-0" aria-hidden />
+                      Відпочинок
+                    </span>
+                    <div className="grid grid-cols-6 gap-1" role="radiogroup" aria-label={`Відпочинок: ${ex?.name ?? 'вправа'}`}>
                       {REST_OPTIONS.map(({ value, label }) => {
                         const selected = (pe.restSec ?? 0) === value;
                         return (
@@ -297,10 +297,8 @@ export default function PlanEditor() {
                             role="radio"
                             aria-checked={selected}
                             onClick={() => patchExercise(i, { restSec: value || undefined })}
-                            className={clsx(
-                              'h-8 shrink-0 rounded-full px-2.5 text-[12px] font-medium transition',
-                              selected ? 'bg-fg text-black' : 'bg-white/[0.06] text-muted hover:text-fg',
-                            )}
+                            data-variant={selected ? 'filled' : undefined}
+                            className={clsx('lg-glass lg-button !h-9 !rounded-full !px-0 text-[12.5px] font-medium', !selected && 'text-muted')}
                           >
                             {label}
                           </button>
@@ -351,7 +349,7 @@ export default function PlanEditor() {
 const REST_OPTIONS = [
   { value: 0, label: 'Авто' },
   { value: 60, label: '1 хв' },
-  { value: 90, label: '1,5' },
+  { value: 90, label: '1,5 хв' },
   { value: 120, label: '2 хв' },
   { value: 180, label: '3 хв' },
   { value: 240, label: '4 хв' },

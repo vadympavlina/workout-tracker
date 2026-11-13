@@ -1,4 +1,4 @@
-import { CalendarDays, Camera, Download, Play, Smartphone, Timer, TrendingUp, Trophy } from 'lucide-react';
+import { CalendarDays, Camera, Download, Play, Smartphone, Timer, TrendingUp, Trophy, ChevronDown } from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { TopBar } from '@/components/ui/TopBar';
 import { IconBadge } from '@/components/ui/IconBadge';
@@ -51,14 +51,18 @@ export default function HelpPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <TopBar back="/profile" title="Допомога" subtitle="Як отримати максимум від Pulse" />
+      {/* Topics fold open one by one — the full text at once was a wall to scroll through. */}
       <ul className="space-y-3">
-        {TOPICS.map(({ icon, title, body }) => (
-          <li key={title} className="card flex gap-4 p-4 sm:p-5">
-            <IconBadge icon={icon} />
-            <div>
-              <h2 className="text-[16px] font-semibold">{title}</h2>
-              <p className="mt-1 text-[15px] leading-relaxed text-muted">{body}</p>
-            </div>
+        {TOPICS.map(({ icon, title, body }, i) => (
+          <li key={title}>
+            <details className="card group" open={i === 0}>
+              <summary className="flex min-h-[64px] cursor-pointer list-none items-center gap-4 p-4 sm:p-5 [&::-webkit-details-marker]:hidden">
+                <IconBadge icon={icon} />
+                <h2 className="min-w-0 flex-1 text-[16px] font-semibold">{title}</h2>
+                <ChevronDown size={20} className="shrink-0 text-subtle transition-transform group-open:rotate-180" aria-hidden />
+              </summary>
+              <p className="-mt-1 px-4 pb-5 text-[15px] leading-relaxed text-muted sm:px-5">{body}</p>
+            </details>
           </li>
         ))}
       </ul>

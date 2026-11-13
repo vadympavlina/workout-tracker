@@ -30,13 +30,13 @@ test('reps in reserve: asked after each set, saved with the workout', async ({ p
 
   await page.getByRole('button', { name: 'Позначити підхід 1 виконаним' }).click();
   const ask1 = page.getByRole('group', { name: 'Скільки ще повторень міг би зробити, підхід 1' });
-  await ask1.getByRole('button', { name: 'Ще 1' }).click();
-  await expect(ask1.getByRole('button', { name: 'Ще 1' })).toHaveAttribute('aria-pressed', 'true');
+  await ask1.getByRole('button', { name: /^1 — ще/ }).click();
+  await expect(ask1.getByRole('button', { name: /^1 — ще/ })).toHaveAttribute('aria-pressed', 'true');
 
   // The question moves to the next set; the first keeps a "+1" badge.
   await page.getByRole('button', { name: 'Позначити підхід 2 виконаним' }).click();
   await expect(ask1).toBeHidden();
-  await page.getByRole('group', { name: 'Скільки ще повторень міг би зробити, підхід 2' }).getByRole('button', { name: 'Нуль — до відмови' }).click();
+  await page.getByRole('group', { name: 'Скільки ще повторень міг би зробити, підхід 2' }).getByRole('button', { name: '0 — до відмови' }).click();
   await expect(page.getByRole('button', { name: 'Підхід 1: дії' }).locator('..')).toContainText('+1');
 
   await page.getByRole('button', { name: 'Завершити тренування' }).click();

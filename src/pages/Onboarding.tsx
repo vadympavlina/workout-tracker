@@ -5,7 +5,8 @@ import type { AppData, GoalType } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { NumberInput } from '@/components/ui/NumberInput';
-import { ActivityRings } from '@/components/ui/ActivityRings';
+import { BodyFigure } from '@/components/exercise/Anatomy';
+import type { Slug } from '@/data/anatomyTypes';
 import { useToast } from '@/components/ui/Toast';
 import { GOALS } from '@/data/labels';
 import { createDemoData, createStarterPlans, emptyData } from '@/data/demo';
@@ -16,6 +17,15 @@ import { uid } from '@/utils/id';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useTheme } from '@/hooks/useTheme';
 import { DEFAULT_SETTINGS } from '@/data/demo';
+
+// Welcome illustration: a full-body week, brighter where the work was heavier.
+const A = (o: number) => `rgb(var(--c-accent) / ${o})`;
+const HERO_FRONT: Partial<Record<Slug, string>> = {
+  chest: A(1), deltoids: A(0.75), biceps: A(0.55), abs: A(0.45), obliques: A(0.3), quadriceps: A(0.9), forearm: A(0.3), adductors: A(0.35), calves: A(0.4),
+};
+const HERO_BACK: Partial<Record<Slug, string>> = {
+  'upper-back': A(0.95), trapezius: A(0.6), deltoids: A(0.55), triceps: A(0.7), 'lower-back': A(0.4), gluteal: A(0.85), hamstring: A(0.7), calves: A(0.45),
+};
 
 interface Props {
   finish: (data: AppData) => Promise<void>;
@@ -93,17 +103,10 @@ export default function Onboarding({ finish }: Props) {
           </div>
 
           <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
-            <ActivityRings
-              size={200}
-              stroke={20}
-              gap={5}
-              label="Ілюстрація: кільця активності"
-              rings={[
-                { label: 'Тренування', value: 0.82, max: 1, color: 'move' },
-                { label: 'Обсяг', value: 0.64, max: 1, color: 'volume' },
-                { label: 'Підходи', value: 0.9, max: 1, color: 'sets' },
-              ]}
-            />
+            <div className="flex h-56 items-end justify-center gap-4" role="img" aria-label="Ілюстрація: мʼязи, які ти тренуєш">
+              <BodyFigure view="front" colors={HERO_FRONT} className="h-full w-auto animate-slide-up" />
+              <BodyFigure view="back" colors={HERO_BACK} className="h-full w-auto animate-slide-up [animation-delay:120ms]" />
+            </div>
             <h1 className="mt-10 text-[38px] font-bold leading-[1.02] tracking-[-0.045em]">
               Тренуйся.
               <br />

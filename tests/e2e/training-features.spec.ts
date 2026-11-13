@@ -43,7 +43,7 @@ test('per-exercise rest time drives the rest timer', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Почати тренування' }).click();
   await page.getByRole('button', { name: 'Позначити підхід 1 виконаним' }).click();
-  await expect(page.getByRole('button', { name: /Відпочинок: залишилось 3:00/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Відпочинок 3:00/ })).toBeVisible();
   noErrors();
 });
 
@@ -72,9 +72,9 @@ test('year heatmap opens the journal for a day', async ({ page }) => {
   const noErrors = trackErrors(page);
   await startDemo(page);
   await page.goto('./#/progress');
-  const grid = page.getByRole('grid', { name: /Тренування за рік/ });
+  const grid = page.getByRole('group', { name: /Тренування за рік/ });
   await expect(grid).toBeVisible();
-  const day = grid.getByRole('gridcell', { name: /^1 жовтня: Ноги \+ Прес/ });
+  const day = grid.getByRole('button', { name: /^1 жовтня: Ноги \+ Прес/ });
   await day.click();
   await expect(page).toHaveURL(/#\/history\?date=2026-10-01$/);
   await expect(page.locator('section[aria-label="Тренування"] li')).toHaveCount(1);

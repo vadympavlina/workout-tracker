@@ -7,8 +7,8 @@ test('drag to reorder and unsaved-changes guard', async ({ page }) => {
   await page.getByRole('link', { name: /Груди \+ Руки/ }).first().click();
   await page.getByRole('button', { name: 'Редагувати' }).click();
 
-  const names = () => page.locator('ol li p.truncate').allTextContents();
-  await expect(page.locator('ol li p.truncate')).toHaveCount(6);
+  const names = () => page.locator('ol li p.line-clamp-2').allTextContents();
+  await expect(page.locator('ol li p.line-clamp-2')).toHaveCount(6);
   const before = await names();
   await page.locator('#ex-heading').scrollIntoViewIfNeeded();
   await page.evaluate(() => window.scrollBy(0, 120));

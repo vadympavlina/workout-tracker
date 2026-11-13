@@ -44,7 +44,7 @@ test('steppers, weight carry-over, delete with undo, rest bar, wake lock', async
 
   // Completing a set starts the rest timer in the bottom bar.
   await page.getByRole('button', { name: 'Позначити підхід 1 виконаним' }).click();
-  const rest = page.getByRole('button', { name: /Відпочинок: залишилось/ });
+  const rest = page.getByRole('button', { name: /^Відпочинок \d/ });
   await expect(rest).toBeVisible();
 
   // Delete a specific set (tap its number), then undo.

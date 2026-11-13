@@ -8,7 +8,7 @@ import { useStartWorkout } from '@/hooks/useStartWorkout';
 import { useTodayPlans } from '@/hooks/useTodayPlans';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useStartSheet } from '@/layouts/AppLayout';
-import { Avatar } from '@/components/ui/Avatar';
+import { Avatar, initials } from '@/components/ui/Avatar';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Section } from '@/components/ui/Card';
 import { StatCard } from '@/components/ui/StatCard';
@@ -16,10 +16,8 @@ import { IconBadge } from '@/components/ui/IconBadge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { BackupReminder } from '@/components/BackupReminder';
 import { MuscleWeekCard } from '@/components/charts/MuscleWeekCard';
-import { addDays, isSameDay, startOfWeek, weekdayOf, WEEKDAYS_SHORT } from '@/utils/date';
-import {
-  formatClock, formatDate, formatDurationWords, formatNumber, formatPercent, formatSigned, formatVolume, formatWeekdayDate, pluralExercises,
-} from '@/utils/format';
+import { addDays, isSameDay, startOfDay, startOfWeek, weekdayOf, WEEKDAYS_SHORT } from '@/utils/date';
+import { formatClock, formatDate, formatDurationWords, formatNumber, formatPercent, formatSigned, formatVolume, formatWeekdayDate, pluralExercises, formatVolumeShort } from '@/utils/format';
 import {
   latestWeight, percentChange, sessionSetCount, sessionsBetween, sessionVolume, sumVolume, weeklyBuckets, weightChangeSince, weightSeries,
 } from '@/utils/stats';
@@ -83,8 +81,10 @@ export default function Dashboard() {
             {firstName ? `Привіт, ${firstName}` : 'Привіт'}
           </h1>
         </div>
-        <Link to="/profile" aria-label="Профіль" className="shrink-0 rounded-full lg:hidden">
-          <Avatar name={data.user.name} src={data.user.avatar} size={48} />
+        <Link to="/profile" aria-label={`Профіль ${initials(data.user.name)}`.trim()} className="shrink-0 rounded-full lg:hidden">
+          <span aria-hidden>
+            <Avatar name={data.user.name} src={data.user.avatar} size={48} />
+          </span>
         </Link>
       </header>
 
@@ -153,7 +153,7 @@ export default function Dashboard() {
               <dl className="mt-5 grid grid-cols-3 gap-2">
                 <Metric label="Час" value={formatClock(lastSession.durationSec)} />
                 <Metric label="Вправ" value={String(lastSession.exercises.length)} />
-                <Metric label="Обсяг" value={formatVolume(sessionVolume(lastSession))} color="text-volume" />
+                <Metric label="Обсяг" value={formatVolumeShort(sessionVolume(lastSession))} color="text-volume" />
               </dl>
             </Link>
           ) : (
@@ -182,8 +182,8 @@ export default function Dashboard() {
                       <span className="block font-mono text-[11px] uppercase tracking-wider text-subtle">{formatDate(r.date)}</span>
                     </span>
                     <span className="metric text-[18px]">
-                      {formatNumber(r.weight, 2)}
-                      <span className="ml-1 font-mono text-[11px] font-medium tracking-normal text-subtle">кг × {r.reps}</span>
+                      {r.weight > 0 ? formatNumber(r.weight, 2) : r.reps}
+                      <span className="ml-1 font-mono text-[11px] font-medium tracking-normal text-subtle">{r.weight > 0 ? `кг × ${r.reps}` : 'повт.'}</span>
                     </span>
                   </Link>
                 </li>
@@ -233,10 +233,10 @@ function Meter({ label, value, current, average, averageText, color }: { label: 
     <div className="min-w-0 rounded-[14px] bg-white/[0.04] p-3">
       <dt className="text-[13px] text-muted">{label}</dt>
       <dd className="metric mt-1 truncate text-[20px]">{value}</dd>
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.08]" aria-hidden>
+      <dd className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.08]" aria-hidden>
         <div className={clsx('h-full rounded-full', color)} style={{ width: `${pct}%` }} />
-      </div>
-      <p className="mt-1.5 truncate text-[12px] text-subtle">{average > 0 ? `середнє ${averageText}` : 'ще немає середнього'}</p>
+      </dd>
+      <dd className="mt-1.5 truncate text-[12px] text-subtle">{average > 0 ? `середнє ${averageText}` : 'немає даних'}</dd>
     </div>
   );
 }
@@ -245,7 +245,7 @@ function Metric({ label, value, color }: { label: string; value: string; color?:
   return (
     <div className="rounded-[14px] bg-white/[0.04] px-3 py-2.5">
       <dt className="eyebrow">{label}</dt>
-      <dd className={clsx('metric mt-1.5 text-[17px]', color)}>{value}</dd>
+      <dd className={clsx('metric mt-1.5 whitespace-nowrap text-[17px]', color)}>{value}</dd>
     </div>
   );
 }
@@ -390,10 +390,13 @@ function WeekPlan() {
   const today = new Date();
   const weekStart = startOfWeek(today);
   const todayIdx = weekdayOf(today);
+  // Days before the account existed are not "missed" — the user wasn't here yet.
+  const since = startOfDay(data.user.createdAt || today).getTime();
 
   const days = WEEKDAYS_SHORT.map((label, i) => {
     const date = addDays(weekStart, i);
-    const plans = data.plans.filter((p) => p.days.includes(i as 0));
+    const counts = date.getTime() >= since;
+    const plans = counts ? data.plans.filter((p) => p.days.includes(i as 0)) : [];
     const done = sessions.filter((s) => isSameDay(s.startedAt, date));
     return { label, i, date, plans, done };
   });

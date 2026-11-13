@@ -6,12 +6,23 @@ export function formatNumber(n: number, digits: 0 | 1 | 2 = 0): string {
   return (digits === 0 ? nf0 : digits === 1 ? nf1 : nf2).format(n);
 }
 
+/** "60 кг × 12", or "17 повт." for a set without load (bodyweight). */
+export function formatSet(weight: number, reps: number): string {
+  return weight > 0 ? `${formatNumber(weight, 2)} кг × ${reps}` : `${reps} повт.`;
+}
+
 export function formatWeight(kg: number): string {
   return `${nf2.format(kg)} кг`;
 }
 
 export function formatVolume(kg: number): string {
   if (kg >= 100_000) return `${nf1.format(kg / 1000)} т`;
+  return `${nf0.format(Math.round(kg))} кг`;
+}
+
+/** For tight tiles: 13 225 → "13,2 т", 950 → "950 кг". */
+export function formatVolumeShort(kg: number): string {
+  if (kg >= 10_000) return `${nf1.format(kg / 1000)} т`;
   return `${nf0.format(Math.round(kg))} кг`;
 }
 

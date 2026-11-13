@@ -15,7 +15,7 @@ import { IconBadge } from '@/components/ui/IconBadge';
 import { BarsChart, TrendChart } from '@/components/charts/Chart';
 import { ActivityHeatmap } from '@/components/charts/ActivityHeatmap';
 import { addDays, daysBetween } from '@/utils/date';
-import { formatDate, formatHours, formatNumber, formatPercent, formatSigned, formatVolume, pluralWorkouts } from '@/utils/format';
+import { formatDate, formatHours, formatNumber, formatPercent, formatSet, formatSigned, formatVolume, pluralWorkouts } from '@/utils/format';
 import {
   exerciseProgress, latestWeight, percentChange, sessionsBetween, sumDuration, sumVolume, weeklyBuckets, weightChangeSince, weightSeries,
 } from '@/utils/stats';
@@ -34,6 +34,7 @@ export default function ProgressPage() {
   const openStart = useStartSheet();
   const { hash } = useLocation();
   const [period, setPeriod] = useState<Period>('3m');
+  const [showAllRecords, setShowAllRecords] = useState(false);
 
   useEffect(() => {
     if (hash === '#records') document.getElementById('records')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -70,13 +71,15 @@ export default function ProgressPage() {
   const weightDelta = weightChangeSince(data.bodyWeight, view.from);
   const weightData = weightSeries(data.bodyWeight, view.from).map((p) => ({ label: p.label, value: p.weight }));
   const wantsGain = data.user.goal === 'muscle' || data.user.goal === 'strength';
-  const allRecords = [...records.values()].sort((a, b) => a.name.localeCompare(b.name, 'uk'));
+  // Newest first: the latest records are what the user wants to see, the rest are behind "Показати всі".
+  const allRecords = [...records.values()].sort((a, b) => b.date.localeCompare(a.date) || a.name.localeCompare(b.name, 'uk'));
 
   if (sessions.length === 0) {
     return (
       <div>
         <TopBar title="Прогрес" />
         <EmptyState
+          level={2}
           icon={ChartLine}
           title="Ще немає даних для статистики"
           description="Заверши кілька тренувань — тут зʼявляться графіки обсягу, рекорди та прогрес по вправах."
@@ -218,7 +221,7 @@ export default function ProgressPage() {
           <Section title="Рекорди" id="records" className="scroll-mt-6">
             {allRecords.length > 0 ? (
               <ul className="card divide-y divide-line">
-                {allRecords.map((r) => (
+                {(showAllRecords ? allRecords : allRecords.slice(0, 5)).map((r) => (
                   <li key={r.exerciseId}>
                     <Link to={`/exercises/${r.exerciseId}`} className="flex items-center gap-3 p-4 transition hover:bg-white/[0.02]">
                       <IconBadge icon={Trophy} tone="warning" size="sm" />
@@ -227,13 +230,19 @@ export default function ProgressPage() {
                         <span className="block text-[13px] text-subtle">{formatDate(r.date)}</span>
                       </span>
                       <span className="tabular text-[15px] font-semibold">
-                        {formatNumber(r.weight, 2)} кг × {r.reps}
+                        {formatSet(r.weight, r.reps)}
                       </span>
                     </Link>
                   </li>
                 ))}
               </ul>
-            ) : (
+            ) : null}
+            {allRecords.length > 5 && (
+              <Button variant="ghost" size="sm" block className="mt-2" onClick={() => setShowAllRecords((v) => !v)}>
+                {showAllRecords ? 'Згорнути' : `Показати всі (${allRecords.length})`}
+              </Button>
+            )}
+            {allRecords.length === 0 && (
               <p className="card p-5 text-[14px] text-muted">Рекорди зʼявляться після тренувань з вагою.</p>
             )}
           </Section>

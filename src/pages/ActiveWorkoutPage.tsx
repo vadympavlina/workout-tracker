@@ -24,7 +24,7 @@ import { SwapExerciseModal } from '@/components/workout/SwapExerciseModal';
 import { WarmupPanel } from '@/components/workout/WarmupPanel';
 import { ExerciseMediaButton } from '@/components/exercise/ExerciseMediaButton';
 import { MUSCLE_GROUPS } from '@/data/labels';
-import { formatClock, formatDurationWords, formatNumber, repsRange } from '@/utils/format';
+import { formatClock, formatDurationWords, formatNumber, formatSet, repsRange } from '@/utils/format';
 import { lastPerformance } from '@/utils/stats';
 import { suggestProgression } from '@/utils/progression';
 
@@ -110,7 +110,7 @@ export default function ActiveWorkoutPage() {
       setRecordSetId(set.id);
       window.setTimeout(() => setRecordSetId((id) => (id === set.id ? null : id)), 2200);
       if (data.settings.vibration) navigator.vibrate?.([60, 40, 60, 40, 120]);
-      toast.show({ kind: 'record', title: 'Новий рекорд!', description: `${current.name}: ${formatNumber(set.weight ?? 0, 2)} кг × ${set.reps}` });
+      toast.show({ kind: 'record', title: 'Новий рекорд!', description: `${current.name}: ${formatSet(set.weight ?? 0, set.reps ?? 0)}` });
     }
   };
 
@@ -480,7 +480,6 @@ export default function ActiveWorkoutPage() {
               <button
                 type="button"
                 onClick={workout.stopRest}
-                aria-label={`Відпочинок: залишилось ${formatClock(restLeft!)}. Натисни, щоб пропустити`}
                 className="relative flex h-14 min-w-0 flex-1 items-center gap-2.5 rounded-full bg-volume/[0.12] pl-1.5 pr-4 transition hover:bg-volume/[0.18] active:scale-[0.97]"
               >
                 <ActivityRings size={44} stroke={5} rings={[{ label: 'Відпочинок', value: restLeft!, max: active.restTotalSec || 90, color: 'volume' }]} label="">
@@ -488,9 +487,11 @@ export default function ActiveWorkoutPage() {
                 </ActivityRings>
                 <span className="min-w-0 text-left">
                   <span className="eyebrow block text-volume/70">Відпочинок</span>
-                  <span role="timer" className="metric block font-mono text-[19px] text-volume">
+                  {' '}
+                  <span className="metric block font-mono text-[19px] text-volume">
                     {formatClock(restLeft!)}
                   </span>
+                  <span className="sr-only"> — натисни, щоб пропустити</span>
                 </span>
               </button>
               <IconButton icon={Minus} label="Мінус 15 секунд відпочинку" variant="secondary" className="h-14 w-12" onClick={() => workout.adjustRest(-15)} />

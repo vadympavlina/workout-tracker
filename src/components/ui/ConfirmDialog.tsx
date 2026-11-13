@@ -40,14 +40,15 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
         title={options?.title ?? ''}
         description={options?.description}
         footer={
-          <>
+          // Stacked on phones (action-sheet style) so long labels never wrap; the action sits on top.
+          <div className="flex w-full flex-col-reverse gap-2.5 sm:flex-row">
             <Button variant="secondary" block onClick={() => close(false)}>
               {options?.cancelLabel ?? 'Скасувати'}
             </Button>
             <Button variant={options?.tone === 'primary' ? 'primary' : 'danger'} block onClick={() => close(true)} data-autofocus>
               {options?.confirmLabel ?? 'Підтвердити'}
             </Button>
-          </>
+          </div>
         }
       >
         {null}

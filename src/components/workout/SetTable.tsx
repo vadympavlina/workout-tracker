@@ -262,7 +262,7 @@ function RirPicker({ index, value, onChange }: { index: number; value: number | 
           key={n}
           type="button"
           aria-pressed={value === n}
-          aria-label={n === 0 ? 'Нуль — до відмови' : `Ще ${rirLabel(n)}`}
+          aria-label={n === 0 ? '0 — до відмови' : `${rirLabel(n)} — ще стільки повторень`}
           onClick={() => onChange(value === n ? null : n)}
           className={clsx(
             'tabular inline-flex h-9 min-w-[38px] items-center justify-center rounded-full px-2 text-[13px] font-semibold transition active:scale-90',

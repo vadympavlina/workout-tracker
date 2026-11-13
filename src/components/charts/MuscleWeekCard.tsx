@@ -73,7 +73,7 @@ export function MuscleWeekCard({ compact = false }: { compact?: boolean }) {
         {(['front', 'back'] as const).map((v) => (
           <figure key={v} className="m-0 flex min-h-0 flex-col items-center">
             <BodyFigure view={v} colors={colors} className="h-full min-h-0 w-auto flex-1" />
-            <figcaption className="mt-1 text-[11px] text-subtle">{v === 'front' ? 'Спереду' : 'Ззаду'}</figcaption>
+            <figcaption className="mt-1 text-[11px] text-muted">{v === 'front' ? 'Спереду' : 'Ззаду'}</figcaption>
           </figure>
         ))}
       </div>

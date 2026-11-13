@@ -15,7 +15,7 @@ import { NumberInput } from '@/components/ui/NumberInput';
 import { Textarea } from '@/components/ui/Input';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
-import { formatClock, formatNumber, formatPercent, formatSigned, formatTime, formatVolume, formatWeekdayDate } from '@/utils/format';
+import { formatClock, formatPercent, formatSet, formatSigned, formatTime, formatVolume, formatWeekdayDate } from '@/utils/format';
 import { bestSet, exerciseVolume, percentChange, previousPerformance, sessionRecords, sessionSetCount, sessionVolume } from '@/utils/stats';
 import { uid } from '@/utils/id';
 import { sessionToText } from '@/utils/sessionText';
@@ -198,7 +198,7 @@ export default function SessionDetail() {
                     <Link to={`/exercises/${ex.exerciseId}`} className="text-[16px] font-semibold hover:text-accent">
                       {ex.name}
                     </Link>
-                    <p className="tabular mt-0.5 text-[13px] text-muted">Обсяг {formatVolume(exerciseVolume(ex))}</p>
+                    {exerciseVolume(ex) > 0 && <p className="tabular mt-0.5 text-[13px] text-muted">Обсяг {formatVolume(exerciseVolume(ex))}</p>}
                   </div>
                   {info.records.has(ex.exerciseId) && !editing && (
                     <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-warning/15 px-2.5 py-1 text-[12px] font-semibold text-warning">
@@ -257,7 +257,7 @@ export default function SessionDetail() {
                           )}
                         >
                           <span className="mr-1.5 text-subtle">{si + 1}</span>
-                          {formatNumber(s.weight, 2)} кг × {s.reps}
+                          {formatSet(s.weight, s.reps)}
                           {s.rir != null && (
                             <span className="ml-1.5 text-subtle" title="Запас повторень">
                               <span className="sr-only">запас </span>+{s.rir >= 4 ? '4+' : s.rir}
@@ -270,7 +270,7 @@ export default function SessionDetail() {
                       <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-line pt-3 text-[13px] text-subtle">
                         <span>
                           Минулого разу:{' '}
-                          <span className="tabular text-muted">{prevBest ? `${formatNumber(prevBest.weight, 2)} кг × ${prevBest.reps}` : '—'}</span>
+                          <span className="tabular text-muted">{prevBest ? formatSet(prevBest.weight, prevBest.reps) : '—'}</span>
                         </span>
                         {weightDelta != null && weightDelta !== 0 && (
                           <span className={weightDelta > 0 ? 'text-positive' : 'text-negative'}>Вага {formatSigned(weightDelta, 'кг')}</span>

@@ -65,7 +65,7 @@ export default function WeightPage() {
         </Card>
 
         {entries.length === 0 ? (
-          <EmptyState icon={Scale} title="Ще немає записів" description="Додай перший замір — і тут зʼявиться графік змін." />
+          <EmptyState icon={Scale} level={2} title="Ще немає записів" description="Додай перший замір — і тут зʼявиться графік змін." />
         ) : (
           <>
             <Card padding="lg">
