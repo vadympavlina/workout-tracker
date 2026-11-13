@@ -12,7 +12,7 @@ interface Props {
   className?: string;
 }
 
-const sizes = { sm: 'h-9 w-9 rounded-xl', md: 'h-11 w-11 rounded-[14px]', lg: 'h-14 w-14 rounded-[18px]' };
+const sizes = { sm: 'h-9 w-9 rounded-xl', md: 'h-11 w-11 rounded-tile', lg: 'h-14 w-14 rounded-tile' };
 const iconSizes = { sm: 17, md: 20, lg: 24 };
 export const TONES: Record<Tone, string> = {
   accent: 'bg-accent/[0.12] text-accent',

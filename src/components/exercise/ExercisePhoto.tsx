@@ -73,7 +73,7 @@ export function ExercisePhoto({ frames: all, alt, className, interval = 1100, sh
           type="button"
           onClick={() => setPaused((v) => !v)}
           aria-label={paused ? 'Відтворити анімацію вправи' : 'Зупинити анімацію вправи'}
-          className="absolute bottom-2 right-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur transition hover:bg-black/70"
+          className="hit absolute bottom-2 right-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur transition hover:bg-black/70"
         >
           {paused ? <Play size={15} aria-hidden /> : <Pause size={15} aria-hidden />}
         </button>

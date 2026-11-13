@@ -28,7 +28,7 @@ export function ExerciseInfo({ exercise, compact }: { exercise: Exercise; compac
             type="button"
             onClick={() => setHidden(true)}
             title="Фото не відповідає вправі? Сховай його"
-            className="absolute left-2 top-2 inline-flex h-9 items-center gap-1.5 rounded-full bg-black/55 px-3 text-[12.5px] font-medium text-white backdrop-blur transition hover:bg-black/70"
+            className="absolute left-2 top-2 inline-flex h-9 items-center gap-1.5 rounded-full bg-black/55 px-3 text-caption font-medium text-white backdrop-blur transition hover:bg-black/70"
           >
             <EyeOff size={14} aria-hidden />
             Сховати фото
@@ -39,7 +39,7 @@ export function ExerciseInfo({ exercise, compact }: { exercise: Exercise; compac
         <button
           type="button"
           onClick={() => setHidden(false)}
-          className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white/[0.06] px-3 text-[13px] font-medium text-muted transition hover:text-fg"
+          className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white/[0.06] px-3 text-footnote font-medium text-muted transition hover:text-fg"
         >
           <ImageIcon size={14} aria-hidden />
           Показати фото
@@ -56,10 +56,10 @@ export function ExerciseInfo({ exercise, compact }: { exercise: Exercise; compac
         <div className="min-w-0 space-y-4">
           <MuscleList title="Основні мʼязи" tone="bg-accent" muscles={targets.primary} />
           {targets.secondary.length > 0 && <MuscleList title="Допоміжні" tone="bg-accent/45" muscles={targets.secondary} />}
-          <p className="text-[14px] text-muted">
+          <p className="text-subhead text-muted">
             Рекомендовано: <span className="tabular font-semibold text-fg">{exercise.defaultSets} × {repsRange(exercise.defaultRepsMin, exercise.defaultRepsMax)}</span>
           </p>
-          {exercise.description && <p className="text-[15px] leading-relaxed">{exercise.description}</p>}
+          {exercise.description && <p className="text-subhead leading-relaxed">{exercise.description}</p>}
         </div>
       </Card>
     </div>
@@ -75,7 +75,7 @@ function MuscleList({ title, tone, muscles }: { title: string; tone: string; mus
       </p>
       <ul className="flex flex-wrap gap-1.5">
         {muscles.map((m) => (
-          <li key={m} className="rounded-full bg-white/[0.07] px-3 py-1.5 text-[13px] font-medium">
+          <li key={m} className="rounded-full bg-white/[0.07] px-3 py-1.5 text-footnote font-medium">
             {MUSCLE_LABELS[m]}
           </li>
         ))}

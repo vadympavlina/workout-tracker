@@ -80,7 +80,7 @@ export default function PlanPage() {
                   aria-selected={active}
                   onClick={() => setFilter(d)}
                   className={clsx(
-                    'relative flex h-12 flex-col items-center justify-center rounded-full text-[13px] font-semibold transition',
+                    'relative flex h-12 flex-col items-center justify-center rounded-full text-footnote font-semibold transition',
                     active ? 'bg-fg text-black' : 'text-muted hover:text-fg',
                     d === today && !active && 'text-accent',
                   )}
@@ -93,7 +93,7 @@ export default function PlanPage() {
           </div>
 
           {filter === 'all' && scheduledCount === 0 && (
-            <div className="card flex items-start gap-3 p-4 text-[14px] text-muted">
+            <div className="card flex items-start gap-3 p-4 text-subhead text-muted">
               <CalendarDays size={18} className="mt-0.5 shrink-0 text-subtle" aria-hidden />
               <p>
                 У розкладі поки порожньо. Щоб тренування зʼявлялось у свій день, відкрий його → «Редагувати» → обери дні тижня.
@@ -111,7 +111,7 @@ export default function PlanPage() {
                   key={d}
                   id={`day-${d}`}
                   title={dayName}
-                  action={d === today ? <span className="rounded-full bg-accent/15 px-2.5 py-1 text-[12px] font-semibold text-accent">Сьогодні</span> : undefined}
+                  action={d === today ? <span className="rounded-full bg-accent/15 px-2.5 py-1 text-caption font-semibold text-accent">Сьогодні</span> : undefined}
                 >
                   {plans.length > 0 ? (
                     <div className="space-y-3">
@@ -119,7 +119,7 @@ export default function PlanPage() {
                     </div>
                   ) : (
                     <div className="card flex items-center justify-between gap-3 p-4">
-                      <p className="text-[15px] text-muted">День відпочинку</p>
+                      <p className="text-subhead text-muted">День відпочинку</p>
                       <ButtonLink to={`/plan/new?day=${d}`} variant="secondary" size="sm" icon={Plus}>
                         Додати
                       </ButtonLink>
@@ -141,13 +141,13 @@ export default function PlanPage() {
           <Link to="/exercises" className="card-interactive flex items-center gap-4 p-4">
             <IconBadge icon={BookOpen} tone="neutral" />
             <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-semibold">Бібліотека вправ</span>
-              <span className="block text-[13px] text-muted">{data.exercises.length} вправ · додавай власні</span>
+              <span className="block text-subhead font-semibold">Бібліотека вправ</span>
+              <span className="block text-footnote text-muted">{data.exercises.length} вправ · додавай власні</span>
             </span>
             <ChevronRight size={20} className="text-subtle" aria-hidden />
           </Link>
           {templates.length === 0 && filter === 'all' && (
-            <p className="flex items-start gap-2 text-[13px] text-subtle">
+            <p className="flex items-start gap-2 text-footnote text-subtle">
               <LayoutTemplate size={16} className="mt-0.5 shrink-0" aria-hidden />
               Тренування без дня тижня зберігаються як шаблони — їх можна запускати будь-коли.
             </p>

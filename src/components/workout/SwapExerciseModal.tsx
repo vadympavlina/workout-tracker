@@ -47,7 +47,7 @@ export function SwapExerciseModal({ open, onClose, original, excludeIds, hasDone
       size="lg"
     >
       {hasDoneSets && (
-        <p className="mb-3 rounded-[14px] bg-white/[0.04] px-3 py-2.5 text-[13px] text-muted">
+        <p className="mb-3 rounded-tile bg-white/[0.04] px-3 py-2.5 text-footnote text-muted">
           Виконані підходи збережуться, а нова вправа стане наступною.
         </p>
       )}
@@ -68,8 +68,8 @@ export function SwapExerciseModal({ open, onClose, original, excludeIds, hasDone
                 >
                   <ExerciseThumb exercise={e} />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[15px] font-medium">{e.name}</span>
-                    <span className="block truncate text-[13px] text-subtle">
+                    <span className="block truncate text-subhead font-medium">{e.name}</span>
+                    <span className="block truncate text-footnote text-subtle">
                       {EQUIPMENT[e.equipment]}
                       {match >= 1 ? ' · ті самі мʼязи' : match > 0 ? ' · частково ті самі' : ''}
                       {best && best.reps > 0 && ` · було ${best.weight > 0 ? `${formatNumber(best.weight, 2)}×` : ''}${best.reps}`}

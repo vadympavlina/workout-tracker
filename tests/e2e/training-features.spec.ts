@@ -76,6 +76,8 @@ test('year heatmap opens the journal for a day', async ({ page }) => {
   await expect(grid).toBeVisible();
   const day = grid.getByRole('button', { name: /^1 жовтня: Ноги \+ Прес/ });
   await day.click();
+  await expect(day).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: 'Відкрити' }).click();
   await expect(page).toHaveURL(/#\/history\?date=2026-10-01$/);
   await expect(page.locator('section[aria-label="Тренування"] li')).toHaveCount(1);
   await expect(page.locator('section[aria-label="Тренування"]')).toContainText('Ноги + Прес');

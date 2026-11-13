@@ -50,9 +50,9 @@ export function MuscleWeekCard({ compact = false }: { compact?: boolean }) {
   return (
     <Card padding="lg" id={compact ? undefined : 'muscles'}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-[17px] font-semibold">Мʼязи за 7 днів</h2>
+        <h2 className="text-headline font-semibold">Мʼязи за 7 днів</h2>
         {compact ? (
-          <Link to="/progress" className="inline-flex items-center gap-0.5 text-[14px] font-medium text-muted hover:text-fg">
+          <Link to="/progress" className="inline-flex items-center gap-0.5 text-subhead font-medium text-muted hover:text-fg">
             Детальніше <ChevronRight size={16} aria-hidden />
           </Link>
         ) : (
@@ -69,36 +69,54 @@ export function MuscleWeekCard({ compact = false }: { compact?: boolean }) {
         )}
       </div>
 
-      <div className={clsx('mt-4 grid grid-cols-2 gap-2', compact ? 'h-52' : 'h-72 sm:h-80')} role="img" aria-label={label}>
-        {(['front', 'back'] as const).map((v) => (
-          <figure key={v} className="m-0 flex min-h-0 flex-col items-center">
-            <BodyFigure view={v} colors={colors} className="h-full min-h-0 w-auto flex-1" />
-            <figcaption className="mt-1 text-[11px] text-muted">{v === 'front' ? 'Спереду' : 'Ззаду'}</figcaption>
-          </figure>
-        ))}
+      {/* On wide screens the compact card puts a short ranking next to the figures instead of leaving the space empty. */}
+      <div className={clsx(compact && 'lg:grid lg:grid-cols-2 lg:items-center lg:gap-10')}>
+        <div>
+        <div className={clsx('mt-4 grid grid-cols-2 gap-2', compact ? 'h-52' : 'h-72 sm:h-80')} role="img" aria-label={label}>
+          {(['front', 'back'] as const).map((v) => (
+            <figure key={v} className="m-0 flex min-h-0 flex-col items-center">
+              <BodyFigure view={v} colors={colors} className="h-full min-h-0 w-auto flex-1" />
+              <figcaption className="mt-1 text-caption2 text-muted">{v === 'front' ? 'Спереду' : 'Ззаду'}</figcaption>
+            </figure>
+          ))}
+        </div>
+
+        {mode === 'load' ? (
+          <div className="mt-3 flex items-center justify-center gap-1.5 text-caption text-subtle" aria-hidden>
+            Менше
+            {LOAD_FILL.map((c, i) => (
+              <span key={i} className="h-2 w-6 rounded-sm" style={{ background: c || BASE }} />
+            ))}
+            Більше підходів
+          </div>
+        ) : (
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-caption text-subtle" aria-hidden>
+            {(Object.keys(REC) as Recovery[]).map((r) => (
+              <span key={r} className="inline-flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: REC[r].fill || BASE }} />
+                {REC[r].label}
+              </span>
+            ))}
+          </div>
+        )}
+        </div>
+        {compact && worked.length > 0 && (
+          <ul className="mt-4 hidden space-y-2.5 lg:block" aria-label="Найбільше підходів">
+            {worked.slice(0, 6).map((m) => (
+              <li key={m} className="grid grid-cols-[112px_minmax(0,1fr)_72px] items-center gap-3 text-footnote">
+                <span className="truncate">{MUSCLE_LABELS[m]}</span>
+                <span className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                  <span className="block h-full rounded-full" style={{ width: `${((load.sets[m] ?? 0) / max) * 100}%`, background: LOAD_FILL[Math.max(1, loadLevel(load.sets[m] ?? 0))] }} />
+                </span>
+                <span className="tabular text-right text-muted">{formatNumber(load.sets[m] ?? 0, 1)} підх.</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
-      {mode === 'load' ? (
-        <div className="mt-3 flex items-center justify-center gap-1.5 text-[12px] text-subtle" aria-hidden>
-          Менше
-          {LOAD_FILL.map((c, i) => (
-            <span key={i} className="h-2 w-6 rounded-sm" style={{ background: c || BASE }} />
-          ))}
-          Більше підходів
-        </div>
-      ) : (
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[12px] text-subtle" aria-hidden>
-          {(Object.keys(REC) as Recovery[]).map((r) => (
-            <span key={r} className="inline-flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: REC[r].fill || BASE }} />
-              {REC[r].label}
-            </span>
-          ))}
-        </div>
-      )}
-
       {compact ? (
-        <p className="mt-3 text-[14px] text-muted">
+        <p className="mt-3 text-subhead text-muted">
           {worked.length ? (
             <>
               Найбільше: <span className="text-fg">{worked.slice(0, 2).map((m) => MUSCLE_LABELS[m]).join(', ')}</span>
@@ -119,7 +137,7 @@ export function MuscleWeekCard({ compact = false }: { compact?: boolean }) {
             const sets = load.sets[m] ?? 0;
             const rec = recovery(load.lastWorked[m], now);
             return (
-              <li key={m} className="grid grid-cols-[104px_minmax(0,1fr)_96px] items-center gap-3 text-[13px]">
+              <li key={m} className="grid grid-cols-[104px_minmax(0,1fr)_96px] items-center gap-3 text-footnote">
                 <span className="truncate">{MUSCLE_LABELS[m]}</span>
                 <span className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
                   <span

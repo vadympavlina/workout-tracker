@@ -49,18 +49,19 @@ axe now reports nothing except `meta-viewport` — zoom is disabled on purpose (
 8. **Naming:** Summary said «Загальна вага» while the rest of the app says «Обсяг» → «Обсяг».
 9. **Equipment chips 32px** → 36px.
 
-## Could Improve — open (needs a decision or a bigger pass)
+## Could Improve — done in the follow-up pass
 
-1. **Type scale sprawl:** 25 distinct `text-[Npx]` sizes and 10 radii in components. Suggest 7 named sizes
-   (11/13/15/17/20/26/34) and 4 radii (12/16/22/full) as Tailwind tokens, then replace the one-offs.
-2. **36px icon buttons** (calendar arrows, weight-row delete, photo pause, reorder ↑↓): usable, but below the 44px guideline.
-   Could grow to 44 where there's room.
-3. **Year heatmap cells are 12×12** — fine as a chart, small as buttons; tapping a day could open a larger popover.
-4. **Desktop home:** the 7-day muscle card is wide with small figures and a lot of empty space; a two-column card
-   (figures + ranking) like on Progress would use it better.
-5. **Plan editor on desktop:** the sticky Cancel/Save bar floats over the exercise list; on wide screens it could live in the header.
-6. **Empty home for a new user** shows four empty cards (workout, week, last workout, records) with repeated «Почати тренування»;
-   a single "first steps" card would be calmer.
+1. **Type scale and radii as tokens.** 25 one-off `text-[Npx]` sizes → 13 named sizes in `tailwind.config.js`
+   (`2xs` 10 · `caption2` 11 · `caption` 12 · `footnote` 13 · `subhead` 15 · `callout` 16 · `headline` 17 · `title3` 20 ·
+   `title2` 22 · `title1` 28 · `large` 34 · `display` 40, plus the unused legacy `body`); 10 radii → `chip` 12 · `tile`/`ctl` 16 · `sheet` 22 · `card` 24 · `panel` 28
+   (3/5px kept for heatmap cells and plates). No arbitrary font sizes are left in components.
+2. **44px touch targets** without bigger visuals: `.hit` grows the tap area of small controls with an invisible `::before`
+   (icon buttons, photo pause, avatar camera, RIR chips).
+3. **Year heatmap:** a tap selects the day (highlighted, details below) and «Відкрити» opens it — no more mis-taps on 12px cells.
+4. **New user's home:** one «Перші кроки» checklist (plan · first workout · body weight · install), ticked from their data,
+   instead of four empty cards; stats, muscles and records appear after the first workout.
+5. **Desktop home:** the 7-day muscle card shows the top-6 ranking next to the figures.
+6. **Desktop plan editor:** Cancel/Save sit in the header; the floating bar stays on phones only.
 
 ## What Works Well
 

@@ -140,7 +140,20 @@ export default function PlanEditor() {
       <TopBar
         back="/plan"
         title={existing ? 'Редагування' : 'Нове тренування'}
-        actions={existing && <IconButton icon={Trash2} label="Видалити тренування" variant="danger" onClick={remove} />}
+        actions={
+          <>
+            {existing && <IconButton icon={Trash2} label="Видалити тренування" variant="danger" onClick={remove} />}
+            {/* Desktop: save lives in the header; phones keep the bar above the thumb. */}
+            <span className="hidden items-center gap-2 lg:flex">
+              <Button variant="secondary" onClick={() => navigate(-1)}>
+                Скасувати
+              </Button>
+              <Button type="submit" icon={Save}>
+                Зберегти
+              </Button>
+            </span>
+          </>
+        }
       />
 
       <div className="space-y-6">
@@ -172,14 +185,14 @@ export default function PlanEditor() {
                     aria-label={`${label} — ${WEEKDAYS_LONG[d].toLowerCase()}`}
                     onClick={() => toggleDay(d as Weekday)}
                     data-variant={selected ? 'filled' : undefined}
-                    className={clsx('lg-glass lg-button !h-12 !rounded-[16px] !px-0 text-[14px] font-semibold', !selected && 'text-muted')}
+                    className={clsx('lg-glass lg-button !h-12 !rounded-tile !px-0 text-subhead font-semibold', !selected && 'text-muted')}
                   >
                     {label}
                   </button>
                 );
               })}
             </div>
-            <p className="mt-2 text-[13px] text-subtle">Без днів тренування збережеться як шаблон.</p>
+            <p className="mt-2 text-footnote text-subtle">Без днів тренування збережеться як шаблон.</p>
           </fieldset>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -222,7 +235,7 @@ export default function PlanEditor() {
 
         <section aria-labelledby="ex-heading" className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 id="ex-heading" className="text-[17px] font-semibold">
+            <h2 id="ex-heading" className="text-headline font-semibold">
               Вправи <span className="text-muted">({plan.exercises.length})</span>
             </h2>
           </div>
@@ -230,8 +243,8 @@ export default function PlanEditor() {
           {plan.exercises.length === 0 && (
             <div className="card flex flex-col items-center px-6 py-8 text-center">
               <IconBadge icon={ListPlus} size="lg" />
-              <p className="mt-3 text-[15px] font-semibold">Додай першу вправу</p>
-              <p className="mt-1 text-[14px] text-muted">Обери з бібліотеки або створи власну.</p>
+              <p className="mt-3 text-subhead font-semibold">Додай першу вправу</p>
+              <p className="mt-1 text-subhead text-muted">Обери з бібліотеки або створи власну.</p>
             </div>
           )}
 
@@ -255,8 +268,8 @@ export default function PlanEditor() {
                       <GripVertical size={18} aria-hidden />
                     </button>
                     <div className="min-w-0 flex-1">
-                      <p className="line-clamp-2 text-[15px] font-semibold leading-snug">{ex?.name ?? 'Видалена вправа'}</p>
-                      <p className="text-[13px] text-subtle">
+                      <p className="line-clamp-2 text-subhead font-semibold leading-snug">{ex?.name ?? 'Видалена вправа'}</p>
+                      <p className="text-footnote text-subtle">
                         <span className="tabular font-mono">{i + 1}</span>
                         {ex && ` · ${MUSCLE_GROUPS[ex.muscleGroup]}`}
                       </p>
@@ -283,7 +296,7 @@ export default function PlanEditor() {
                     </CompactField>
                   </div>
                   <div className="mt-3">
-                    <span className="mb-1.5 flex items-center gap-1.5 text-[13px] text-subtle">
+                    <span className="mb-1.5 flex items-center gap-1.5 text-footnote text-subtle">
                       <Timer size={14} className="shrink-0" aria-hidden />
                       Відпочинок
                     </span>
@@ -298,7 +311,7 @@ export default function PlanEditor() {
                             aria-checked={selected}
                             onClick={() => patchExercise(i, { restSec: value || undefined })}
                             data-variant={selected ? 'filled' : undefined}
-                            className={clsx('lg-glass lg-button !h-9 !rounded-full !px-0 text-[12.5px] font-medium', !selected && 'text-muted')}
+                            className={clsx('lg-glass lg-button !h-9 !rounded-full !px-0 text-caption font-medium', !selected && 'text-muted')}
                           >
                             {label}
                           </button>
@@ -316,7 +329,7 @@ export default function PlanEditor() {
           </Button>
         </section>
 
-        <div className="sticky bottom-[calc(72px+var(--safe-bottom))] z-20 -mx-4 border-t border-line bg-bg/90 px-4 py-3 backdrop-blur-xl sm:mx-0 sm:rounded-card sm:border lg:bottom-4">
+        <div className="sticky bottom-[calc(72px+var(--safe-bottom))] z-20 -mx-4 border-t border-line bg-bg/90 px-4 py-3 backdrop-blur-xl sm:mx-0 sm:rounded-card sm:border lg:hidden">
           <div className="flex gap-3">
             <Button variant="secondary" block onClick={() => navigate(-1)}>
               Скасувати
@@ -358,7 +371,7 @@ const REST_OPTIONS = [
 function CompactField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <span className="mb-1 block text-center text-[12px] font-medium text-subtle" aria-hidden>
+      <span className="mb-1 block text-center text-caption font-medium text-subtle" aria-hidden>
         {label}
       </span>
       {children}

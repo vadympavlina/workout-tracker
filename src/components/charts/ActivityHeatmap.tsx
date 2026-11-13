@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 import clsx from 'clsx';
 import type { WorkoutSession } from '@/types';
 import { addDays, startOfWeek, toISODate, WEEKDAYS_SHORT } from '@/utils/date';
@@ -33,6 +35,8 @@ export function ActivityHeatmap({ sessions, weeks = 53 }: Props) {
   const navigate = useNavigate();
   const scroller = useRef<HTMLDivElement>(null);
   const [focus, setFocus] = useState<Day | null>(null);
+  // Cells are tiny: a tap selects a day and shows it below; opening it is a separate, bigger button.
+  const [selected, setSelected] = useState<Day | null>(null);
 
   const { columns, months, total } = useMemo(() => {
     const today = new Date();
@@ -90,12 +94,12 @@ export function ActivityHeatmap({ sessions, weeks = 53 }: Props) {
           <span className="sticky left-0 z-10 bg-[rgb(var(--c-surface))]" aria-hidden />
           <div className="relative h-5" aria-hidden>
             {months.map((m) => (
-              <span key={`${m.col}-${m.label}`} className="absolute top-0 font-mono text-[10px] uppercase text-subtle" style={{ left: m.col * 15 }}>
+              <span key={`${m.col}-${m.label}`} className="absolute top-0 font-mono text-2xs uppercase text-subtle" style={{ left: m.col * 15 }}>
                 {m.label}
               </span>
             ))}
           </div>
-          <div className="sticky left-0 z-10 grid grid-rows-7 gap-[3px] bg-[rgb(var(--c-surface))] pr-1.5 font-mono text-[9px] leading-[12px] text-subtle" aria-hidden>
+          <div className="sticky left-0 z-10 grid grid-rows-7 gap-[3px] bg-[rgb(var(--c-surface))] pr-1.5 font-mono text-2xs leading-[12px] text-subtle" aria-hidden>
             {WEEKDAYS_SHORT.map((d, i) => (
               <span key={d}>{i % 2 === 0 ? d : ''}</span>
             ))}
@@ -112,8 +116,13 @@ export function ActivityHeatmap({ sessions, weeks = 53 }: Props) {
                       title={describe(day)}
                       onMouseEnter={() => setFocus(day)}
                       onFocus={() => setFocus(day)}
-                      onClick={() => navigate(`/history?date=${day.key}`)}
-                      className={clsx('h-3 w-3 rounded-[3px] transition hover:ring-2 hover:ring-fg/60 focus-visible:ring-2', LEVEL_CLASS[day.level])}
+                      aria-pressed={selected?.key === day.key}
+                      onClick={() => setSelected((s) => (s?.key === day.key ? null : day))}
+                      className={clsx(
+                        'h-3 w-3 rounded-[3px] transition hover:ring-2 hover:ring-fg/60 focus-visible:ring-2',
+                        LEVEL_CLASS[day.level],
+                        selected?.key === day.key && 'ring-2 ring-fg',
+                      )}
                     />
                   ) : (
                     <span
@@ -130,10 +139,19 @@ export function ActivityHeatmap({ sessions, weeks = 53 }: Props) {
       </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-        <p className="min-h-[20px] text-[13px] text-muted" aria-live="polite">
-          {focus ? describe(focus) : `${pluralWorkouts(total)} за рік · натисни на день, щоб відкрити`}
-        </p>
-        <div className="flex items-center gap-1.5 font-mono text-[10px] text-subtle" aria-hidden>
+        {selected ? (
+          <div className="flex w-full items-center gap-3 rounded-tile bg-white/[0.04] py-2 pl-3 pr-2" aria-live="polite">
+            <p className="min-w-0 flex-1 text-footnote text-fg">{describe(selected)}</p>
+            <Button size="sm" variant="secondary" iconRight={ChevronRight} onClick={() => navigate(`/history?date=${selected.key}`)}>
+              Відкрити
+            </Button>
+          </div>
+        ) : (
+          <p className="min-h-[20px] text-footnote text-muted" aria-live="polite">
+            {focus ? describe(focus) : `${pluralWorkouts(total)} за рік · натисни на день, щоб побачити`}
+          </p>
+        )}
+        <div className="flex items-center gap-1.5 font-mono text-2xs text-subtle" aria-hidden>
           Менше
           {LEVEL_CLASS.map((c) => (
             <span key={c} className={clsx('h-3 w-3 rounded-[3px]', c)} />

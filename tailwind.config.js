@@ -26,9 +26,29 @@ export default {
         sans: ['"Geist Variable"', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
         mono: ['"Geist Mono Variable"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
+      // Type scale (iOS text styles): use these instead of one-off text-[Npx] sizes.
+      fontSize: {
+        '2xs': '10px',
+        caption2: '11px',
+        caption: '12px',
+        footnote: '13px',
+        subhead: '15px',
+        callout: '16px',
+        headline: '17px',
+        title3: '20px',
+        title2: '22px',
+        title1: '28px',
+        large: '34px',
+        display: '40px',
+      },
+      // Radii: chip < tile/ctl < sheet < card < panel.
       borderRadius: {
-        card: '24px',
+        chip: '12px',
+        tile: '16px',
         ctl: '16px',
+        sheet: '22px',
+        card: '24px',
+        panel: '28px',
       },
       boxShadow: {
         card: 'inset 0 1px 0 0 rgb(255 255 255 / 0.05), 0 12px 32px -16px rgb(0 0 0 / 0.8)',

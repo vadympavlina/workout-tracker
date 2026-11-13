@@ -46,10 +46,10 @@ export default function LoginPage() {
     >
       <div className="glow-blob -right-24 -top-24 h-72 w-72 bg-accent/[0.14]" aria-hidden />
       <div className="relative flex items-center gap-2.5">
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-[13px] bg-accent text-black shadow-glow">
+        <span className="inline-flex h-10 w-10 items-center justify-center rounded-chip bg-accent text-black shadow-glow">
           <Dumbbell size={20} strokeWidth={2.4} aria-hidden />
         </span>
-        <span className="text-[20px] font-bold tracking-[-0.04em]">Pulse</span>
+        <span className="text-title3 font-bold tracking-[-0.04em]">Pulse</span>
       </div>
 
       <form onSubmit={(e) => void submit(e)} className="relative flex flex-1 flex-col justify-center py-10" noValidate>
@@ -61,13 +61,13 @@ export default function LoginPage() {
               setError('');
               setInfo('');
             }}
-            className="mb-6 inline-flex h-11 w-fit items-center gap-2 rounded-full bg-white/[0.06] px-4 text-[14px] font-medium transition hover:bg-white/[0.1]"
+            className="mb-6 inline-flex h-11 w-fit items-center gap-2 rounded-full bg-white/[0.06] px-4 text-subhead font-medium transition hover:bg-white/[0.1]"
           >
             <ArrowLeft size={16} aria-hidden /> До входу
           </button>
         )}
-        <h1 className="text-[36px] font-bold leading-[1.05] tracking-[-0.045em]">{mode === 'login' ? 'Вхід' : 'Відновлення пароля'}</h1>
-        <p className="mt-2 text-[15px] text-muted">
+        <h1 className="text-large font-bold leading-[1.05] tracking-[-0.045em]">{mode === 'login' ? 'Вхід' : 'Відновлення пароля'}</h1>
+        <p className="mt-2 text-subhead text-muted">
           {mode === 'login' ? 'Твої тренування синхронізуються між пристроями.' : 'Вкажи email акаунта — надішлемо посилання для нового пароля.'}
         </p>
 
@@ -107,12 +107,12 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <p role="alert" className="mt-4 rounded-[14px] border border-negative/25 bg-negative/[0.08] px-4 py-3 text-[14px] text-negative">
+          <p role="alert" className="mt-4 rounded-tile border border-negative/25 bg-negative/[0.08] px-4 py-3 text-subhead text-negative">
             {error}
           </p>
         )}
         {info && (
-          <p role="status" className="mt-4 rounded-[14px] border border-positive/25 bg-positive/[0.07] px-4 py-3 text-[14px] text-fg">
+          <p role="status" className="mt-4 rounded-tile border border-positive/25 bg-positive/[0.07] px-4 py-3 text-subhead text-fg">
             {info}
           </p>
         )}
@@ -128,14 +128,14 @@ export default function LoginPage() {
               setMode('reset');
               setError('');
             }}
-            className="mx-auto mt-4 h-11 rounded-full px-4 text-[14px] font-medium text-muted transition hover:text-fg"
+            className="mx-auto mt-4 h-11 rounded-full px-4 text-subhead font-medium text-muted transition hover:text-fg"
           >
             Забули пароль?
           </button>
         )}
       </form>
 
-      <p className="relative text-center text-[13px] text-subtle">Немає акаунта? Його створює адміністратор застосунку.</p>
+      <p className="relative text-center text-footnote text-subtle">Немає акаунта? Його створює адміністратор застосунку.</p>
     </main>
   );
 }

@@ -72,12 +72,12 @@ export default function WeightPage() {
               <div className="mb-4 flex items-end justify-between gap-3">
                 <div>
                   <p className="label">Поточна вага</p>
-                  <p className="tabular mt-1 text-[30px] font-semibold leading-none tracking-tight">
-                    {formatNumber(latest!.weight, 1)} <span className="text-[16px] font-medium text-muted">кг</span>
+                  <p className="tabular mt-1 text-title1 font-semibold leading-none tracking-tight">
+                    {formatNumber(latest!.weight, 1)} <span className="text-callout font-medium text-muted">кг</span>
                   </p>
                 </div>
                 {target != null && (
-                  <p className="flex items-center gap-1.5 text-[14px] text-muted">
+                  <p className="flex items-center gap-1.5 text-subhead text-muted">
                     <Target size={15} aria-hidden />
                     Ціль {formatNumber(target, 1)} кг
                     <span className="tabular text-subtle">({formatSigned(Math.round((target - latest!.weight) * 10) / 10, 'кг')})</span>
@@ -87,13 +87,13 @@ export default function WeightPage() {
               {series.length >= 2 ? (
                 <TrendChart data={series} tone="body" domain={['auto', 'auto']} formatValue={(v) => `${formatNumber(v, 1)} кг`} ariaLabel="Графік зміни ваги" />
               ) : (
-                <p className="py-8 text-center text-[14px] text-muted">Додай ще один запис, щоб побачити графік.</p>
+                <p className="py-8 text-center text-subhead text-muted">Додай ще один запис, щоб побачити графік.</p>
               )}
             </Card>
 
             <Section
               title="Записи"
-              action={entries.length > RECENT && <span className="text-[13px] text-subtle">{entries.length}</span>}
+              action={entries.length > RECENT && <span className="text-footnote text-subtle">{entries.length}</span>}
             >
               <ul className="card divide-y divide-line overflow-hidden">
                 {(showAll ? entries : entries.slice(0, RECENT)).map((e, i) => {
@@ -114,11 +114,11 @@ export default function WeightPage() {
                         }}
                       >
                       <div className="flex items-center gap-3 py-2 pl-4 pr-2">
-                      <span className="min-w-0 flex-1 text-[15px]">{formatDate(fromISODate(e.date))}</span>
+                      <span className="min-w-0 flex-1 text-subhead">{formatDate(fromISODate(e.date))}</span>
                       {delta != null && delta !== 0 && (
-                        <span className={`tabular text-[13px] ${delta > 0 ? 'text-positive' : 'text-muted'}`}>{formatSigned(delta)}</span>
+                        <span className={`tabular text-footnote ${delta > 0 ? 'text-positive' : 'text-muted'}`}>{formatSigned(delta)}</span>
                       )}
-                      <span className="tabular w-20 text-right text-[16px] font-semibold">{formatNumber(e.weight, 1)} кг</span>
+                      <span className="tabular w-20 text-right text-callout font-semibold">{formatNumber(e.weight, 1)} кг</span>
                       <IconButton
                         icon={Trash2}
                         label={`Видалити запис ${formatDate(fromISODate(e.date))}`}
@@ -135,7 +135,7 @@ export default function WeightPage() {
                 })}
               </ul>
               {entries.length > RECENT && (
-                <button type="button" onClick={() => setShowAll((v) => !v)} className="mt-1 h-11 w-full rounded-ctl text-[14px] font-medium text-muted transition hover:bg-white/[0.04] hover:text-fg">
+                <button type="button" onClick={() => setShowAll((v) => !v)} className="mt-1 h-11 w-full rounded-ctl text-subhead font-medium text-muted transition hover:bg-white/[0.04] hover:text-fg">
                   {showAll ? 'Згорнути' : `Показати всі (${entries.length})`}
                 </button>
               )}

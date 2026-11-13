@@ -96,10 +96,10 @@ export default function Onboarding({ finish }: Props) {
       {step === 'welcome' ? (
         <div className="relative flex flex-1 flex-col">
           <div className="flex items-center gap-2.5">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-[13px] bg-accent text-black shadow-glow">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-chip bg-accent text-black shadow-glow">
               <Dumbbell size={20} strokeWidth={2.4} aria-hidden />
             </span>
-            <span className="text-[20px] font-bold tracking-[-0.04em]">Pulse</span>
+            <span className="text-title3 font-bold tracking-[-0.04em]">Pulse</span>
           </div>
 
           <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
@@ -107,12 +107,12 @@ export default function Onboarding({ finish }: Props) {
               <BodyFigure view="front" colors={HERO_FRONT} className="h-full w-auto animate-slide-up" />
               <BodyFigure view="back" colors={HERO_BACK} className="h-full w-auto animate-slide-up [animation-delay:120ms]" />
             </div>
-            <h1 className="mt-10 text-[38px] font-bold leading-[1.02] tracking-[-0.045em]">
+            <h1 className="mt-10 text-display font-bold leading-[1.02] tracking-[-0.045em]">
               Тренуйся.
               <br />
               Записуй. Рости.
             </h1>
-            <p className="mt-4 max-w-xs text-[16px] text-muted">
+            <p className="mt-4 max-w-xs text-callout text-muted">
               Плани на тиждень, швидкий запис підходів, рекорди та прогрес — усе на твоєму телефоні.
             </p>
           </div>
@@ -128,7 +128,7 @@ export default function Onboarding({ finish }: Props) {
               type="button"
               onClick={() => fileInput.current?.click()}
               disabled={busy}
-              className="mx-auto flex h-11 items-center gap-2 rounded-full px-4 text-[14px] font-medium text-muted transition hover:text-fg"
+              className="mx-auto flex h-11 items-center gap-2 rounded-full px-4 text-subhead font-medium text-muted transition hover:text-fg"
             >
               <Upload size={16} aria-hidden />
               Відновити з резервної копії
@@ -155,8 +155,8 @@ export default function Onboarding({ finish }: Props) {
           >
             <ChevronLeft size={22} aria-hidden />
           </button>
-          <h1 className="mt-6 text-[32px] font-bold leading-[1.05] tracking-[-0.04em]">Трохи про тебе</h1>
-          <p className="mt-2 text-[15px] text-muted">Це можна змінити будь-коли в профілі.</p>
+          <h1 className="mt-6 text-large font-bold leading-[1.05] tracking-[-0.04em]">Трохи про тебе</h1>
+          <p className="mt-2 text-subhead text-muted">Це можна змінити будь-коли в профілі.</p>
 
           <div className="mt-8 flex-1 space-y-5">
             <Input
@@ -186,7 +186,7 @@ export default function Onboarding({ finish }: Props) {
                     aria-pressed={goal === g}
                     onClick={() => setGoal(g)}
                     className={clsx(
-                      'h-11 rounded-full px-4 text-[14px] font-medium transition',
+                      'h-11 rounded-full px-4 text-subhead font-medium transition',
                       goal === g ? 'bg-fg text-black' : 'bg-white/[0.06] text-muted hover:text-fg',
                     )}
                   >
@@ -203,7 +203,7 @@ export default function Onboarding({ finish }: Props) {
               role="checkbox"
               aria-checked={starter}
               onClick={() => setStarter((v) => !v)}
-              className="flex w-full items-start gap-3 rounded-[18px] bg-white/[0.04] p-4 text-left transition hover:bg-white/[0.06]"
+              className="flex w-full items-start gap-3 rounded-tile bg-white/[0.04] p-4 text-left transition hover:bg-white/[0.06]"
             >
               <span
                 className={clsx(
@@ -214,8 +214,8 @@ export default function Onboarding({ finish }: Props) {
                 {starter && <Check size={16} strokeWidth={3} aria-hidden />}
               </span>
               <span>
-                <span className="block text-[15px] font-medium">Додати готовий план</span>
-                <span className="block text-[13px] text-subtle">4 тренування: Груди + Руки, Спина + Біцепс, Ноги + Прес, Повне тіло — можна змінити</span>
+                <span className="block text-subhead font-medium">Додати готовий план</span>
+                <span className="block text-footnote text-subtle">4 тренування: Груди + Руки, Спина + Біцепс, Ноги + Прес, Повне тіло — можна змінити</span>
               </span>
             </button>
           </div>

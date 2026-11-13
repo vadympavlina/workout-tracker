@@ -17,9 +17,9 @@ interface CommonProps {
 }
 
 const sizes: Record<Size, string> = {
-  sm: 'h-9 px-3.5 text-[13px]',
-  md: 'h-11 px-5 text-[15px]',
-  lg: 'h-14 px-7 text-[16px]',
+  sm: 'h-9 px-3.5 text-footnote',
+  md: 'h-11 px-5 text-subhead',
+  lg: 'h-14 px-7 text-callout',
 };
 
 /**
@@ -128,7 +128,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
   // Round glass button from glisse; ghost/danger stay plain icons on the surface.
   if (variant === 'secondary')
     return (
-      <GlassButton ref={ref} type={type} icon={glyph} aria-label={label} title={label} className={clsx('shrink-0 rounded-full', box, className)} {...rest} />
+      <GlassButton ref={ref} type={type} icon={glyph} aria-label={label} title={label} className={clsx('hit shrink-0 rounded-full', box, className)} {...rest} />
     );
   return (
     <button
@@ -137,7 +137,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       aria-label={label}
       title={label}
       className={clsx(
-        'inline-flex shrink-0 items-center justify-center rounded-full transition duration-200 active:scale-95 disabled:pointer-events-none disabled:opacity-30',
+        'hit inline-flex shrink-0 items-center justify-center rounded-full transition duration-200 active:scale-95 disabled:pointer-events-none disabled:opacity-30',
         box,
         variant === 'ghost' && 'text-muted hover:bg-white/[0.06] hover:text-fg',
         variant === 'danger' && 'text-negative hover:bg-negative/10',

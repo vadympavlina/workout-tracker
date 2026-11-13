@@ -25,7 +25,7 @@ export function EquipmentChips({ exercises, value, onChange, className }: Props)
           aria-pressed={value === k}
           onClick={() => onChange(k)}
           className={clsx(
-            'h-9 shrink-0 rounded-full px-3.5 text-[13px] font-medium transition',
+            'h-9 shrink-0 rounded-full px-3.5 text-footnote font-medium transition',
             value === k ? 'lg-glass text-fg' : 'text-subtle hover:text-fg',
           )}
         >

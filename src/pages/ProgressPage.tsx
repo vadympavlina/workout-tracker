@@ -167,7 +167,7 @@ export default function ProgressPage() {
             value={weight ? `${formatNumber(weight.weight, 1)} кг` : '—'}
             caption={weightDelta != null ? `${formatSigned(weightDelta, 'кг')} за період` : undefined}
             action={
-              <Link to="/weight" className="inline-flex h-9 items-center gap-1 rounded-xl px-2 text-[14px] font-medium text-accent hover:bg-accent/10">
+              <Link to="/weight" className="inline-flex h-9 items-center gap-1 rounded-xl px-2 text-subhead font-medium text-accent hover:bg-accent/10">
                 Записи <ChevronRight size={16} aria-hidden />
               </Link>
             }
@@ -182,7 +182,7 @@ export default function ProgressPage() {
                 ariaLabel={`Зміна ваги: зараз ${weight?.weight ?? '—'} кг`}
               />
             ) : (
-              <div className="flex h-[180px] flex-col items-center justify-center gap-3 text-center text-[14px] text-muted">
+              <div className="flex h-[180px] flex-col items-center justify-center gap-3 text-center text-subhead text-muted">
                 Додай щонайменше два записи ваги, щоб побачити графік.
                 <ButtonLink to="/weight" size="sm" variant="secondary">
                   Записати вагу
@@ -200,12 +200,12 @@ export default function ProgressPage() {
                   <li key={p.exerciseId}>
                     <Link to={`/exercises/${p.exerciseId}`} className="flex items-center gap-3 p-4 transition hover:bg-white/[0.02]">
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[15px] font-medium">{p.name}</span>
-                        <span className="tabular block text-[13px] text-subtle">
+                        <span className="block truncate text-subhead font-medium">{p.name}</span>
+                        <span className="tabular block text-footnote text-subtle">
                           {formatNumber(p.from, 2)} → {formatNumber(p.to, 2)} кг
                         </span>
                       </span>
-                      <span className={`tabular text-[16px] font-semibold ${p.delta > 0 ? 'text-positive' : p.delta < 0 ? 'text-negative' : 'text-muted'}`}>
+                      <span className={`tabular text-callout font-semibold ${p.delta > 0 ? 'text-positive' : p.delta < 0 ? 'text-negative' : 'text-muted'}`}>
                         {formatSigned(p.delta, 'кг')}
                       </span>
                       <ChevronRight size={18} className="text-subtle" aria-hidden />
@@ -214,7 +214,7 @@ export default function ProgressPage() {
                 ))}
               </ul>
             ) : (
-              <p className="card p-5 text-[14px] text-muted">Потрібно щонайменше два тренування з однаковою вправою за цей період.</p>
+              <p className="card p-5 text-subhead text-muted">Потрібно щонайменше два тренування з однаковою вправою за цей період.</p>
             )}
           </Section>
 
@@ -226,10 +226,10 @@ export default function ProgressPage() {
                     <Link to={`/exercises/${r.exerciseId}`} className="flex items-center gap-3 p-4 transition hover:bg-white/[0.02]">
                       <IconBadge icon={Trophy} tone="warning" size="sm" />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[15px] font-medium">{r.name}</span>
-                        <span className="block text-[13px] text-subtle">{formatDate(r.date)}</span>
+                        <span className="block truncate text-subhead font-medium">{r.name}</span>
+                        <span className="block text-footnote text-subtle">{formatDate(r.date)}</span>
                       </span>
-                      <span className="tabular text-[15px] font-semibold">
+                      <span className="tabular text-subhead font-semibold">
                         {formatSet(r.weight, r.reps)}
                       </span>
                     </Link>
@@ -243,7 +243,7 @@ export default function ProgressPage() {
               </Button>
             )}
             {allRecords.length === 0 && (
-              <p className="card p-5 text-[14px] text-muted">Рекорди зʼявляться після тренувань з вагою.</p>
+              <p className="card p-5 text-subhead text-muted">Рекорди зʼявляться після тренувань з вагою.</p>
             )}
           </Section>
         </div>
@@ -251,8 +251,8 @@ export default function ProgressPage() {
         <Link to="/exercises" className="card-interactive flex items-center gap-4 p-4">
           <IconBadge icon={BookOpen} tone="neutral" />
           <span className="min-w-0 flex-1">
-            <span className="block text-[15px] font-semibold">Історія по кожній вправі</span>
-            <span className="block text-[13px] text-muted">Графіки ваги, обсягу та всі підходи</span>
+            <span className="block text-subhead font-semibold">Історія по кожній вправі</span>
+            <span className="block text-footnote text-muted">Графіки ваги, обсягу та всі підходи</span>
           </span>
           <ChevronRight size={20} className="text-subtle" aria-hidden />
         </Link>
@@ -283,13 +283,13 @@ function ChartCard({
             <span className={`h-1.5 w-1.5 rounded-full ${DOT[color]}`} aria-hidden />
             {title}
           </h2>
-          <p className="metric mt-3 text-[34px]">{value}</p>
+          <p className="metric mt-3 text-large">{value}</p>
           {change != null ? (
-            <p className={`mt-2 text-[13px] font-medium ${change >= 0 ? 'text-positive' : 'text-negative'}`}>
+            <p className={`mt-2 text-footnote font-medium ${change >= 0 ? 'text-positive' : 'text-negative'}`}>
               {formatPercent(change)} <span className="font-normal text-subtle">до попереднього періоду</span>
             </p>
           ) : (
-            caption && <p className="mt-2 text-[13px] text-subtle">{caption}</p>
+            caption && <p className="mt-2 text-footnote text-subtle">{caption}</p>
           )}
         </div>
         {action}

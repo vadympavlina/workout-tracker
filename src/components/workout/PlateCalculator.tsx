@@ -57,7 +57,7 @@ export function PlateCalculator({ open, onClose, initialWeight }: Props) {
         </div>
 
         {/* Bar illustration: one side, sleeve on the right. */}
-        <div className="flex h-36 items-center overflow-hidden rounded-[20px] bg-white/[0.04] px-4" role="img" aria-label={`На кожну сторону: ${load.perSide.join(' + ') || 'нічого'} кг`}>
+        <div className="flex h-36 items-center overflow-hidden rounded-sheet bg-white/[0.04] px-4" role="img" aria-label={`На кожну сторону: ${load.perSide.join(' + ') || 'нічого'} кг`}>
           <div className="h-3 w-10 shrink-0 rounded-l-full bg-[#9a9aa2]" aria-hidden />
           <div className="h-6 w-2 shrink-0 rounded-sm bg-[#c5c5cc]" aria-hidden />
           <div className="flex items-center gap-[3px] pl-1">
@@ -66,7 +66,7 @@ export function PlateCalculator({ open, onClose, initialWeight }: Props) {
               return (
                 <div
                   key={i}
-                  className="flex animate-pop items-center justify-center rounded-[5px] font-mono text-[10px] font-bold [writing-mode:vertical-rl]"
+                  className="flex animate-pop items-center justify-center rounded-[5px] font-mono text-2xs font-bold [writing-mode:vertical-rl]"
                   style={{ height: style.h, width: p >= 10 ? 22 : 16, background: style.color, color: style.text, animationDelay: `${i * 50}ms` }}
                   aria-hidden
                 >
@@ -81,20 +81,20 @@ export function PlateCalculator({ open, onClose, initialWeight }: Props) {
         <div className="space-y-2">
           <p className="eyebrow">На кожну сторону</p>
           {load.perSide.length === 0 ? (
-            <p className="text-[15px] text-muted">Лише гриф — дисків не потрібно.</p>
+            <p className="text-subhead text-muted">Лише гриф — дисків не потрібно.</p>
           ) : (
             <ul className="flex flex-wrap gap-2">
               {Object.entries(counts)
                 .sort((a, b) => Number(b[0]) - Number(a[0]))
                 .map(([plate, n]) => (
-                  <li key={plate} className="flex items-center gap-2 rounded-full bg-white/[0.06] py-1.5 pl-1.5 pr-3.5 text-[14px] font-semibold">
+                  <li key={plate} className="flex items-center gap-2 rounded-full bg-white/[0.06] py-1.5 pl-1.5 pr-3.5 text-subhead font-semibold">
                     <span className="h-5 w-5 rounded-full" style={{ background: PLATE_STYLE[Number(plate)]?.color }} aria-hidden />
                     {n} × {formatNumber(Number(plate), 2)} кг
                   </li>
                 ))}
             </ul>
           )}
-          <p className={clsx('text-[14px]', load.remainder !== 0 ? 'text-warning' : 'text-muted')}>
+          <p className={clsx('text-subhead', load.remainder !== 0 ? 'text-warning' : 'text-muted')}>
             Разом: <span className="metric font-semibold text-fg">{formatNumber(load.total, 2)} кг</span>
             {load.remainder > 0 && ` — точно ${formatNumber(target ?? 0, 2)} кг набрати не вийде (бракує ${formatNumber(load.remainder, 2)} кг)`}
           </p>

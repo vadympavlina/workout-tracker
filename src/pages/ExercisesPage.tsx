@@ -99,7 +99,7 @@ export default function ExercisesPage() {
             aria-controls="muscle-picker"
             onClick={() => setBodyOpen((o) => !o)}
             data-variant={bodyOpen || muscle ? 'filled' : undefined}
-            className="lg-glass lg-button h-12 shrink-0 rounded-full px-4 text-[14px] font-medium"
+            className="lg-glass lg-button h-12 shrink-0 rounded-full px-4 text-subhead font-medium"
           >
             <PersonStanding size={18} aria-hidden />
             Мʼяз
@@ -107,25 +107,25 @@ export default function ExercisesPage() {
         </div>
         {bodyOpen && (
           <div id="muscle-picker" className="card max-w-xl p-4">
-            <p className="text-[13px] text-subtle">Торкнись мʼяза, щоб побачити вправи для нього.</p>
+            <p className="text-footnote text-subtle">Торкнись мʼяза, щоб побачити вправи для нього.</p>
             <div className="mt-3 grid h-72 grid-cols-2 gap-2">
               {(['front', 'back'] as const).map((v) => (
                 <figure key={v} className="m-0 flex min-h-0 flex-col items-center">
                   <BodyFigure view={v} colors={picked} onPick={pick} className="h-full min-h-0 w-auto flex-1" />
-                  <figcaption className="mt-1 text-[11px] text-muted">{v === 'front' ? 'Спереду' : 'Ззаду'}</figcaption>
+                  <figcaption className="mt-1 text-caption2 text-muted">{v === 'front' ? 'Спереду' : 'Ззаду'}</figcaption>
                 </figure>
               ))}
             </div>
           </div>
         )}
         {muscle ? (
-          <div className="flex items-center gap-2 text-[14px]">
+          <div className="flex items-center gap-2 text-subhead">
             <span className="text-muted">Мʼяз:</span>
             <button
               type="button"
               onClick={() => setMuscle(null)}
               data-variant="filled"
-              className="lg-glass lg-button h-9 rounded-full pl-3.5 pr-2.5 text-[14px] font-medium"
+              className="lg-glass lg-button h-9 rounded-full pl-3.5 pr-2.5 text-subhead font-medium"
               aria-label={`Прибрати фільтр: ${MUSCLE_LABELS[muscle]}`}
             >
               {MUSCLE_LABELS[muscle]}
@@ -141,7 +141,7 @@ export default function ExercisesPage() {
               aria-pressed={group === g}
               onClick={() => setGroup(g)}
               data-variant={group === g ? 'filled' : undefined}
-              className={clsx('lg-glass lg-button h-10 shrink-0 rounded-full px-4 text-[14px] font-medium', group !== g && 'text-muted')}
+              className={clsx('lg-glass lg-button h-10 shrink-0 rounded-full px-4 text-subhead font-medium', group !== g && 'text-muted')}
             >
               {g === 'all' ? 'Усі' : g === 'custom' ? 'Власні' : MUSCLE_GROUPS[g]}
             </button>
@@ -163,14 +163,14 @@ export default function ExercisesPage() {
                   <ExerciseThumb exercise={e} />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
-                      <span className="truncate text-[15px] font-semibold">{e.name}</span>
-                      {e.isCustom && <span className="shrink-0 rounded-full bg-accent/15 px-2 py-0.5 text-[11px] font-semibold text-accent">Власна</span>}
+                      <span className="truncate text-subhead font-semibold">{e.name}</span>
+                      {e.isCustom && <span className="shrink-0 rounded-full bg-accent/15 px-2 py-0.5 text-caption2 font-semibold text-accent">Власна</span>}
                     </span>
-                    <span className="block text-[13px] text-subtle">
+                    <span className="block text-footnote text-subtle">
                       {MUSCLE_GROUPS[e.muscleGroup]} · {EQUIPMENT[e.equipment]} · {e.defaultSets} × {repsRange(e.defaultRepsMin, e.defaultRepsMax)}
                     </span>
                   </span>
-                  {pr && <span className="tabular hidden text-[14px] font-medium text-muted sm:block">{formatNumber(pr.weight, 2)} кг</span>}
+                  {pr && <span className="tabular hidden text-subhead font-medium text-muted sm:block">{formatNumber(pr.weight, 2)} кг</span>}
                   <ChevronRight size={18} className="text-subtle" aria-hidden />
                 </Link>
               </li>

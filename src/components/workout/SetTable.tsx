@@ -39,7 +39,7 @@ export function SetTable({ exercise, isBodyweight, weightStep, recordSetId, onCh
 
   return (
     <div role="table" aria-label={`Підходи: ${exercise.name}`} className="relative">
-      <div role="row" className={clsx(GRID, 'px-1 pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted')}>
+      <div role="row" className={clsx(GRID, 'px-1 pb-2 font-mono text-caption2 font-medium uppercase tracking-[0.08em] text-muted')}>
         <span role="columnheader" className="text-center">
           #
         </span>
@@ -77,7 +77,7 @@ export function SetTable({ exercise, isBodyweight, weightStep, recordSetId, onCh
         ))}
       </div>
       {exercise.sets.length > 0 && (
-        <p className="mt-2 text-center text-[11.5px] text-subtle">Свайп ← або натисни номер, щоб видалити підхід</p>
+        <p className="mt-2 text-center text-caption2 text-subtle">Свайп ← або натисни номер, щоб видалити підхід</p>
       )}
     </div>
   );
@@ -121,14 +121,14 @@ function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange
   const bump = (dir: 1 | -1) => onChange({ weight: Math.max(0, Math.round(((set.weight ?? 0) + dir * weightStep) * 100) / 100) });
 
   return (
-    <div role="row" className="relative overflow-hidden rounded-[18px]">
+    <div role="row" className="relative overflow-hidden rounded-tile">
       <button
         type="button"
         onClick={onRemove}
         tabIndex={open ? 0 : -1}
         aria-hidden={!open}
         className={clsx(
-          'absolute inset-y-0 right-0 flex items-center justify-center gap-1.5 rounded-[18px] bg-negative text-[13px] font-semibold text-black transition-opacity',
+          'absolute inset-y-0 right-0 flex items-center justify-center gap-1.5 rounded-tile bg-negative text-footnote font-semibold text-black transition-opacity',
           offset === 0 ? 'opacity-0' : 'opacity-100',
         )}
         style={{ width: REVEAL - 6 }}
@@ -144,12 +144,12 @@ function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange
         onPointerCancel={onPointerEnd}
         className={clsx(
           GRID,
-          'relative rounded-[18px] bg-[rgb(var(--c-surface))] px-1 py-1',
+          'relative rounded-tile bg-[rgb(var(--c-surface))] px-1 py-1',
           drag === null && 'transition-transform duration-300 ease-out',
         )}
         style={{ transform: `translateX(${offset}px)`, touchAction: 'pan-y' }}
       >
-        <span className={clsx('pointer-events-none absolute inset-0 rounded-[18px] transition-colors duration-300', set.done ? 'bg-positive/[0.09]' : 'bg-transparent')} aria-hidden />
+        <span className={clsx('pointer-events-none absolute inset-0 rounded-tile transition-colors duration-300', set.done ? 'bg-positive/[0.09]' : 'bg-transparent')} aria-hidden />
         <span role="cell" className="relative flex justify-center">
           <button
             type="button"
@@ -157,7 +157,7 @@ function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange
             aria-label={`Підхід ${index + 1}: дії`}
             aria-expanded={open}
             className={clsx(
-              'tabular inline-flex h-9 w-7 items-center justify-center rounded-lg text-[15px] font-semibold transition hover:bg-white/[0.06] sm:w-9',
+              'tabular inline-flex h-9 w-7 items-center justify-center rounded-lg text-subhead font-semibold transition hover:bg-white/[0.06] sm:w-9',
               set.done ? 'text-positive' : 'text-muted',
             )}
           >
@@ -165,7 +165,7 @@ function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange
           </button>
           {set.done && set.rir != null && (
             <span
-              className="tabular pointer-events-none absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-white/[0.08] px-1 text-[9.5px] font-semibold leading-[14px] text-muted"
+              className="tabular pointer-events-none absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-white/[0.08] px-1 text-2xs font-semibold leading-[14px] text-muted"
               title={`Запас: ${rirLabel(set.rir)} повт.`}
             >
               <span className="sr-only">Запас </span>+{rirLabel(set.rir)}
@@ -179,7 +179,7 @@ function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange
             onClick={() => bump(-1)}
             disabled={(set.weight ?? 0) <= 0}
             aria-label={`Мінус ${formatNumber(weightStep, 2)} кг, підхід ${index + 1}`}
-            className="inline-flex h-12 w-10 shrink-0 items-center justify-center rounded-[12px] bg-white/[0.04] text-muted transition hover:bg-white/[0.08] hover:text-fg active:scale-90 disabled:opacity-30"
+            className="inline-flex h-12 w-10 shrink-0 items-center justify-center rounded-chip bg-white/[0.04] text-muted transition hover:bg-white/[0.08] hover:text-fg active:scale-90 disabled:opacity-30"
           >
             <Minus size={15} aria-hidden />
           </button>
@@ -199,7 +199,7 @@ function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange
             type="button"
             onClick={() => bump(1)}
             aria-label={`Плюс ${formatNumber(weightStep, 2)} кг, підхід ${index + 1}`}
-            className="inline-flex h-12 w-10 shrink-0 items-center justify-center rounded-[12px] bg-white/[0.04] text-muted transition hover:bg-white/[0.08] hover:text-fg active:scale-90"
+            className="inline-flex h-12 w-10 shrink-0 items-center justify-center rounded-chip bg-white/[0.04] text-muted transition hover:bg-white/[0.08] hover:text-fg active:scale-90"
           >
             <Plus size={15} aria-hidden />
           </button>
@@ -236,7 +236,7 @@ function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange
         </span>
 
         {isRecord && (
-          <span className="pointer-events-none absolute -top-0.5 right-12 flex animate-pop items-center gap-1 rounded-full bg-warning px-2 py-0.5 text-[11px] font-bold text-black shadow-lg">
+          <span className="pointer-events-none absolute -top-0.5 right-12 flex animate-pop items-center gap-1 rounded-full bg-warning px-2 py-0.5 text-caption2 font-bold text-black shadow-lg">
             <Trophy size={12} aria-hidden />
             Рекорд
           </span>
@@ -256,7 +256,7 @@ function RirPicker({ index, value, onChange }: { index: number; value: number | 
     <div role="row">
     <div role="cell" className="block">
     <div role="group" aria-label={`Скільки ще повторень міг би зробити, підхід ${index + 1}`} className="flex animate-pop items-center gap-1.5 px-1 py-1">
-      <span className="min-w-0 flex-1 text-[12.5px] leading-tight text-muted">Скільки ще міг би?</span>
+      <span className="min-w-0 flex-1 text-caption leading-tight text-muted">Скільки ще міг би?</span>
       {RIR_OPTIONS.map((n) => (
         <button
           key={n}
@@ -265,7 +265,7 @@ function RirPicker({ index, value, onChange }: { index: number; value: number | 
           aria-label={n === 0 ? '0 — до відмови' : `${rirLabel(n)} — ще стільки повторень`}
           onClick={() => onChange(value === n ? null : n)}
           className={clsx(
-            'tabular inline-flex h-9 min-w-[38px] items-center justify-center rounded-full px-2 text-[13px] font-semibold transition active:scale-90',
+            'hit tabular inline-flex h-9 min-w-[38px] items-center justify-center rounded-full px-2 text-footnote font-semibold transition active:scale-90',
             value === n ? 'bg-accent text-black' : 'bg-white/[0.06] text-muted hover:text-fg',
           )}
         >

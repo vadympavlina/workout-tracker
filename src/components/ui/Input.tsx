@@ -3,7 +3,7 @@ import clsx from 'clsx';
 
 /** Glass field in glisse's palette (same fill and edge as its controls). */
 const fieldBase =
-  'lg-glass w-full rounded-[22px] px-4 text-[16px] text-fg placeholder:text-subtle transition duration-200 focus:bg-[var(--lg-glass-active)] focus:outline-none focus:ring-2 focus:ring-accent/50';
+  'lg-glass w-full rounded-sheet px-4 text-callout text-fg placeholder:text-subtle transition duration-200 focus:bg-[var(--lg-glass-active)] focus:outline-none focus:ring-2 focus:ring-accent/50';
 
 interface FieldProps {
   label?: string;
@@ -37,14 +37,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           className={clsx(fieldBase, 'h-12', suffix && 'pr-12', error && 'ring-2 ring-negative/60')}
           {...rest}
         />
-        {suffix && <span className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-[15px] text-subtle">{suffix}</span>}
+        {suffix && <span className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-subhead text-subtle">{suffix}</span>}
       </div>
       {error ? (
-        <p id={`${inputId}-err`} className="mt-1.5 text-[13px] text-negative">
+        <p id={`${inputId}-err`} className="mt-1.5 text-footnote text-negative">
           {error}
         </p>
       ) : hint ? (
-        <p id={`${inputId}-hint`} className="mt-1.5 text-[13px] text-subtle">
+        <p id={`${inputId}-hint`} className="mt-1.5 text-footnote text-subtle">
           {hint}
         </p>
       ) : null}
@@ -68,7 +68,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
         </label>
       )}
       <textarea ref={ref} id={inputId} className={clsx(fieldBase, 'min-h-[88px] resize-y py-3')} {...rest} />
-      {hint && <p className="mt-1.5 text-[13px] text-subtle">{hint}</p>}
+      {hint && <p className="mt-1.5 text-footnote text-subtle">{hint}</p>}
     </div>
   );
 });

@@ -30,7 +30,7 @@ export function ExerciseMediaButton({ exercise, className }: Props) {
         type="button"
         onClick={() => setOpen(true)}
         aria-label={`Як виконувати: ${exercise.name}`}
-        className={clsx('group relative shrink-0 overflow-hidden rounded-[16px] transition active:scale-95', className)}
+        className={clsx('group relative shrink-0 overflow-hidden rounded-tile transition active:scale-95', className)}
       >
         {photos.length > 0 ? (
           <ExercisePhoto
@@ -52,13 +52,13 @@ export function ExerciseMediaButton({ exercise, className }: Props) {
       <Modal open={open} onClose={() => setOpen(false)} title={exercise.name} size="lg">
         <div className="space-y-5">
           {photos.length > 0 && (
-            <ExercisePhoto frames={photos} alt={`Техніка: ${exercise.name}`} className="aspect-[3/2] w-full rounded-[20px]" />
+            <ExercisePhoto frames={photos} alt={`Техніка: ${exercise.name}`} className="aspect-[3/2] w-full rounded-sheet" />
           )}
           <div className="flex items-center gap-5">
             <div className="h-40 shrink-0">
               <MuscleMap primary={targets.primary} secondary={targets.secondary} label={`Основні мʼязи: ${targets.primary.map((m) => MUSCLE_LABELS[m]).join(', ')}`} />
             </div>
-            <div className="min-w-0 space-y-2 text-[14px]">
+            <div className="min-w-0 space-y-2 text-subhead">
               <p>
                 <span className="eyebrow mr-2">Основні</span>
                 {targets.primary.map((m) => MUSCLE_LABELS[m]).join(', ') || '—'}
@@ -71,7 +71,7 @@ export function ExerciseMediaButton({ exercise, className }: Props) {
               )}
             </div>
           </div>
-          {exercise.description && <p className="text-[15px] leading-relaxed text-fg/90">{exercise.description}</p>}
+          {exercise.description && <p className="text-subhead leading-relaxed text-fg/90">{exercise.description}</p>}
         </div>
       </Modal>
     </>

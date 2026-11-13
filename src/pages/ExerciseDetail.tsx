@@ -114,19 +114,19 @@ export default function ExerciseDetail() {
 
         <Section title="Історія">
           {history.length === 0 ? (
-            <p className="card p-5 text-[14px] text-muted">Вправа ще не виконувалась. Додай її до плану, щоб почати відстежувати.</p>
+            <p className="card p-5 text-subhead text-muted">Вправа ще не виконувалась. Додай її до плану, щоб почати відстежувати.</p>
           ) : (
             <ul className="card divide-y divide-line">
               {[...history].reverse().map((p) => (
                 <li key={p.sessionId}>
                   <Link to={`/history/${p.sessionId}`} className="flex items-center gap-3 p-4 transition hover:bg-white/[0.02]">
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[15px] font-medium">{formatDate(p.date)}</span>
-                      <span className="tabular block truncate text-[13px] text-subtle">
+                      <span className="block text-subhead font-medium">{formatDate(p.date)}</span>
+                      <span className="tabular block truncate text-footnote text-subtle">
                         {p.sets.map((s) => `${formatNumber(s.weight, 2)}×${s.reps}`).join(' · ')}
                       </span>
                     </span>
-                    <span className="tabular text-[14px] text-muted">{formatVolume(p.volume)}</span>
+                    <span className="tabular text-subhead text-muted">{formatVolume(p.volume)}</span>
                     <ChevronRight size={18} className="text-subtle" aria-hidden />
                   </Link>
                 </li>
@@ -139,7 +139,7 @@ export default function ExerciseDetail() {
           <Section title="У планах">
             <div className="flex flex-wrap gap-2">
               {usedIn.map((p) => (
-                <Link key={p.id} to={`/workout/${p.id}`} className="rounded-full border border-line bg-surface px-4 py-2.5 text-[14px] font-medium transition hover:border-white/20">
+                <Link key={p.id} to={`/workout/${p.id}`} className="rounded-full border border-line bg-surface px-4 py-2.5 text-subhead font-medium transition hover:border-white/20">
                   {p.name}
                 </Link>
               ))}

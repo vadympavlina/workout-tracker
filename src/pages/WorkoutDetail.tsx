@@ -105,13 +105,13 @@ export default function WorkoutDetail() {
           <Info icon={CalendarDays} label="Дні" value={plan.days.length ? [...plan.days].sort().map((d) => WEEKDAYS_SHORT[d]).join(', ') : '—'} />
         </Card>
 
-        {plan.notes && <p className="rounded-card border border-line bg-surface p-4 text-[15px] text-muted">{plan.notes}</p>}
+        {plan.notes && <p className="rounded-card border border-line bg-surface p-4 text-subhead text-muted">{plan.notes}</p>}
 
         <Section title="Вправи">
           {plan.exercises.length === 0 ? (
             <div className="card flex flex-col items-center px-6 py-8 text-center">
-              <p className="text-[15px] font-semibold">У тренуванні ще немає вправ</p>
-              <p className="mt-1 text-[14px] text-muted">Додай вправи, щоб почати.</p>
+              <p className="text-subhead font-semibold">У тренуванні ще немає вправ</p>
+              <p className="mt-1 text-subhead text-muted">Додай вправи, щоб почати.</p>
               <ButtonLink to={`/plan/${plan.id}/edit`} icon={Plus} className="mt-4">
                 Додати вправи
               </ButtonLink>
@@ -149,8 +149,8 @@ export default function WorkoutDetail() {
                   <Link to={`/history/${s.id}`} className="flex items-center gap-3 p-4 transition hover:bg-white/[0.02]">
                     <IconBadge icon={s.icon} size="sm" tone="neutral" />
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[15px] font-medium">{formatDate(s.startedAt)}</span>
-                      <span className="block text-[13px] text-subtle">
+                      <span className="block text-subhead font-medium">{formatDate(s.startedAt)}</span>
+                      <span className="block text-footnote text-subtle">
                         {formatDurationWords(s.durationSec)} · {formatVolume(sessionVolume(s))}
                       </span>
                     </span>
@@ -175,11 +175,11 @@ export default function WorkoutDetail() {
 function Info({ icon: Icon, label, value }: { icon: typeof Clock; label: string; value: string }) {
   return (
     <div className="bg-surface p-4">
-      <p className="flex items-center gap-1.5 text-[12px] text-subtle">
+      <p className="flex items-center gap-1.5 text-caption text-subtle">
         <Icon size={13} aria-hidden />
         {label}
       </p>
-      <p className="tabular mt-1 text-[16px] font-semibold">{value}</p>
+      <p className="tabular mt-1 text-callout font-semibold">{value}</p>
     </div>
   );
 }

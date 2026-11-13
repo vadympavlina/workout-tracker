@@ -73,14 +73,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 key={t.id}
                 role={t.kind === 'error' ? 'alert' : 'status'}
                 className={clsx(
-                  'pointer-events-auto flex w-full max-w-sm animate-slide-up items-center gap-3 rounded-[22px] py-2 pl-3.5 pr-1.5 sheet-glass',
+                  'pointer-events-auto flex w-full max-w-sm animate-slide-up items-center gap-3 rounded-sheet py-2 pl-3.5 pr-1.5 sheet-glass',
                   t.kind === 'record' && 'border-warning/30',
                 )}
               >
                 <Icon size={19} className={clsx('shrink-0', TONE[t.kind], t.kind === 'record' && 'animate-pop')} aria-hidden />
                 <div className="min-w-0 flex-1 py-0.5">
-                  <p className="truncate text-[14px] font-semibold leading-snug">{t.title}</p>
-                  {t.description && <p className="truncate text-[12.5px] text-muted">{t.description}</p>}
+                  <p className="truncate text-subhead font-semibold leading-snug">{t.title}</p>
+                  {t.description && <p className="truncate text-caption text-muted">{t.description}</p>}
                 </div>
                 {t.action && (
                   <button
@@ -89,7 +89,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                       t.action!.onClick();
                       dismiss(t.id);
                     }}
-                    className="h-9 shrink-0 rounded-full bg-white/[0.1] px-3.5 text-[13px] font-semibold text-accent transition hover:bg-white/[0.16]"
+                    className="h-9 shrink-0 rounded-full bg-white/[0.1] px-3.5 text-footnote font-semibold text-accent transition hover:bg-white/[0.16]"
                   >
                     {t.action.label}
                   </button>

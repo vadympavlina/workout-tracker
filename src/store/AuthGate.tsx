@@ -134,7 +134,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
 function Splash() {
   return (
     <div className="flex min-h-dvh items-center justify-center" role="status" aria-label="Завантаження">
-      <span className="inline-flex h-14 w-14 animate-pulse items-center justify-center rounded-[18px] bg-accent text-black shadow-glow">
+      <span className="inline-flex h-14 w-14 animate-pulse items-center justify-center rounded-tile bg-accent text-black shadow-glow">
         <Dumbbell size={26} strokeWidth={2.4} aria-hidden />
       </span>
     </div>
@@ -158,11 +158,11 @@ function CenteredScreen({ title, children }: { title: string; children: ReactNod
 function OfflineScreen({ onRetry, onSignOut }: { onRetry: () => void; onSignOut: () => void }) {
   return (
     <CenteredScreen title="Немає зʼєднання">
-      <span className="inline-flex h-14 w-14 items-center justify-center rounded-[18px] bg-white/[0.06] text-muted">
+      <span className="inline-flex h-14 w-14 items-center justify-center rounded-tile bg-white/[0.06] text-muted">
         <CloudOff size={26} aria-hidden />
       </span>
-      <h1 className="mt-6 text-[30px] font-bold leading-[1.1] tracking-[-0.04em]">Немає зʼєднання</h1>
-      <p className="mt-2 text-[15px] text-muted">
+      <h1 className="mt-6 text-title1 font-bold leading-[1.1] tracking-[-0.04em]">Немає зʼєднання</h1>
+      <p className="mt-2 text-subhead text-muted">
         На цьому пристрої ще немає твоїх даних, а завантажити їх із хмари не вдалося. Перевір інтернет і спробуй ще раз — після першого
         завантаження застосунок працює й офлайн.
       </p>
@@ -199,11 +199,11 @@ function MigratePrompt({ legacy, done }: { legacy: AppData; done: () => void }) 
 
   return (
     <CenteredScreen title="Перенесення даних">
-      <span className="inline-flex h-14 w-14 items-center justify-center rounded-[18px] bg-accent text-black shadow-glow">
+      <span className="inline-flex h-14 w-14 items-center justify-center rounded-tile bg-accent text-black shadow-glow">
         <Upload size={24} strokeWidth={2.4} aria-hidden />
       </span>
-      <h1 className="mt-6 text-[30px] font-bold leading-[1.1] tracking-[-0.04em]">Перенести дані в акаунт?</h1>
-      <p className="mt-2 text-[15px] text-muted">
+      <h1 className="mt-6 text-title1 font-bold leading-[1.1] tracking-[-0.04em]">Перенести дані в акаунт?</h1>
+      <p className="mt-2 text-subhead text-muted">
         На цьому пристрої є дані, збережені до входу: {legacy.user.name ? `профіль «${legacy.user.name}», ` : ''}
         {pluralWorkouts(legacy.sessions.length)} у журналі. Їх можна перенести в акаунт — тоді вони будуть доступні на всіх твоїх пристроях.
       </p>

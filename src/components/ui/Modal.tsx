@@ -85,18 +85,18 @@ export function Modal({ open, onClose, title, description, children, footer, siz
         tabIndex={-1}
         className={clsx(
           'sheet-glass relative flex max-h-[92dvh] w-full flex-col overflow-hidden focus:outline-none',
-          'animate-sheet-up rounded-t-[30px] sm:animate-slide-up sm:rounded-[28px]',
+          'animate-sheet-up rounded-t-panel sm:animate-slide-up sm:rounded-panel',
           size === 'md' ? 'sm:max-w-lg' : 'sm:max-w-2xl',
         )}
       >
         <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-white/15 sm:hidden" aria-hidden />
         <header className="flex items-start justify-between gap-3 px-5 pb-2 pt-3 sm:px-6 sm:pt-5">
           <div className="min-w-0 pt-1.5">
-            <h2 id={titleId} className="text-[20px] font-bold tracking-[-0.03em]">
+            <h2 id={titleId} className="text-title3 font-bold tracking-[-0.03em]">
               {title}
             </h2>
             {description && (
-              <p id={descId} className="mt-1 text-[14px] text-muted">
+              <p id={descId} className="mt-1 text-subhead text-muted">
                 {description}
               </p>
             )}

@@ -37,15 +37,15 @@ export function StatCard({ label, value, unit, icon: Icon, color, trend, spark, 
         </span>
         {Icon && <Icon size={15} className="shrink-0 text-subtle" aria-hidden />}
       </div>
-      <p className={clsx('metric text-[32px]', valueClassName)}>
+      <p className={clsx('metric text-large', valueClassName)}>
         {value}
-        {unit && <span className="ml-1 font-mono text-[11px] font-medium uppercase tracking-normal text-subtle">{unit}</span>}
+        {unit && <span className="ml-1 font-mono text-caption2 font-medium uppercase tracking-normal text-subtle">{unit}</span>}
       </p>
       <div className="flex min-h-[28px] items-end justify-between gap-2">
         {trend ? (
           <p
             className={clsx(
-              'inline-flex min-w-0 flex-wrap items-center gap-x-1 text-[12px] font-medium leading-tight',
+              'inline-flex min-w-0 flex-wrap items-center gap-x-1 text-caption font-medium leading-tight',
               trend.direction === 'flat' ? 'text-subtle' : positive ? 'text-positive' : 'text-negative',
             )}
           >

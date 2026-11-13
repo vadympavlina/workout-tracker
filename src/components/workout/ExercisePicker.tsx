@@ -57,7 +57,7 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
                 aria-pressed={group === g}
                 onClick={() => setGroup(g)}
                 data-variant={group === g ? 'filled' : undefined}
-                className={clsx('lg-glass lg-button h-9 shrink-0 rounded-full px-3.5 text-[13px] font-medium', group !== g && 'text-muted')}
+                className={clsx('lg-glass lg-button h-9 shrink-0 rounded-full px-3.5 text-footnote font-medium', group !== g && 'text-muted')}
               >
                 {g === 'all' ? 'Усі' : MUSCLE_GROUPS[g]}
               </button>
@@ -78,8 +78,8 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
                 >
                   <ExerciseThumb exercise={e} className={added ? 'ring-1 ring-accent/50' : undefined} />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[15px] font-medium">{e.name}</span>
-                    <span className="block text-[13px] text-subtle">
+                    <span className="block truncate text-subhead font-medium">{e.name}</span>
+                    <span className="block text-footnote text-subtle">
                       {MUSCLE_GROUPS[e.muscleGroup]} · {EQUIPMENT[e.equipment]}
                       {e.isCustom && ' · власна'}
                     </span>

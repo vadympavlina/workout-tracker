@@ -104,7 +104,7 @@ export function SwipeToDelete({ children, onDelete, label, className, surfaceCla
         aria-hidden={!open}
         aria-label={label}
         className={clsx(
-          'absolute inset-y-0 right-0 flex items-center justify-end gap-1.5 bg-negative pr-6 text-[14px] font-semibold text-black transition-opacity',
+          'absolute inset-y-0 right-0 flex items-center justify-end gap-1.5 bg-negative pr-6 text-subhead font-semibold text-black transition-opacity',
           offset === 0 ? 'opacity-0' : 'opacity-100',
         )}
         style={{ width: Math.max(REVEAL, -offset) }}

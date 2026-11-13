@@ -9,7 +9,7 @@ interface Props {
   className?: string;
 }
 
-const sizes = { sm: 'h-11 w-11 rounded-[12px]', md: 'h-14 w-14 rounded-[14px]', lg: 'h-20 w-20 rounded-[18px]' };
+const sizes = { sm: 'h-11 w-11 rounded-chip', md: 'h-14 w-14 rounded-tile', lg: 'h-20 w-20 rounded-tile' };
 
 /** List thumbnail: the body zoomed in on the worked muscles. */
 export function ExerciseThumb({ exercise, size = 'md', className }: Props) {

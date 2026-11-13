@@ -214,9 +214,9 @@ export function ExerciseFormModal({ open, onClose, onSave, initial }: Props) {
         <div>
           <p className="label mb-1.5">Фото</p>
           {preview ? (
-            <div className="relative overflow-hidden rounded-[18px] bg-white/[0.04]">
+            <div className="relative overflow-hidden rounded-tile bg-white/[0.04]">
               {linkBroken ? (
-                <div className="flex aspect-[3/2] w-full items-center justify-center px-6 text-center text-[14px] text-muted">
+                <div className="flex aspect-[3/2] w-full items-center justify-center px-6 text-center text-subhead text-muted">
                   Не вдалося завантажити зображення за цим посиланням
                 </div>
               ) : (
@@ -252,11 +252,11 @@ export function ExerciseFormModal({ open, onClose, onSave, initial }: Props) {
             <button
               type="button"
               onClick={() => fileInput.current?.click()}
-              className="flex h-28 w-full flex-col items-center justify-center gap-1.5 rounded-[18px] border border-dashed border-white/15 text-muted transition hover:border-accent/60 hover:text-fg"
+              className="flex h-28 w-full flex-col items-center justify-center gap-1.5 rounded-tile border border-dashed border-white/15 text-muted transition hover:border-accent/60 hover:text-fg"
             >
               <ImagePlus size={22} aria-hidden />
-              <span className="text-[14px] font-medium">Завантажити фото</span>
-              <span className="text-[12px] text-subtle">Напр., тренажер у твоєму залі</span>
+              <span className="text-subhead font-medium">Завантажити фото</span>
+              <span className="text-caption text-subtle">Напр., тренажер у твоєму залі</span>
             </button>
           )}
           <Input

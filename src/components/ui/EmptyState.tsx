@@ -19,8 +19,8 @@ export function EmptyState({ icon: Icon, title, description, action, className, 
       <span className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-accent/[0.12] text-accent">
         <Icon size={26} aria-hidden />
       </span>
-      <Heading className="text-[19px] font-bold tracking-[-0.02em]">{title}</Heading>
-      {description && <p className="mt-1.5 max-w-xs text-[15px] text-muted">{description}</p>}
+      <Heading className="text-title3 font-bold tracking-[-0.02em]">{title}</Heading>
+      {description && <p className="mt-1.5 max-w-xs text-subhead text-muted">{description}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
   );

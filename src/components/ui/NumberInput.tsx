@@ -72,7 +72,7 @@ export function NumberInput({
       onBlur={() => setText(value == null ? '' : String(value))}
       className={clsx(
         'tabular w-full min-w-0 bg-transparent text-center font-semibold text-fg placeholder:font-normal placeholder:text-subtle focus:outline-none',
-        variant === 'compact' ? clsx('h-12 text-[17px]', caption && 'pt-2.5') : 'h-12 text-[18px]',
+        variant === 'compact' ? clsx('h-12 text-headline', caption && 'pt-2.5') : 'h-12 text-headline',
         dimmed && 'text-muted',
       )}
     />
@@ -82,12 +82,12 @@ export function NumberInput({
     return (
       <div
         className={clsx(
-          'lg-glass relative rounded-[14px] transition focus-within:bg-[var(--lg-glass-active)] focus-within:ring-2 focus-within:ring-accent/50',
+          'lg-glass relative rounded-tile transition focus-within:bg-[var(--lg-glass-active)] focus-within:ring-2 focus-within:ring-accent/50',
           className,
         )}
       >
         {caption && (
-          <span className="pointer-events-none absolute inset-x-0 top-1 text-center font-mono text-[9.5px] leading-none text-subtle" aria-hidden>
+          <span className="pointer-events-none absolute inset-x-0 top-1 text-center font-mono text-2xs leading-none text-subtle" aria-hidden>
             {caption}
           </span>
         )}
@@ -103,7 +103,7 @@ export function NumberInput({
           {label}
         </label>
       )}
-      <div className="lg-glass flex items-center gap-1 rounded-[22px] p-1 focus-within:bg-[var(--lg-glass-active)] focus-within:ring-2 focus-within:ring-accent/50">
+      <div className="lg-glass flex items-center gap-1 rounded-sheet p-1 focus-within:bg-[var(--lg-glass-active)] focus-within:ring-2 focus-within:ring-accent/50">
         <button
           type="button"
           onClick={() => bump(-1)}
@@ -116,7 +116,7 @@ export function NumberInput({
         <div className="relative min-w-0 flex-1">
           {input}
           {suffix && value != null && (
-            <span className="pointer-events-none absolute inset-y-0 right-1 flex items-center text-[13px] text-subtle">{suffix}</span>
+            <span className="pointer-events-none absolute inset-y-0 right-1 flex items-center text-footnote text-subtle">{suffix}</span>
           )}
         </div>
         <button

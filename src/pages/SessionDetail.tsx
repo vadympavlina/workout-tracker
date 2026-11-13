@@ -166,16 +166,16 @@ export default function SessionDetail() {
         <Card padding="none" className="grid grid-cols-2 gap-px overflow-hidden bg-line bg-none sm:grid-cols-4">
           {stats.map(({ icon: Icon, label, value }) => (
             <div key={label} className="bg-surface p-4">
-              <p className="flex items-center gap-1.5 text-[12px] text-subtle">
+              <p className="flex items-center gap-1.5 text-caption text-subtle">
                 <Icon size={13} aria-hidden /> {label}
               </p>
-              <p className="tabular mt-1 text-[18px] font-semibold">{value}</p>
+              <p className="tabular mt-1 text-headline font-semibold">{value}</p>
             </div>
           ))}
         </Card>
 
         {info.volumeChange != null && !editing && (
-          <p className={clsx('flex items-center gap-2 text-[14px]', info.volumeChange >= 0 ? 'text-positive' : 'text-muted')}>
+          <p className={clsx('flex items-center gap-2 text-subhead', info.volumeChange >= 0 ? 'text-positive' : 'text-muted')}>
             {info.volumeChange >= 0 ? <TrendingUp size={16} aria-hidden /> : <TrendingDown size={16} aria-hidden />}
             Обсяг {formatPercent(info.volumeChange)} порівняно з{' '}
             <Link to={`/history/${info.previous!.id}`} className="underline decoration-white/20 underline-offset-4 hover:text-fg">
@@ -195,13 +195,13 @@ export default function SessionDetail() {
               <li key={ex.id} className="card p-4 sm:p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <Link to={`/exercises/${ex.exerciseId}`} className="text-[16px] font-semibold hover:text-accent">
+                    <Link to={`/exercises/${ex.exerciseId}`} className="text-callout font-semibold hover:text-accent">
                       {ex.name}
                     </Link>
-                    {exerciseVolume(ex) > 0 && <p className="tabular mt-0.5 text-[13px] text-muted">Обсяг {formatVolume(exerciseVolume(ex))}</p>}
+                    {exerciseVolume(ex) > 0 && <p className="tabular mt-0.5 text-footnote text-muted">Обсяг {formatVolume(exerciseVolume(ex))}</p>}
                   </div>
                   {info.records.has(ex.exerciseId) && !editing && (
-                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-warning/15 px-2.5 py-1 text-[12px] font-semibold text-warning">
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-warning/15 px-2.5 py-1 text-caption font-semibold text-warning">
                       <Trophy size={13} aria-hidden /> Рекорд
                     </span>
                   )}
@@ -211,7 +211,7 @@ export default function SessionDetail() {
                   <div className="mt-3 space-y-1.5">
                     {ex.sets.map((s, si) => (
                       <div key={s.id} className="grid grid-cols-[28px_1fr_1fr_44px] items-center gap-2">
-                        <span className="tabular text-center text-[14px] font-semibold text-muted">{si + 1}</span>
+                        <span className="tabular text-center text-subhead font-semibold text-muted">{si + 1}</span>
                         <NumberInput variant="compact" decimals={2} max={1000} ariaLabel={`Вага, підхід ${si + 1}`} value={s.weight} onChange={(v) => patchSet(ei, si, { weight: v ?? 0 })} />
                         <NumberInput variant="compact" max={200} ariaLabel={`Повторення, підхід ${si + 1}`} value={s.reps} onChange={(v) => patchSet(ei, si, { reps: v ?? 0 })} />
                         <IconButton
@@ -252,7 +252,7 @@ export default function SessionDetail() {
                         <li
                           key={s.id}
                           className={clsx(
-                            'tabular rounded-xl border px-3 py-2 text-[14px] font-medium',
+                            'tabular rounded-xl border px-3 py-2 text-subhead font-medium',
                             best && s.id === best.id ? 'border-accent/40 bg-accent/10' : 'border-line bg-white/[0.03]',
                           )}
                         >
@@ -267,7 +267,7 @@ export default function SessionDetail() {
                       ))}
                     </ul>
                     {prev && (
-                      <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-line pt-3 text-[13px] text-subtle">
+                      <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-line pt-3 text-footnote text-subtle">
                         <span>
                           Минулого разу:{' '}
                           <span className="tabular text-muted">{prevBest ? formatSet(prevBest.weight, prevBest.reps) : '—'}</span>
@@ -280,7 +280,7 @@ export default function SessionDetail() {
                         )}
                       </p>
                     )}
-                    {ex.note && <p className="mt-3 rounded-xl bg-white/[0.03] px-3 py-2 text-[14px] text-muted">{ex.note}</p>}
+                    {ex.note && <p className="mt-3 rounded-xl bg-white/[0.03] px-3 py-2 text-subhead text-muted">{ex.note}</p>}
                   </>
                 )}
               </li>
@@ -305,7 +305,7 @@ export default function SessionDetail() {
             {session.note && (
               <Card>
                 <p className="label mb-1">Нотатка</p>
-                <p className="text-[15px]">{session.note}</p>
+                <p className="text-subhead">{session.note}</p>
               </Card>
             )}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

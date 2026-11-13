@@ -32,8 +32,8 @@ export function StartWorkoutModal({ open, onClose }: { open: boolean; onClose: (
         >
           <IconBadge icon={Play} />
           <span className="min-w-0 flex-1">
-            <span className="block text-[15px] font-semibold">Продовжити «{active.name}»</span>
-            <span className="block text-[13px] text-muted">Тренування ще триває</span>
+            <span className="block text-subhead font-semibold">Продовжити «{active.name}»</span>
+            <span className="block text-footnote text-muted">Тренування ще триває</span>
           </span>
           <ChevronRight size={18} className="text-subtle" aria-hidden />
         </Link>
@@ -50,14 +50,14 @@ export function StartWorkoutModal({ open, onClose }: { open: boolean; onClose: (
               <IconBadge icon={plan.icon} tone={plan.days.includes(today) ? 'accent' : 'neutral'} />
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-2">
-                  <span className="truncate text-[15px] font-semibold">{plan.name}</span>
+                  <span className="truncate text-subhead font-semibold">{plan.name}</span>
                   {plan.days.includes(today) && (
-                    <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-accent">
+                    <span className="rounded-full bg-accent/15 px-2 py-0.5 text-caption2 font-semibold uppercase tracking-wide text-accent">
                       Сьогодні
                     </span>
                   )}
                 </span>
-                <span className="block text-[13px] text-muted">
+                <span className="block text-footnote text-muted">
                   {pluralExercises(plan.exercises.length)} · ≈ {plan.estimatedMinutes} хв
                 </span>
               </span>
@@ -73,8 +73,8 @@ export function StartWorkoutModal({ open, onClose }: { open: boolean; onClose: (
           >
             <IconBadge icon={Sparkles} tone="neutral" />
             <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-semibold">Вільне тренування</span>
-              <span className="block text-[13px] text-muted">Без плану — додавай вправи по ходу</span>
+              <span className="block text-subhead font-semibold">Вільне тренування</span>
+              <span className="block text-footnote text-muted">Без плану — додавай вправи по ходу</span>
             </span>
             <ChevronRight size={18} className="text-subtle" aria-hidden />
           </button>
@@ -84,7 +84,7 @@ export function StartWorkoutModal({ open, onClose }: { open: boolean; onClose: (
       <Link
         to="/plan/new"
         onClick={onClose}
-        className="mt-3 flex h-12 items-center justify-center gap-2 rounded-ctl border border-dashed border-line text-[15px] font-medium text-muted transition hover:border-white/20 hover:text-fg"
+        className="mt-3 flex h-12 items-center justify-center gap-2 rounded-ctl border border-dashed border-line text-subhead font-medium text-muted transition hover:border-white/20 hover:text-fg"
       >
         <Plus size={18} aria-hidden />
         Створити новий план

@@ -90,10 +90,10 @@ export default function HistoryPage() {
           <div className="mb-3 flex items-center justify-between">
             <IconButton icon={ChevronLeft} label="Попередній місяць" size="sm" disabled={month <= firstMonth} onClick={() => shiftMonth(-1)} />
             <div className="text-center">
-              <h2 className="text-[16px] font-semibold" aria-live="polite">
+              <h2 className="text-callout font-semibold" aria-live="polite">
                 {formatMonthYear(month)}
               </h2>
-              <p className="text-[12px] text-subtle">
+              <p className="text-caption text-subtle">
                 {pluralWorkouts(monthSessions.length)} · {formatVolume(sumVolume(monthSessions))}
               </p>
             </div>
@@ -101,7 +101,7 @@ export default function HistoryPage() {
           </div>
           <div className="grid grid-cols-7 gap-1 text-center" role="group" aria-label="Календар місяця">
             {WEEKDAYS_SHORT.map((d) => (
-              <span key={d} className="pb-1 text-[11px] font-semibold uppercase text-subtle" aria-hidden>
+              <span key={d} className="pb-1 text-caption2 font-semibold uppercase text-subtle" aria-hidden>
                 {d}
               </span>
             ))}
@@ -119,7 +119,7 @@ export default function HistoryPage() {
                   aria-label={`${formatDate(d)}${has ? `, ${byDate.get(key)!.length} трен.` : ''}`}
                   onClick={() => setSelected(isSel ? null : key)}
                   className={clsx(
-                    'tabular relative flex h-11 flex-col items-center justify-center rounded-xl text-[14px] transition',
+                    'tabular relative flex h-11 flex-col items-center justify-center rounded-xl text-subhead transition',
                     !inMonth && 'opacity-30',
                     has ? 'font-semibold text-fg hover:bg-white/[0.06]' : 'text-subtle',
                     isSel && 'bg-accent text-black hover:bg-accent',
@@ -137,14 +137,14 @@ export default function HistoryPage() {
         <section aria-label="Тренування" className="space-y-3">
           {selected && (
             <div className="flex items-center justify-between">
-              <p className="text-[15px] font-medium">{formatDate(selected)}</p>
+              <p className="text-subhead font-medium">{formatDate(selected)}</p>
               <Button size="sm" variant="ghost" icon={X} onClick={() => setSelected(null)}>
                 Показати весь місяць
               </Button>
             </div>
           )}
           {visible.length === 0 ? (
-            <div className="card p-6 text-center text-[15px] text-muted">У цьому місяці тренувань немає.</div>
+            <div className="card p-6 text-center text-subhead text-muted">У цьому місяці тренувань немає.</div>
           ) : (
             <ul className="space-y-2.5">
               {visible.map((s) => (
@@ -174,15 +174,15 @@ function SessionRow({ session }: { session: WorkoutSession }) {
   return (
     <Link to={`/history/${session.id}`} className="card-interactive flex items-center gap-4 p-4">
       <div className="flex w-12 shrink-0 flex-col items-center rounded-ctl bg-white/[0.04] py-1.5">
-        <span className="tabular text-[18px] font-semibold leading-tight">{d.getDate()}</span>
-        <span className="text-[11px] uppercase text-subtle">{WEEKDAYS_SHORT[(d.getDay() + 6) % 7]}</span>
+        <span className="tabular text-headline font-semibold leading-tight">{d.getDate()}</span>
+        <span className="text-caption2 uppercase text-subtle">{WEEKDAYS_SHORT[(d.getDay() + 6) % 7]}</span>
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <IconBadge icon={session.icon} size="sm" tone="neutral" className="hidden sm:inline-flex" />
-          <h3 className="truncate text-[16px] font-semibold">{session.name}</h3>
+          <h3 className="truncate text-callout font-semibold">{session.name}</h3>
         </div>
-        <p className="mt-0.5 flex flex-wrap gap-x-3 text-[13px] text-muted">
+        <p className="mt-0.5 flex flex-wrap gap-x-3 text-footnote text-muted">
           <span className="tabular inline-flex items-center gap-1">
             <Clock size={13} aria-hidden />
             {formatClock(session.durationSec)}

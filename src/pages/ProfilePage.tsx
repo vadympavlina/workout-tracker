@@ -136,15 +136,15 @@ export default function ProfilePage() {
               type="button"
               onClick={() => photoInput.current?.click()}
               aria-label="Змінити фото"
-              className="absolute -bottom-1 -right-1 inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-surface bg-accent text-black transition hover:brightness-110"
+              className="hit absolute -bottom-1 -right-1 inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-surface bg-accent text-black transition hover:brightness-110"
             >
               <Camera size={16} aria-hidden />
             </button>
             <input ref={photoInput} type="file" accept="image/*" className="hidden" onChange={(e) => { void onPhoto(e.target.files?.[0]); e.target.value = ''; }} />
           </div>
           <div className="min-w-0">
-            <h2 className="truncate text-[22px] font-semibold tracking-tight">{user.name || 'Без імені'}</h2>
-            <p className="mt-0.5 text-[14px] text-muted">{GOALS[user.goal].label}</p>
+            <h2 className="truncate text-title2 font-semibold tracking-tight">{user.name || 'Без імені'}</h2>
+            <p className="mt-0.5 text-subhead text-muted">{GOALS[user.goal].label}</p>
           </div>
         </div>
         <dl className="relative mt-5 grid grid-cols-3 gap-2">
@@ -181,7 +181,7 @@ export default function ProfilePage() {
           <input ref={importInput} type="file" accept="application/json,.json" className="hidden" onChange={(e) => { void importData(e.target.files?.[0]); e.target.value = ''; }} />
         </MenuGroup>
 
-        <p className="pb-4 text-center text-[13px] text-subtle">
+        <p className="pb-4 text-center text-footnote text-subtle">
           Pulse 1.0 · Дані зберігаються в хмарі й доступні офлайн на цьому пристрої.
           <br />
           Експорт — це копія у файлі, яку можна зберегти окремо.
@@ -213,8 +213,8 @@ function SyncRow({ email, sync }: { email: string; sync: SyncState }) {
         <Icon size={19} aria-hidden />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-[15px] font-medium">{email}</span>
-        <span className="block truncate text-[13px] text-subtle" role="status">
+        <span className="block truncate text-subhead font-medium">{email}</span>
+        <span className="block truncate text-footnote text-subtle" role="status">
           {state.text}
         </span>
       </span>
@@ -225,10 +225,10 @@ function SyncRow({ email, sync }: { email: string; sync: SyncState }) {
 function ProfileStat({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
     <div className="rounded-ctl bg-white/[0.03] p-3">
-      <dt className="flex items-center gap-1 text-[12px] text-subtle">
+      <dt className="flex items-center gap-1 text-caption text-subtle">
         <Icon size={13} aria-hidden /> {label}
       </dt>
-      <dd className="tabular mt-1 text-[16px] font-semibold">{value}</dd>
+      <dd className="tabular mt-1 text-callout font-semibold">{value}</dd>
     </div>
   );
 }
@@ -249,8 +249,8 @@ function MenuItem({ icon: Icon, label, hint, onClick, to, danger }: { icon: Luci
         <Icon size={19} aria-hidden />
       </span>
       <span className="min-w-0 flex-1">
-        <span className={clsx('block text-[15px] font-medium', danger && 'text-negative')}>{label}</span>
-        {hint && <span className="block truncate text-[13px] text-subtle">{hint}</span>}
+        <span className={clsx('block text-subhead font-medium', danger && 'text-negative')}>{label}</span>
+        {hint && <span className="block truncate text-footnote text-subtle">{hint}</span>}
       </span>
       {!danger && <ChevronRight size={18} className="shrink-0 text-subtle" aria-hidden />}
     </>
@@ -316,7 +316,7 @@ function PersonalSheet({ open, onClose, user, onSave, onPhoto }: { open: boolean
             </Button>
           )}
         </div>
-        <p className="text-[13px] text-subtle">Вагу тіла записуй у розділі «Вага тіла» — так зберігається історія змін.</p>
+        <p className="text-footnote text-subtle">Вагу тіла записуй у розділі «Вага тіла» — так зберігається історія змін.</p>
       </div>
     </Modal>
   );
@@ -363,8 +363,8 @@ function GoalsSheet({ open, onClose, user, onSave }: { open: boolean; onClose: (
           >
             <input type="radio" name="goal" value={g} checked={goal === g} onChange={() => setGoal(g)} className="h-4 w-4 accent-[rgb(var(--c-accent))]" />
             <span>
-              <span className="block text-[15px] font-medium">{GOALS[g].label}</span>
-              <span className="block text-[13px] text-subtle">{GOALS[g].hint}</span>
+              <span className="block text-subhead font-medium">{GOALS[g].label}</span>
+              <span className="block text-footnote text-subtle">{GOALS[g].hint}</span>
             </span>
           </label>
         ))}
@@ -435,7 +435,7 @@ function ThemeSheet({ open, onClose, settings, onChange }: { open: boolean; onCl
               aria-pressed={settings.accent === k}
               onClick={() => onChange({ accent: k })}
               className={clsx(
-                'flex h-14 items-center gap-3 rounded-ctl border px-4 text-left text-[15px] font-medium transition',
+                'flex h-14 items-center gap-3 rounded-ctl border px-4 text-left text-subhead font-medium transition',
                 settings.accent === k ? 'border-white/25 bg-white/[0.06]' : 'border-line hover:border-white/15',
               )}
             >

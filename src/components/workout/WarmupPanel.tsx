@@ -30,12 +30,12 @@ export function WarmupPanel({ id, working, equipment }: Props) {
   const all = done.length >= sets.length;
 
   return (
-    <div className="relative mt-2 rounded-[14px] bg-white/[0.04]">
+    <div className="relative mt-2 rounded-tile bg-white/[0.04]">
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="flex min-h-[44px] w-full items-center gap-2 px-3 text-left text-[13px]"
+        className="flex min-h-[44px] w-full items-center gap-2 px-3 text-left text-footnote"
       >
         <Flame size={15} className={clsx('shrink-0', all ? 'text-positive' : 'text-warning')} aria-hidden />
         <span className="min-w-0 flex-1">
@@ -55,7 +55,7 @@ export function WarmupPanel({ id, working, equipment }: Props) {
                 type="button"
                 aria-pressed={done.includes(i)}
                 onClick={() => toggle(i)}
-                className="flex min-h-[44px] w-full items-center gap-3 rounded-[12px] px-2 text-left transition hover:bg-white/[0.04]"
+                className="flex min-h-[44px] w-full items-center gap-3 rounded-chip px-2 text-left transition hover:bg-white/[0.04]"
               >
                 <span
                   className={clsx(
@@ -65,11 +65,11 @@ export function WarmupPanel({ id, working, equipment }: Props) {
                 >
                   <Check size={15} strokeWidth={2.6} aria-hidden />
                 </span>
-                <span className={clsx('tabular min-w-0 flex-1 text-[14px]', done.includes(i) && 'text-muted line-through decoration-white/20')}>
+                <span className={clsx('tabular min-w-0 flex-1 text-subhead', done.includes(i) && 'text-muted line-through decoration-white/20')}>
                   <span className="font-semibold">{formatNumber(s.weight, 2)} кг</span> × {s.reps}
                 </span>
                 {s.plates && (
-                  <span className="tabular shrink-0 text-[12px] text-subtle">
+                  <span className="tabular shrink-0 text-caption text-subtle">
                     {s.plates.length ? `${s.plates.map((p) => formatNumber(p, 2)).join(' + ')} з боку` : 'лише гриф'}
                   </span>
                 )}

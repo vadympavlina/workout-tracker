@@ -28,12 +28,12 @@ export function ActiveWorkoutPill() {
           <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[14px] font-semibold">{active.name}</span>
-          <span className="block text-[12px] text-muted">
+          <span className="block truncate text-subhead font-semibold">{active.name}</span>
+          <span className="block text-caption text-muted">
             Тренування триває · {finished} / {active.exercises.length} вправ
           </span>
         </span>
-        <span className="tabular rounded-xl bg-accent/15 px-2.5 py-1.5 text-[15px] font-semibold text-accent">{formatClock(elapsed)}</span>
+        <span className="tabular rounded-xl bg-accent/15 px-2.5 py-1.5 text-subhead font-semibold text-accent">{formatClock(elapsed)}</span>
         <ChevronRight size={18} className="text-subtle" aria-hidden />
       </Link>
     </div>

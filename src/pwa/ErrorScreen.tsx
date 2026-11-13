@@ -14,13 +14,13 @@ export function ErrorScreen({ error }: { error: unknown }) {
       className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-5"
       style={{ paddingTop: 'calc(24px + var(--safe-top))', paddingBottom: 'calc(24px + var(--safe-bottom))' }}
     >
-      <span className="inline-flex h-14 w-14 items-center justify-center rounded-[18px] bg-white/[0.06] text-muted">
+      <span className="inline-flex h-14 w-14 items-center justify-center rounded-tile bg-white/[0.06] text-muted">
         <Icon size={26} aria-hidden />
       </span>
-      <h1 className="mt-6 text-[28px] font-bold leading-[1.1] tracking-[-0.04em]">
+      <h1 className="mt-6 text-title1 font-bold leading-[1.1] tracking-[-0.04em]">
         {chunk ? 'Не вдалося завантажити екран' : 'Щось пішло не так'}
       </h1>
-      <p className="mt-2 text-[15px] text-muted">
+      <p className="mt-2 text-subhead text-muted">
         {chunk
           ? offline
             ? 'Немає інтернету, а цю частину застосунку ще не збережено на пристрої. Підключись до мережі й спробуй ще раз.'
@@ -30,11 +30,11 @@ export function ErrorScreen({ error }: { error: unknown }) {
       <button
         type="button"
         onClick={() => window.location.reload()}
-        className="mt-8 inline-flex h-14 items-center justify-center gap-2 rounded-full bg-accent text-[16px] font-semibold text-black"
+        className="mt-8 inline-flex h-14 items-center justify-center gap-2 rounded-full bg-accent text-callout font-semibold text-black"
       >
         <RotateCw size={18} aria-hidden /> Перезавантажити
       </button>
-      <a href="./#/" onClick={() => setTimeout(() => window.location.reload(), 0)} className="mt-2 inline-flex h-12 items-center justify-center gap-2 rounded-full text-[15px] font-medium text-muted">
+      <a href="./#/" onClick={() => setTimeout(() => window.location.reload(), 0)} className="mt-2 inline-flex h-12 items-center justify-center gap-2 rounded-full text-subhead font-medium text-muted">
         <Home size={17} aria-hidden /> На головну
       </a>
     </main>

@@ -30,7 +30,7 @@ export function BottomNavigation() {
           value: to,
           href: to,
           label: (
-            <span className="flex flex-col items-center gap-0.5 text-[11px] font-medium">
+            <span className="flex flex-col items-center gap-0.5 text-caption2 font-medium">
               <Icon size={21} strokeWidth={current === to ? 2.3 : 1.8} className={current === to ? 'text-accent' : undefined} aria-hidden />
               {label}
             </span>

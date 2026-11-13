@@ -58,10 +58,10 @@ export default function HelpPage() {
             <details className="card group" open={i === 0}>
               <summary className="flex min-h-[64px] cursor-pointer list-none items-center gap-4 p-4 sm:p-5 [&::-webkit-details-marker]:hidden">
                 <IconBadge icon={icon} />
-                <h2 className="min-w-0 flex-1 text-[16px] font-semibold">{title}</h2>
+                <h2 className="min-w-0 flex-1 text-callout font-semibold">{title}</h2>
                 <ChevronDown size={20} className="shrink-0 text-subtle transition-transform group-open:rotate-180" aria-hidden />
               </summary>
-              <p className="-mt-1 px-4 pb-5 text-[15px] leading-relaxed text-muted sm:px-5">{body}</p>
+              <p className="-mt-1 px-4 pb-5 text-subhead leading-relaxed text-muted sm:px-5">{body}</p>
             </details>
           </li>
         ))}

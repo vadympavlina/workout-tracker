@@ -24,7 +24,7 @@ import {
 import type { WorkoutPlan } from '@/types';
 
 const SeeAll = ({ to, children }: { to: string; children: string }) => (
-  <Link to={to} className="inline-flex h-9 items-center gap-0.5 rounded-full px-3 text-[14px] font-medium text-muted transition hover:bg-white/[0.06] hover:text-fg">
+  <Link to={to} className="inline-flex h-9 items-center gap-0.5 rounded-full px-3 text-subhead font-medium text-muted transition hover:bg-white/[0.06] hover:text-fg">
     {children} <ChevronRight size={16} aria-hidden />
   </Link>
 );
@@ -70,6 +70,9 @@ export default function Dashboard() {
   const lastSession = sessions[0];
   const recentRecords = [...records.values()].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
   const target = data.user.weeklyWorkoutsTarget;
+  // Before the first workout the stats, records and muscle map would all be empty cards:
+  // show one "first steps" checklist instead.
+  const isNew = sessions.length === 0;
 
 
   return (
@@ -77,7 +80,7 @@ export default function Dashboard() {
       <header className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="eyebrow">{formatWeekdayDate(now)}</p>
-          <h1 className="mt-2 text-[34px] font-bold leading-[1.05] tracking-[-0.04em] sm:text-[44px]">
+          <h1 className="mt-2 text-large font-bold leading-[1.05] tracking-[-0.04em] sm:text-display">
             {firstName ? `Привіт, ${firstName}` : 'Привіт'}
           </h1>
         </div>
@@ -92,6 +95,9 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
         <TodayCard />
 
+        {isNew ? (
+          <FirstSteps />
+        ) : (
         <WeekProgress
           count={stats.weekCount}
           target={target}
@@ -100,11 +106,14 @@ export default function Dashboard() {
           sets={stats.weekSets}
           avgSets={stats.avgSets}
         />
+        )}
       </div>
 
       <BackupReminder />
 
-      <MuscleWeekCard compact />
+      {!isNew && <MuscleWeekCard compact />}
+
+      {!isNew && (
 
       <section aria-label="Коротка статистика" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
@@ -135,9 +144,11 @@ export default function Dashboard() {
           trend={{ value: stats.volumeChange != null ? 'обсяг до мин. 30 дн.' : 'замало даних', direction: 'flat' }}
         />
       </section>
+      )}
 
       <WeekPlan />
 
+      {!isNew && (
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-6">
         <Section title="Останнє тренування" action={sessions.length > 0 && <SeeAll to="/history">Журнал</SeeAll>}>
           {lastSession ? (
@@ -145,8 +156,8 @@ export default function Dashboard() {
               <div className="flex items-center gap-3.5">
                 <IconBadge icon={lastSession.icon} tone="move" />
                 <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-[17px] font-semibold">{lastSession.name}</h3>
-                  <p className="text-[13px] text-muted">{formatDate(lastSession.startedAt)}</p>
+                  <h3 className="truncate text-headline font-semibold">{lastSession.name}</h3>
+                  <p className="text-footnote text-muted">{formatDate(lastSession.startedAt)}</p>
                 </div>
                 <ChevronRight size={20} className="text-subtle" aria-hidden />
               </div>
@@ -178,12 +189,12 @@ export default function Dashboard() {
                   <Link to={`/exercises/${r.exerciseId}`} className="flex items-center gap-3.5 p-4 transition hover:bg-white/[0.03]">
                     <IconBadge icon={Trophy} tone="warning" size="sm" />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[15px] font-medium">{r.name}</span>
-                      <span className="block font-mono text-[11px] uppercase tracking-wider text-subtle">{formatDate(r.date)}</span>
+                      <span className="block truncate text-subhead font-medium">{r.name}</span>
+                      <span className="block font-mono text-caption2 uppercase tracking-wider text-subtle">{formatDate(r.date)}</span>
                     </span>
-                    <span className="metric text-[18px]">
+                    <span className="metric text-headline">
                       {r.weight > 0 ? formatNumber(r.weight, 2) : r.reps}
-                      <span className="ml-1 font-mono text-[11px] font-medium tracking-normal text-subtle">{r.weight > 0 ? `кг × ${r.reps}` : 'повт.'}</span>
+                      <span className="ml-1 font-mono text-caption2 font-medium tracking-normal text-subtle">{r.weight > 0 ? `кг × ${r.reps}` : 'повт.'}</span>
                     </span>
                   </Link>
                 </li>
@@ -194,7 +205,73 @@ export default function Dashboard() {
           )}
         </Section>
       </div>
+      )}
     </div>
+  );
+}
+
+/** A new user's checklist: what to do first, ticked off from their own data. */
+function FirstSteps() {
+  const { data } = useData();
+  const openStart = useStartSheet();
+  const installed = typeof window !== 'undefined' && window.matchMedia?.('(display-mode: standalone)').matches;
+  const steps = [
+    { title: 'Скласти план на тиждень', done: data.plans.length > 0, to: '/plan', hint: data.plans.length ? 'План готовий — можна змінити' : 'Тренування й дні' },
+    { title: 'Провести перше тренування', done: false, onClick: openStart, hint: 'Вага й повторення підставляться наступного разу' },
+    { title: 'Записати вагу тіла', done: data.bodyWeight.length > 0, to: '/weight', hint: 'Щоб бачити динаміку' },
+    { title: 'Встановити на телефон', done: !!installed, to: '/help', hint: 'Працює офлайн, як звичайний застосунок' },
+  ];
+  const doneCount = steps.filter((s) => s.done).length;
+  return (
+    <section aria-labelledby="first-steps" className="card p-5 sm:p-6">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id="first-steps" className="text-headline font-semibold">
+          Перші кроки
+        </h2>
+        <span className="tabular text-footnote text-muted">
+          {doneCount} з {steps.length}
+        </span>
+      </div>
+      <ol className="mt-3 space-y-1">
+        {steps.map((step, i) => {
+          const body = (
+            <>
+              <span
+                className={clsx(
+                  'tabular inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-footnote font-semibold',
+                  step.done ? 'bg-positive text-black' : 'bg-white/[0.07] text-muted',
+                )}
+                aria-hidden
+              >
+                {step.done ? <Check size={16} strokeWidth={3} /> : i + 1}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className={clsx('block text-subhead font-medium', step.done && 'text-muted line-through decoration-white/25')}>
+                  {step.title}
+                  {step.done && <span className="sr-only"> — виконано</span>}
+                </span>
+                <span className="block text-footnote text-subtle">{step.hint}</span>
+              </span>
+              <ChevronRight size={18} className="shrink-0 text-subtle" aria-hidden />
+            </>
+          );
+          const cls = '-mx-2 flex min-h-[56px] w-[calc(100%+16px)] items-center gap-3 rounded-tile px-2 text-left transition hover:bg-white/[0.04]';
+          return (
+            <li key={step.title}>
+              {step.to ? (
+                <Link to={step.to} className={cls}>
+                  {body}
+                </Link>
+              ) : (
+                <button type="button" onClick={step.onClick} className={cls}>
+                  {body}
+                </button>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </section>
   );
 }
 
@@ -207,12 +284,12 @@ function formatCompact(kg: number) {
 function WeekProgress({ count, target, volume, avgVolume, sets, avgSets }: { count: number; target: number; volume: number; avgVolume: number; sets: number; avgSets: number }) {
   return (
     <section aria-labelledby="week-title" className="card p-5 sm:p-6">
-      <h2 id="week-title" className="text-[17px] font-semibold">
+      <h2 id="week-title" className="text-headline font-semibold">
         Підсумок тижня
       </h2>
       <p className="mt-3 flex items-baseline gap-2">
-        <span className="metric text-[34px] leading-none">{count}</span>
-        <span className="text-[15px] text-muted">з {target} {target === 1 ? 'тренування' : 'тренувань'} на тиждень</span>
+        <span className="metric text-large leading-none">{count}</span>
+        <span className="text-subhead text-muted">з {target} {target === 1 ? 'тренування' : 'тренувань'} на тиждень</span>
       </p>
       <div className="mt-3 flex gap-1.5" role="img" aria-label={`Виконано ${count} з ${target} тренувань`}>
         {Array.from({ length: Math.max(target, count) }, (_, i) => (
@@ -230,22 +307,22 @@ function WeekProgress({ count, target, volume, avgVolume, sets, avgSets }: { cou
 function Meter({ label, value, current, average, averageText, color }: { label: string; value: string; current: number; average: number; averageText: string; color: string }) {
   const pct = average > 0 ? Math.min(100, Math.round((current / average) * 100)) : 0;
   return (
-    <div className="min-w-0 rounded-[14px] bg-white/[0.04] p-3">
-      <dt className="text-[13px] text-muted">{label}</dt>
-      <dd className="metric mt-1 truncate text-[20px]">{value}</dd>
+    <div className="min-w-0 rounded-tile bg-white/[0.04] p-3">
+      <dt className="text-footnote text-muted">{label}</dt>
+      <dd className="metric mt-1 truncate text-title3">{value}</dd>
       <dd className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.08]" aria-hidden>
         <div className={clsx('h-full rounded-full', color)} style={{ width: `${pct}%` }} />
       </dd>
-      <dd className="mt-1.5 truncate text-[12px] text-subtle">{average > 0 ? `середнє ${averageText}` : 'немає даних'}</dd>
+      <dd className="mt-1.5 truncate text-caption text-subtle">{average > 0 ? `середнє ${averageText}` : 'немає даних'}</dd>
     </div>
   );
 }
 
 function Metric({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
-    <div className="rounded-[14px] bg-white/[0.04] px-3 py-2.5">
+    <div className="rounded-tile bg-white/[0.04] px-3 py-2.5">
       <dt className="eyebrow">{label}</dt>
-      <dd className={clsx('metric mt-1.5 whitespace-nowrap text-[17px]', color)}>{value}</dd>
+      <dd className={clsx('metric mt-1.5 whitespace-nowrap text-headline', color)}>{value}</dd>
     </div>
   );
 }
@@ -327,8 +404,8 @@ function TodayCard() {
         {mood === 'rest' && <Moon size={13} aria-hidden />}
         {eyebrow}
       </p>
-      <h2 className="mt-3 text-[32px] font-bold leading-[1.02] tracking-[-0.045em] sm:text-[40px]">{title}</h2>
-      <div className="mt-2 text-[15px] text-muted">{meta}</div>
+      <h2 className="mt-3 text-large font-bold leading-[1.02] tracking-[-0.045em] sm:text-display">{title}</h2>
+      <div className="mt-2 text-subhead text-muted">{meta}</div>
     </>
   );
 
@@ -355,12 +432,12 @@ function TodayCard() {
         {chips.length > 0 && (
           <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="Вправи">
             {chips.map((c) => (
-              <li key={c} className="max-w-full truncate rounded-full bg-white/[0.07] px-3 py-1.5 text-[12.5px] text-fg/80 backdrop-blur">
+              <li key={c} className="max-w-full truncate rounded-full bg-white/[0.07] px-3 py-1.5 text-caption text-fg/80 backdrop-blur">
                 {c}
               </li>
             ))}
             {pending && pending.exercises.length > chips.length && (
-              <li className="rounded-full bg-white/[0.07] px-3 py-1.5 text-[12.5px] text-subtle">+{pending.exercises.length - chips.length}</li>
+              <li className="rounded-full bg-white/[0.07] px-3 py-1.5 text-caption text-subtle">+{pending.exercises.length - chips.length}</li>
             )}
           </ul>
         )}
@@ -432,12 +509,12 @@ function WeekPlan() {
               const done = doneList.length > 0;
               return (
                 <li key={label} className="flex flex-col items-center gap-2">
-                  <span className={clsx('font-mono text-[11px] font-medium uppercase', isToday ? 'text-fg' : 'text-subtle')}>{label}</span>
+                  <span className={clsx('font-mono text-caption2 font-medium uppercase', isToday ? 'text-fg' : 'text-subtle')}>{label}</span>
                   <span
                     role="img"
                     aria-label={`${label}: ${done ? 'виконано' : plan ? (past ? 'пропущено' : 'заплановано') : 'відпочинок'}`}
                     className={clsx(
-                      'tabular flex h-[38px] w-[38px] items-center justify-center rounded-full border-2 text-[13px] font-semibold',
+                      'tabular flex h-[38px] w-[38px] items-center justify-center rounded-full border-2 text-footnote font-semibold',
                       done ? 'border-move bg-move/[0.14] text-move' : isToday ? 'border-fg bg-fg text-black' : plan ? 'border-white/20 text-fg' : 'border-transparent bg-white/[0.04] text-subtle',
                     )}
                   >
@@ -455,12 +532,12 @@ function WeekPlan() {
               const status = done ? 'Виконано' : isToday ? 'Сьогодні' : i < todayIdx ? 'Пропущено' : 'Заплановано';
               return (
                 <li key={key}>
-                  <Link to={to} className="-mx-2 flex min-h-[52px] items-center gap-3 rounded-[14px] px-2 transition hover:bg-white/[0.04]">
-                    <span className={clsx('w-7 font-mono text-[12px] font-medium uppercase', isToday ? 'text-fg' : 'text-subtle')}>{label}</span>
-                    <span className="min-w-0 flex-1 truncate text-[15px] font-medium">{name}</span>
+                  <Link to={to} className="-mx-2 flex min-h-[52px] items-center gap-3 rounded-tile px-2 transition hover:bg-white/[0.04]">
+                    <span className={clsx('w-7 font-mono text-caption font-medium uppercase', isToday ? 'text-fg' : 'text-subtle')}>{label}</span>
+                    <span className="min-w-0 flex-1 truncate text-subhead font-medium">{name}</span>
                     <span
                       className={clsx(
-                        'shrink-0 rounded-full px-2.5 py-1 text-[11.5px] font-semibold',
+                        'shrink-0 rounded-full px-2.5 py-1 text-caption2 font-semibold',
                         done ? 'bg-move/[0.14] text-move' : isToday ? 'bg-fg text-black' : i < todayIdx ? 'text-negative/80' : 'text-subtle',
                       )}
                     >

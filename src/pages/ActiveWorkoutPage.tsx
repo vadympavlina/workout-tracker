@@ -188,19 +188,19 @@ export default function ActiveWorkoutPage() {
     <div className="mx-auto max-w-2xl" style={{ paddingBottom: 'calc(120px + var(--safe-bottom))' }}>
       {/* Header */}
       <header
-        className="glass sticky top-0 z-30 rounded-b-[28px] px-2 pb-3 sm:px-4"
+        className="glass sticky top-0 z-30 rounded-b-panel px-2 pb-3 sm:px-4"
         style={{ paddingTop: 'calc(8px + var(--safe-top))' }}
       >
         <div className="flex items-center gap-1">
           <IconButton icon={ChevronLeft} label="Згорнути тренування" onClick={() => navigate('/')} />
           <div className="min-w-0 flex-1 px-1">
-            <h1 className="truncate text-[17px] font-bold leading-tight tracking-[-0.02em]">{active.name}</h1>
-            <p className="font-mono text-[11.5px] uppercase tracking-wide text-subtle">
+            <h1 className="truncate text-headline font-bold leading-tight tracking-[-0.02em]">{active.name}</h1>
+            <p className="font-mono text-caption2 uppercase tracking-wide text-subtle">
               <span className="tabular">{finishedCount} / {active.exercises.length}</span> вправ ·{' '}
               <span className="tabular">{doneSets} / {totalSets}</span> підх.
             </p>
           </div>
-          <div className="flex h-11 items-center gap-2 rounded-full bg-accent px-4 font-mono text-[17px] font-semibold tabular-nums text-black shadow-glow" role="timer" aria-label="Тривалість тренування">
+          <div className="flex h-11 items-center gap-2 rounded-full bg-accent px-4 font-mono text-headline font-semibold tabular-nums text-black shadow-glow" role="timer" aria-label="Тривалість тренування">
             <span className="h-2 w-2 animate-pulse rounded-full bg-black/70" aria-hidden />
             {formatClock(elapsed)}
           </div>
@@ -210,7 +210,7 @@ export default function ActiveWorkoutPage() {
 
       <div className="space-y-5 px-4 pt-4">
         {active.lastActivityAt && now - active.lastActivityAt > IDLE_LIMIT_MS && (
-          <div role="status" className="rounded-[18px] border border-warning/25 bg-warning/[0.07] p-4 text-[14px]">
+          <div role="status" className="rounded-tile border border-warning/25 bg-warning/[0.07] p-4 text-subhead">
             <p className="font-semibold text-warning">Схоже, тренування не завершили вчасно</p>
             <p className="mt-1 text-muted">
               Остання дія була {formatDurationWords((now - active.lastActivityAt) / 1000)} тому. Паузу довшу за годину не буде враховано в тривалості тренування.
@@ -241,13 +241,13 @@ export default function ActiveWorkoutPage() {
                     onClick={() => workout.goTo(i)}
                     aria-current={i === idx ? 'step' : undefined}
                     className={clsx(
-                      'flex h-11 max-w-[190px] shrink-0 items-center gap-2 rounded-full pl-1.5 pr-4 text-[13px] font-medium transition',
+                      'flex h-11 max-w-[190px] shrink-0 items-center gap-2 rounded-full pl-1.5 pr-4 text-footnote font-medium transition',
                       i === idx ? 'bg-fg text-black' : 'bg-white/[0.06] text-muted hover:text-fg',
                     )}
                   >
                     <span
                       className={clsx(
-                        'tabular inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold',
+                        'tabular inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-caption font-semibold',
                         e.finished ? 'bg-positive text-black' : i === idx ? 'bg-black text-fg' : 'bg-white/[0.08]',
                       )}
                     >
@@ -269,8 +269,8 @@ export default function ActiveWorkoutPage() {
                   <p className="eyebrow">
                     Вправа {idx + 1} / {active.exercises.length}
                   </p>
-                  {currentEx && <p className="mt-1 text-[13px] text-muted">{MUSCLE_GROUPS[currentEx.muscleGroup]}</p>}
-                  <p className="mt-1 text-[14px] text-muted">
+                  {currentEx && <p className="mt-1 text-footnote text-muted">{MUSCLE_GROUPS[currentEx.muscleGroup]}</p>}
+                  <p className="mt-1 text-subhead text-muted">
                     Ціль: <span className="tabular font-semibold text-fg">{current.sets.length} × {repsRange(current.targetRepsMin ?? 8, current.targetRepsMax ?? 12)}</span>
                   </p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
@@ -278,7 +278,7 @@ export default function ActiveWorkoutPage() {
                       <button
                         type="button"
                         onClick={() => setPlatesOpen(true)}
-                        className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white/[0.07] px-3 text-[12.5px] font-medium text-fg transition hover:bg-white/[0.12]"
+                        className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white/[0.07] px-3 text-caption font-medium text-fg transition hover:bg-white/[0.12]"
                       >
                         <Disc3 size={14} aria-hidden /> Диски
                       </button>
@@ -287,7 +287,7 @@ export default function ActiveWorkoutPage() {
                       <button
                         type="button"
                         onClick={() => setSwapOpen(true)}
-                        className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white/[0.07] px-3 text-[12.5px] font-medium text-fg transition hover:bg-white/[0.12]"
+                        className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white/[0.07] px-3 text-caption font-medium text-fg transition hover:bg-white/[0.12]"
                       >
                         <ArrowLeftRight size={14} aria-hidden /> Замінити
                       </button>
@@ -299,11 +299,11 @@ export default function ActiveWorkoutPage() {
                   <IconButton icon={ChevronRight} label="Наступна вправа" size="sm" disabled={idx === active.exercises.length - 1} onClick={() => workout.goTo(idx + 1)} />
                 </div>
               </div>
-              <h2 id="current-ex" className="relative mt-4 text-[26px] font-bold leading-[1.1] tracking-[-0.035em]">
+              <h2 id="current-ex" className="relative mt-4 text-title1 font-bold leading-[1.1] tracking-[-0.035em]">
                 {current.name}
               </h2>
 
-              <p className="relative mt-4 flex items-start gap-2 rounded-[14px] bg-white/[0.04] px-3 py-2.5 text-[13px] text-muted">
+              <p className="relative mt-4 flex items-start gap-2 rounded-tile bg-white/[0.04] px-3 py-2.5 text-footnote text-muted">
                 <History size={15} className="mt-0.5 shrink-0 text-subtle" aria-hidden />
                 {lastTime ? (
                   <span>
@@ -318,13 +318,13 @@ export default function ActiveWorkoutPage() {
               </p>
 
               {showHint && hint && (
-                <div role="status" className="relative mt-2 flex items-center gap-3 rounded-[14px] border border-accent/25 bg-accent/[0.07] py-2 pl-3 pr-2">
+                <div role="status" className="relative mt-2 flex items-center gap-3 rounded-tile border border-accent/25 bg-accent/[0.07] py-2 pl-3 pr-2">
                   {hint.kind === 'down' ? (
                     <TrendingDown size={17} className="shrink-0 text-warning" aria-hidden />
                   ) : (
                     <TrendingUp size={17} className="shrink-0 text-accent" aria-hidden />
                   )}
-                  <p className="min-w-0 flex-1 text-[13px] leading-snug">
+                  <p className="min-w-0 flex-1 text-footnote leading-snug">
                     <span className="font-semibold text-fg">
                       {hint.kind === 'reps'
                         ? `Спробуй ${hint.reps} повторень`
@@ -356,7 +356,7 @@ export default function ActiveWorkoutPage() {
 
               {current.finished && (
                 <div className="mt-3 flex items-center justify-between gap-3 rounded-ctl border border-positive/25 bg-positive/[0.06] px-3 py-2">
-                  <span className="flex items-center gap-2 text-[14px] font-medium text-positive">
+                  <span className="flex items-center gap-2 text-subhead font-medium text-positive">
                     <CircleCheck size={17} aria-hidden /> Вправу завершено
                   </span>
                   <Button size="sm" variant="ghost" icon={RotateCcw} onClick={() => workout.reopenExercise(idx)}>
@@ -404,7 +404,7 @@ export default function ActiveWorkoutPage() {
                 <button
                   type="button"
                   onClick={() => setNoteOpen(true)}
-                  className="mt-2 inline-flex h-11 items-center gap-2 rounded-ctl px-2 text-[14px] text-muted transition hover:text-fg"
+                  className="mt-2 inline-flex h-11 items-center gap-2 rounded-ctl px-2 text-subhead text-muted transition hover:text-fg"
                 >
                   <NotebookPen size={16} aria-hidden /> Додати примітку
                 </button>
@@ -420,7 +420,7 @@ export default function ActiveWorkoutPage() {
             {/* Overview */}
             <section aria-labelledby="overview" className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 id="overview" className="text-[17px] font-semibold">
+                <h2 id="overview" className="text-headline font-semibold">
                   Усі вправи
                 </h2>
                 <Button size="sm" variant="ghost" icon={Plus} onClick={() => setPickerOpen(true)}>
@@ -435,15 +435,15 @@ export default function ActiveWorkoutPage() {
                       <button type="button" onClick={() => workout.goTo(i)} className="flex min-h-[48px] min-w-0 flex-1 items-center gap-3 text-left">
                         <span
                           className={clsx(
-                            'tabular inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold',
+                            'tabular inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-caption font-semibold',
                             e.finished ? 'bg-positive/15 text-positive' : i === idx ? 'bg-accent/15 text-accent' : 'bg-white/[0.05] text-muted',
                           )}
                         >
                           {e.finished ? <Check size={14} strokeWidth={3} aria-hidden /> : i + 1}
                         </span>
                         <span className="min-w-0">
-                          <span className={clsx('block truncate text-[15px]', i === idx ? 'font-semibold' : 'font-medium')}>{e.name}</span>
-                          <span className="tabular block text-[12px] text-subtle">
+                          <span className={clsx('block truncate text-subhead', i === idx ? 'font-semibold' : 'font-medium')}>{e.name}</span>
+                          <span className="tabular block text-caption text-subtle">
                             {done} / {e.sets.length} підходів
                           </span>
                         </span>
@@ -473,7 +473,7 @@ export default function ActiveWorkoutPage() {
       </div>
 
       {/* Bottom action bar — the rest timer lives here so it never covers content. */}
-      <div className="glass fixed inset-x-0 bottom-0 z-40 rounded-t-[28px]" style={{ paddingBottom: 'var(--safe-bottom)' }}>
+      <div className="glass fixed inset-x-0 bottom-0 z-40 rounded-t-panel" style={{ paddingBottom: 'var(--safe-bottom)' }}>
         <div className="mx-auto flex max-w-2xl items-center gap-2 px-4 py-3">
           {resting ? (
             <>
@@ -488,7 +488,7 @@ export default function ActiveWorkoutPage() {
                 <span className="min-w-0 text-left">
                   <span className="eyebrow block text-volume/70">Відпочинок</span>
                   {' '}
-                  <span className="metric block font-mono text-[19px] text-volume">
+                  <span className="metric block font-mono text-title3 text-volume">
                     {formatClock(restLeft!)}
                   </span>
                   <span className="sr-only"> — натисни, щоб пропустити</span>

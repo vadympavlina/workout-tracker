@@ -76,8 +76,8 @@ export default function WorkoutSummary() {
           <Check size={26} strokeWidth={3} aria-hidden />
         </span>
         <p className="eyebrow mt-4 animate-slide-up">Тренування завершено</p>
-        <h1 className="mt-2 animate-slide-up text-[38px] font-bold leading-tight tracking-[-0.045em] [animation-delay:60ms]">Чудова робота!</h1>
-        <p className="mt-1 animate-slide-up text-[16px] text-muted [animation-delay:100ms]">{session.name}</p>
+        <h1 className="mt-2 animate-slide-up text-display font-bold leading-tight tracking-[-0.045em] [animation-delay:60ms]">Чудова робота!</h1>
+        <p className="mt-1 animate-slide-up text-callout text-muted [animation-delay:100ms]">{session.name}</p>
       </div>
 
       <dl className="mt-8 grid grid-cols-2 gap-3">
@@ -86,7 +86,7 @@ export default function WorkoutSummary() {
             <dt className="eyebrow flex items-center gap-1.5">
               <Icon size={13} aria-hidden /> {label}
             </dt>
-            <dd className={`metric mt-3 text-[28px] ${color}`}>{value}</dd>
+            <dd className={`metric mt-3 text-title1 ${color}`}>{value}</dd>
           </div>
         ))}
       </dl>
@@ -94,7 +94,7 @@ export default function WorkoutSummary() {
       {info.volumeChange != null && (
         <p
           className={clsx(
-            'mt-3 flex animate-slide-up items-center justify-center gap-1.5 rounded-card border p-3 text-[14px] font-medium [animation-delay:360ms]',
+            'mt-3 flex animate-slide-up items-center justify-center gap-1.5 rounded-card border p-3 text-subhead font-medium [animation-delay:360ms]',
             info.volumeChange >= 0 ? 'border-positive/20 bg-positive/[0.06] text-positive' : 'border-line bg-surface text-muted',
           )}
         >
@@ -104,7 +104,7 @@ export default function WorkoutSummary() {
       )}
 
       <section aria-labelledby="new-records" className="mt-6 animate-slide-up [animation-delay:420ms]">
-        <h2 id="new-records" className="mb-3 text-[17px] font-semibold">
+        <h2 id="new-records" className="mb-3 text-headline font-semibold">
           Нові рекорди
         </h2>
         {info.records.length > 0 ? (
@@ -114,15 +114,15 @@ export default function WorkoutSummary() {
                 <span className="inline-flex h-10 w-10 animate-pop items-center justify-center rounded-ctl bg-warning/15 text-warning" style={{ animationDelay: `${520 + i * 120}ms` }}>
                   <Trophy size={20} aria-hidden />
                 </span>
-                <span className="min-w-0 flex-1 truncate text-[15px] font-medium">{r.name}</span>
-                <span className="tabular text-[15px] font-semibold">
+                <span className="min-w-0 flex-1 truncate text-subhead font-medium">{r.name}</span>
+                <span className="tabular text-subhead font-semibold">
                   {formatSet(r.weight, r.reps)}
                 </span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="card p-4 text-[14px] text-muted">Цього разу без нових рекордів — регулярність теж прогрес.</p>
+          <p className="card p-4 text-subhead text-muted">Цього разу без нових рекордів — регулярність теж прогрес.</p>
         )}
       </section>
 

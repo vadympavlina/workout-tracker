@@ -22,20 +22,20 @@ export function ExerciseCard({ exercise, name, index, scheme, previous, actions,
       <div className="relative">
         <ExerciseThumb exercise={exercise} />
         {index != null && (
-          <span className="absolute -left-1.5 -top-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-line bg-elevated px-1 text-[11px] font-semibold text-muted">
+          <span className="absolute -left-1.5 -top-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-line bg-elevated px-1 text-caption2 font-semibold text-muted">
             {index}
           </span>
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <h3 className="text-[15px] font-semibold leading-snug">{name}</h3>
-        <p className="mt-0.5 text-[13px] text-muted">
+        <h3 className="text-subhead font-semibold leading-snug">{name}</h3>
+        <p className="mt-0.5 text-footnote text-muted">
           {scheme && <span className="tabular font-medium text-fg/90">{scheme}</span>}
           {scheme && exercise && <span className="mx-1.5 text-subtle">·</span>}
           {exercise && <span>{MUSCLE_GROUPS[exercise.muscleGroup]}</span>}
         </p>
         {previous !== undefined && (
-          <p className="mt-1 inline-flex items-center gap-1.5 text-[13px] text-subtle">
+          <p className="mt-1 inline-flex items-center gap-1.5 text-footnote text-subtle">
             <History size={13} aria-hidden />
             {previous ? (
               <span>

@@ -32,9 +32,9 @@ interface TooltipContentProps {
 function ChartTooltip({ active, payload, label, formatValue }: TooltipContentProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-[14px] border border-white/[0.08] bg-[rgb(28_28_31/0.92)] px-3 py-2 shadow-2xl backdrop-blur-xl">
-      <p className="font-mono text-[11px] uppercase tracking-wider text-subtle">{label}</p>
-      <p className="metric mt-1 text-[17px] text-fg">{formatValue(Number(payload[0].value))}</p>
+    <div className="rounded-tile border border-white/[0.08] bg-[rgb(28_28_31/0.92)] px-3 py-2 shadow-2xl backdrop-blur-xl">
+      <p className="font-mono text-caption2 uppercase tracking-wider text-subtle">{label}</p>
+      <p className="metric mt-1 text-headline text-fg">{formatValue(Number(payload[0].value))}</p>
     </div>
   );
 }
