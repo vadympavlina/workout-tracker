@@ -3,8 +3,8 @@ import type { Anatomy, BodyType, Slug } from '@/data/anatomyTypes';
 import { MUSCLE_SLUGS, NON_MUSCLE } from '@/data/anatomyTypes';
 import { muscleTargets } from '@/data/exerciseMedia';
 import { ACCENTS } from '@/data/labels';
-import { formatNumber, formatSet, formatTime, formatWeekdayDate, pluralSets } from './format';
-import { bestSet, sessionVolume } from './stats';
+import { formatNumber, formatTime, formatWeekdayDate } from './format';
+import { sessionVolume } from './stats';
 
 /** Everything the story card shows, already worked out from the session. */
 export interface ShareCard {
@@ -13,7 +13,8 @@ export interface ShareCard {
   durationSec: number;
   volumeKg: number;
   sets: number;
-  exercises: { name: string; sets: number; best: { weight: number; reps: number } | null }[];
+  /** Completed sets of each exercise, in order. */
+  exercises: { name: string; sets: { weight: number; reps: number }[] }[];
   /** Sets per body shape (primary muscles 1, secondary ½). */
   load: Partial<Record<Slug, number>>;
   sex: BodyType;
@@ -128,6 +129,97 @@ function stat(ctx: CanvasRenderingContext2D, x: number, y: number, value: string
   ctx.fillText(label, x, y + 52);
 }
 
+// ---- Exercise list ----------------------------------------------------------
+
+interface Block {
+  x: number;
+  y: number;
+  width: number;
+  name: string;
+  nameSize: number;
+  /** Chips placed relative to the block. */
+  chips: { text: string; x: number; y: number; w: number; best: boolean }[];
+  height: number;
+}
+
+interface ListLayout {
+  k: number;
+  height: number;
+  blocks: Block[];
+}
+
+const chipText = (s: { weight: number; reps: number }) => (s.weight > 0 ? `${formatNumber(s.weight, 2)} × ${s.reps}` : `${s.reps} повт.`);
+
+/** Places each exercise (name over a wrapped row of set chips) in 1 or 2 columns at scale k. */
+function layoutList(ctx: CanvasRenderingContext2D, card: ShareCard, cols: number, k: number): ListLayout {
+  const colGap = 48;
+  const width = cols === 1 ? CARD_W - PAD * 2 : (CARD_W - PAD * 2 - colGap) / 2;
+  const nameH = 46 * k;
+  const chipH = 54 * k;
+  const gap = 10 * k;
+  const blockGap = 26 * k;
+  const blocks: Block[] = card.exercises.map((e) => {
+    let nameSize = Math.round(34 * k);
+    ctx.font = font(nameSize, 600);
+    while (nameSize > Math.round(27 * k) && ctx.measureText(e.name).width > width) ctx.font = font(--nameSize, 600);
+    const heaviest = Math.max(...e.sets.map((s) => s.weight));
+    // The top weight is highlighted only when the weights actually differ.
+    const bestIdx = heaviest > 0 && e.sets.some((s) => s.weight !== heaviest) ? e.sets.findIndex((s) => s.weight === heaviest) : -1;
+    ctx.font = font(Math.round(29 * k), 600);
+    const chips: Block['chips'] = [];
+    let cx = 0;
+    let cy = nameH + gap;
+    e.sets.forEach((set, i) => {
+      const text = chipText(set);
+      const w = ctx.measureText(text).width + 32 * k;
+      if (cx > 0 && cx + w > width) {
+        cx = 0;
+        cy += chipH + gap;
+      }
+      chips.push({ text, x: cx, y: cy, w, best: i === bestIdx });
+      cx += w + gap;
+    });
+    return { x: 0, y: 0, width, name: e.name, nameSize, chips, height: cy + chipH };
+  });
+  // Two columns: fill the left one first, then the right, keeping heights balanced.
+  const total = blocks.reduce((a, b) => a + b.height + blockGap, 0) - blockGap;
+  let col = 0;
+  let cy = 0;
+  let height = 0;
+  for (const b of blocks) {
+    if (cols === 2 && col === 0 && cy > 0 && cy + b.height / 2 > total / 2) {
+      col = 1;
+      cy = 0;
+    }
+    b.x = PAD + col * (width + colGap);
+    b.y = cy;
+    cy += b.height + blockGap;
+    height = Math.max(height, cy - blockGap);
+  }
+  return { k, height, blocks };
+}
+
+function drawList(ctx: CanvasRenderingContext2D, l: ListLayout, top: number, accent: string) {
+  const { k } = l;
+  const chipH = 54 * k;
+  for (const b of l.blocks) {
+    const by = top + b.y;
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = FG;
+    ctx.font = font(b.nameSize, 600);
+    ctx.fillText(fit(ctx, b.name, b.width), b.x, by + 20 * k);
+    ctx.font = font(Math.round(29 * k), 600);
+    for (const c of b.chips) {
+      roundRect(ctx, b.x + c.x, by + c.y, c.w, chipH, 16 * k);
+      ctx.fillStyle = c.best ? rgba(accent, 0.16) : 'rgba(255,255,255,0.06)';
+      ctx.fill();
+      ctx.fillStyle = c.best ? `rgb(${accent})` : FG;
+      ctx.fillText(c.text, b.x + c.x + 16 * k, by + c.y + chipH / 2 + 1);
+    }
+  }
+}
+
 /**
  * Draws a 1080×1920 story card (Instagram / Telegram stories). Important content
  * stays clear of the top and bottom ~220 px that story apps cover with their UI.
@@ -203,56 +295,49 @@ export function drawShareCard(ctx: CanvasRenderingContext2D, card: ShareCard, an
   });
   y += panelH;
 
-  // Every exercise must fit. Rows shrink as the list grows; the body figures take
-  // what is left and are dropped only when they would get too small to read.
-  const n = card.exercises.length;
+  // Every exercise with every set must fit. Try the roomiest layout first, then
+  // drop the figures, then shrink, and finally split the list into two columns.
   const bottom = 1700;
   const top = y + 56;
-  const avail = bottom - top;
   const FIG_MIN = 300;
   const FIG_EXTRA = 100; // caption + gap under the figures
-  let rowH = Math.min(84, Math.max(40, (avail - FIG_MIN - FIG_EXTRA) / Math.max(n, 1)));
-  let figH = avail - n * rowH - FIG_EXTRA;
-  if (figH < FIG_MIN) {
-    figH = 0;
-    rowH = Math.min(84, avail / Math.max(n, 1));
-  }
-  figH = Math.min(figH, 700);
-  const k = rowH / 84;
-  const listTop = bottom - n * rowH;
-
-  card.exercises.forEach((e, i) => {
-    const ry = listTop + i * rowH;
-    const mid = ry + rowH / 2;
-    if (i > 0) {
-      ctx.fillStyle = 'rgba(255,255,255,0.07)';
-      ctx.fillRect(PAD, ry, inner, 2);
+  const LEGEND = 56;
+  let plan: ListLayout | null = null;
+  let figH = 0;
+  search: for (const cols of [1, 2]) {
+    for (let k = 1; k >= 0.55; k -= 0.05) {
+      const l = layoutList(ctx, card, cols, k);
+      const room = bottom - top - LEGEND - l.height;
+      if (cols === 1 && k > 0.8 && room >= FIG_MIN + FIG_EXTRA) {
+        plan = l;
+        figH = Math.min(room - FIG_EXTRA, 620);
+        break search;
+      }
+      if (room >= 0) {
+        plan = l;
+        break search;
+      }
     }
-    ctx.textBaseline = 'middle';
-    const right = e.best ? formatSet(e.best.weight, e.best.reps) : '';
-    ctx.font = font(Math.round(36 * k), 650);
-    const rw = ctx.measureText(right).width;
-    ctx.textAlign = 'right';
-    ctx.fillStyle = FG;
-    ctx.fillText(right, W - PAD, mid);
-    ctx.textAlign = 'left';
-    ctx.fillStyle = SUBTLE;
-    ctx.font = font(Math.round(27 * k), 500);
-    const setsLabel = pluralSets(e.sets);
-    const sw = ctx.measureText(setsLabel).width;
-    ctx.fillText(setsLabel, W - PAD - rw - sw - 28, mid + 1);
-    // A long name first gets smaller type (down to 80 %), only then an ellipsis.
-    const nameMax = inner - rw - sw - 72;
-    let size = Math.round(36 * k);
-    ctx.font = font(size, 500);
-    while (size > Math.round(29 * k) && ctx.measureText(e.name).width > nameMax) ctx.font = font(--size, 500);
-    ctx.fillStyle = FG;
-    ctx.fillText(fit(ctx, e.name, nameMax), PAD, mid);
-  });
+  }
+  plan ??= layoutList(ctx, card, 2, 0.5);
+  const listTop = bottom - plan.height;
+  drawList(ctx, plan, listTop, A);
+
+  // Legend over the list: what the numbers in the chips mean.
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = SUBTLE;
+  ctx.font = font(24, 600);
+  ctx.letterSpacing = '3px';
+  ctx.fillText('ВПРАВИ', PAD, listTop - 24);
+  ctx.letterSpacing = '0px';
+  ctx.textAlign = 'right';
+  ctx.font = font(24, 500);
+  ctx.fillText('вага, кг × повторення', W - PAD, listTop - 24);
+  ctx.textAlign = 'left';
 
   // Body figures, centred in the space between the stats and the list.
   if (figH > 0) {
-    const figTop = top + (listTop - top - figH - FIG_EXTRA) / 2 + 10;
+    const figTop = top + (listTop - LEGEND - top - figH - FIG_EXTRA) / 2 + 10;
     g = ctx.createRadialGradient(W / 2, figTop + figH / 2, 0, W / 2, figTop + figH / 2, figH * 0.75);
     g.addColorStop(0, rgba(A, 0.08));
     g.addColorStop(1, rgba(A, 0));
@@ -294,8 +379,7 @@ export function buildShareCard(
     const done = e.sets.filter((x) => x.done !== false && x.reps > 0);
     if (!done.length) continue;
     sets += done.length;
-    const best = bestSet(done.map((x) => ({ ...x, done: true })));
-    exercises.push({ name: e.name, sets: done.length, best: best && { weight: best.weight, reps: best.reps } });
+    exercises.push({ name: e.name, sets: done.map((x) => ({ weight: x.weight, reps: x.reps })) });
     const { primary, secondary } = muscleTargets(exerciseById(e.exerciseId) ?? { id: e.exerciseId, muscleGroup: 'fullBody' });
     for (const m of primary) add(MUSCLE_SLUGS[m], done.length);
     for (const m of secondary) if (!primary.includes(m)) add(MUSCLE_SLUGS[m], done.length / 2);

@@ -19,10 +19,10 @@ const session: WorkoutSession = {
 describe('buildShareCard', () => {
   const card = buildShareCard(session, byId, { accent: 'pink', bodyType: 'female' });
 
-  it('keeps only exercises with completed sets, each with its best set', () => {
+  it('keeps only exercises with completed sets, each with every set in order', () => {
     expect(card.exercises).toEqual([
-      { name: 'Жим штанги лежачи', sets: 2, best: { weight: 100, reps: 8 } },
-      { name: 'Віджимання на брусах', sets: 2, best: { weight: 0, reps: 14 } },
+      { name: 'Жим штанги лежачи', sets: [{ weight: 90, reps: 10 }, { weight: 100, reps: 8 }] },
+      { name: 'Віджимання на брусах', sets: [{ weight: 0, reps: 12 }, { weight: 0, reps: 14 }] },
     ]);
     expect(card.sets).toBe(4);
     expect(card.volumeKg).toBe(1700);
