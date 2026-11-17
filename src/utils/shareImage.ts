@@ -10,7 +10,6 @@ export interface ShareCard {
   volumeKg: number;
   sets: number;
   exercises: { name: string; sets: number; best: { weight: number; reps: number } | null }[];
-  records: { name: string; weight: number; reps: number }[];
   /** Sets per body shape (primary muscles 1, secondary ½). */
   load: Partial<Record<Slug, number>>;
   sex: BodyType;
@@ -26,15 +25,6 @@ const PAD = 88;
 const FG = '#FAFAFA';
 const MUTED = '#A3A3AA';
 const SUBTLE = '#84848C';
-
-const TROPHY = [
-  'M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2',
-  'M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2',
-  'M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3',
-  'M4 22h16',
-  'M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z',
-  'M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3',
-];
 
 const font = (size: number, weight = 400) => `${weight} ${size}px ${FONT}`;
 const rgba = (rgb: string, a: number) => `rgb(${rgb} / ${a})`;
@@ -96,18 +86,6 @@ function drawBody(ctx: CanvasRenderingContext2D, anatomy: Anatomy, card: ShareCa
   ctx.strokeStyle = '#3d4049';
   ctx.lineWidth = 2 / s;
   ctx.stroke(new Path2D(v.outline));
-  ctx.restore();
-}
-
-function drawTrophy(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.scale(size / 24, size / 24);
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2.2;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  for (const d of TROPHY) ctx.stroke(new Path2D(d));
   ctx.restore();
 }
 
@@ -221,81 +199,69 @@ export function drawShareCard(ctx: CanvasRenderingContext2D, card: ShareCard, an
   });
   y += panelH;
 
-  // Records strip.
-  if (card.records.length) {
-    y += 28;
-    const h = 92;
-    roundRect(ctx, PAD, y, inner, h, 28);
-    ctx.fillStyle = rgba(A, 0.12);
-    ctx.fill();
-    drawTrophy(ctx, PAD + 30, y + 26, 40, `rgb(${A})`);
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = `rgb(${A})`;
-    ctx.font = font(32, 650);
-    const head = card.records.length === 1 ? 'Новий рекорд' : `Нові рекорди: ${card.records.length}`;
-    ctx.fillText(head, PAD + 92, y + h / 2);
-    const hw = ctx.measureText(head).width;
-    const r = card.records[0];
-    ctx.fillStyle = FG;
-    ctx.font = font(30, 500);
-    ctx.fillText(fit(ctx, `· ${r.name} ${formatSet(r.weight, r.reps)}`, inner - 92 - hw - 40), PAD + 92 + hw + 14, y + h / 2);
-    y += h;
+  // Every exercise must fit. Rows shrink as the list grows; the body figures take
+  // what is left and are dropped only when they would get too small to read.
+  const n = card.exercises.length;
+  const bottom = 1700;
+  const top = y + 56;
+  const avail = bottom - top;
+  const FIG_MIN = 300;
+  const FIG_EXTRA = 100; // caption + gap under the figures
+  let rowH = Math.min(84, Math.max(40, (avail - FIG_MIN - FIG_EXTRA) / Math.max(n, 1)));
+  let figH = avail - n * rowH - FIG_EXTRA;
+  if (figH < FIG_MIN) {
+    figH = 0;
+    rowH = Math.min(84, avail / Math.max(n, 1));
   }
+  figH = Math.min(figH, 700);
+  const k = rowH / 84;
+  const listTop = bottom - n * rowH;
 
-  // Exercise list, anchored to the bottom safe line.
-  const rowH = 78;
-  const bottom = 1690;
-  const maxRows = 5;
-  const shown = card.exercises.slice(0, card.exercises.length > maxRows ? maxRows - 1 : maxRows);
-  const more = card.exercises.length - shown.length;
-  const listTop = bottom - (shown.length + (more ? 1 : 0)) * rowH;
-  shown.forEach((e, i) => {
+  card.exercises.forEach((e, i) => {
     const ry = listTop + i * rowH;
+    const mid = ry + rowH / 2;
     if (i > 0) {
       ctx.fillStyle = 'rgba(255,255,255,0.07)';
       ctx.fillRect(PAD, ry, inner, 2);
     }
     ctx.textBaseline = 'middle';
     const right = e.best ? formatSet(e.best.weight, e.best.reps) : '';
-    ctx.font = font(34, 650);
+    ctx.font = font(Math.round(36 * k), 650);
     const rw = ctx.measureText(right).width;
     ctx.textAlign = 'right';
     ctx.fillStyle = FG;
-    ctx.fillText(right, W - PAD, ry + rowH / 2);
+    ctx.fillText(right, W - PAD, mid);
     ctx.textAlign = 'left';
     ctx.fillStyle = SUBTLE;
-    ctx.font = font(26, 500);
+    ctx.font = font(Math.round(27 * k), 500);
     const setsLabel = pluralSets(e.sets);
     const sw = ctx.measureText(setsLabel).width;
-    ctx.fillText(setsLabel, W - PAD - rw - 28 - sw, ry + rowH / 2 + 2);
+    ctx.fillText(setsLabel, W - PAD - rw - sw - 28, mid + 1);
+    // A long name first gets smaller type (down to 80 %), only then an ellipsis.
+    const nameMax = inner - rw - sw - 72;
+    let size = Math.round(36 * k);
+    ctx.font = font(size, 500);
+    while (size > Math.round(29 * k) && ctx.measureText(e.name).width > nameMax) ctx.font = font(--size, 500);
     ctx.fillStyle = FG;
-    ctx.font = font(34, 500);
-    ctx.fillText(fit(ctx, e.name, inner - rw - sw - 72), PAD, ry + rowH / 2);
+    ctx.fillText(fit(ctx, e.name, nameMax), PAD, mid);
   });
-  if (more) {
-    ctx.fillStyle = SUBTLE;
-    ctx.font = font(28, 500);
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`і ще ${more} ${more === 1 ? 'вправа' : more < 5 ? 'вправи' : 'вправ'}`, PAD, bottom - rowH / 2);
-  }
 
-  // Body figures fill the space between stats and the list.
-  const figTop = y + 64;
-  const figH = listTop - 56 - figTop - 40;
-  if (figH > 240) {
+  // Body figures, centred in the space between the stats and the list.
+  if (figH > 0) {
+    const figTop = top + (listTop - top - figH - FIG_EXTRA) / 2 + 10;
     g = ctx.createRadialGradient(W / 2, figTop + figH / 2, 0, W / 2, figTop + figH / 2, figH * 0.75);
     g.addColorStop(0, rgba(A, 0.08));
     g.addColorStop(1, rgba(A, 0));
     ctx.fillStyle = g;
-    ctx.fillRect(0, figTop - 40, W, figH + 120);
-    drawBody(ctx, anatomy, card, 'front', W * 0.3, figTop, figH);
-    drawBody(ctx, anatomy, card, 'back', W * 0.7, figTop, figH);
+    ctx.fillRect(0, figTop - 40, W, figH + 80);
+    drawBody(ctx, anatomy, card, 'front', W * 0.32, figTop, figH);
+    drawBody(ctx, anatomy, card, 'back', W * 0.68, figTop, figH);
     ctx.fillStyle = SUBTLE;
     ctx.font = font(24, 500);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText('Спереду', W * 0.3, figTop + figH + 36);
-    ctx.fillText('Ззаду', W * 0.7, figTop + figH + 36);
+    ctx.fillText('Спереду', W * 0.32, figTop + figH + 36);
+    ctx.fillText('Ззаду', W * 0.68, figTop + figH + 36);
     ctx.textAlign = 'left';
   }
 
