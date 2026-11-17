@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import clsx from 'clsx';
 import {
-  ClipboardCopy, Clock, Copy, Dumbbell, Layers, Pencil, Play, Plus, Save, Share2, Trash2, TrendingDown, TrendingUp, Trophy, Weight, X,
+  ClipboardCopy, Clock, Copy, Dumbbell, Image as ImageIcon, Layers, Pencil, Play, Plus, Save, Share2, Trash2, TrendingDown, TrendingUp, Trophy, Weight, X,
 } from 'lucide-react';
 import type { WorkoutPlan, WorkoutSession } from '@/types';
 import { useData } from '@/store/DataContext';
@@ -21,6 +21,7 @@ import { uid } from '@/utils/id';
 import { sessionToText } from '@/utils/sessionText';
 import { copyText } from '@/utils/clipboard';
 import { Menu } from 'glisse';
+import { ShareImageSheet } from '@/components/workout/ShareImageSheet';
 import NotFound from './NotFound';
 
 export default function SessionDetail() {
@@ -32,6 +33,7 @@ export default function SessionDetail() {
   const toast = useToast();
   const session = sessions.find((s) => s.id === id);
   const [draft, setDraft] = useState<WorkoutSession | null>(null);
+  const [imageOpen, setImageOpen] = useState(false);
   usePageTitle(session?.name ?? 'Тренування');
 
   const info = useMemo(() => {
@@ -151,7 +153,8 @@ export default function SessionDetail() {
               aria-label="Дії з тренуванням"
               items={[
                 { label: 'Скопіювати як текст', icon: <ClipboardCopy size={18} />, onSelect: () => void copyWorkout() },
-                ...(canShare ? [{ label: 'Поділитися', icon: <Share2 size={18} />, onSelect: () => void shareWorkout() }] : []),
+                ...(canShare ? [{ label: 'Поділитися текстом', icon: <Share2 size={18} />, onSelect: () => void shareWorkout() }] : []),
+                { label: 'Поділитися фото', icon: <ImageIcon size={18} />, onSelect: () => setImageOpen(true) },
                 { label: 'Редагувати', icon: <Pencil size={18} />, onSelect: () => setDraft(JSON.parse(JSON.stringify(session)) as WorkoutSession) },
                 'separator',
                 { label: 'Видалити', icon: <Trash2 size={18} />, destructive: true, onSelect: () => void remove() },
@@ -160,7 +163,7 @@ export default function SessionDetail() {
           )
         }
       />
-
+      <ShareImageSheet session={session} open={imageOpen} onClose={() => setImageOpen(false)} />
 
       <div className="space-y-6">
         <Card padding="none" className="grid grid-cols-2 gap-px overflow-hidden bg-line bg-none sm:grid-cols-4">

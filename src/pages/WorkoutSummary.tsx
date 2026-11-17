@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import clsx from 'clsx';
-import { Check, Clock, Dumbbell, House, Layers, NotebookText, TrendingDown, TrendingUp, Trophy, Weight } from 'lucide-react';
+import { Check, Clock, Dumbbell, House, Image as ImageIcon, Layers, NotebookText, TrendingDown, TrendingUp, Trophy, Weight } from 'lucide-react';
 import { useData } from '@/store/DataContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { ButtonLink } from '@/components/ui/Button';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { ShareImageSheet } from '@/components/workout/ShareImageSheet';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { MuscleMap } from '@/components/exercise/MuscleMap';
 import { muscleTargets } from '@/data/exerciseMedia';
@@ -17,6 +18,7 @@ export default function WorkoutSummary() {
   const { id } = useParams();
   const { sessions, exerciseById } = useData();
   const session = sessions.find((s) => s.id === id);
+  const [imageOpen, setImageOpen] = useState(false);
 
   const info = useMemo(() => {
     if (!session) return null;
@@ -126,7 +128,10 @@ export default function WorkoutSummary() {
         )}
       </section>
 
-      <div className="mt-auto grid grid-cols-1 gap-3 pt-8 sm:grid-cols-2">
+      <div className="mt-auto grid grid-cols-1 gap-3 pt-8 sm:grid-cols-3">
+        <Button variant="secondary" size="lg" icon={ImageIcon} onClick={() => setImageOpen(true)}>
+          Поділитися фото
+        </Button>
         <ButtonLink to={`/history/${session.id}`} variant="secondary" size="lg" icon={NotebookText} replace>
           Деталі в журналі
         </ButtonLink>
@@ -134,6 +139,7 @@ export default function WorkoutSummary() {
           На головну
         </ButtonLink>
       </div>
+      <ShareImageSheet session={session} open={imageOpen} onClose={() => setImageOpen(false)} />
     </div>
   );
 }

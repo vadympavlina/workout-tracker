@@ -84,3 +84,22 @@ test('copy a finished workout as text from the journal', async ({ page, context 
   expect(text).toMatch(/\n\n.+ — \d+ підх\S*\n1\. [\d,]+ кг × \d+/);
   noErrors();
 });
+
+test('share a finished workout as a 9:16 picture', async ({ page }) => {
+  const noErrors = trackErrors(page);
+  await startDemo(page);
+  await page.goto('./#/history');
+  await page.locator('main a[href*="#/history/"]').first().click();
+  await page.getByRole('button', { name: 'Дії з тренуванням' }).click();
+  await page.getByRole('menuitem', { name: /Поділитися фото/ }).click();
+
+  const dialog = page.getByRole('dialog', { name: 'Поділитися фото' });
+  const img = dialog.getByRole('img', { name: /Картинка тренування/ });
+  await expect(img).toBeVisible();
+  const size = await img.evaluate((el: HTMLImageElement) => el.decode().then(() => [el.naturalWidth, el.naturalHeight]));
+  expect(size).toEqual([1080, 1920]);
+
+  const [download] = await Promise.all([page.waitForEvent('download'), dialog.getByRole('button', { name: 'Зберегти' }).click()]);
+  expect(download.suggestedFilename()).toMatch(/^pulse-\d{4}-\d\d-\d\d\.png$/);
+  noErrors();
+});

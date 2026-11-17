@@ -1,6 +1,10 @@
+import type { Exercise, Settings, WorkoutSession } from '@/types';
 import type { Anatomy, BodyType, Slug } from '@/data/anatomyTypes';
-import { NON_MUSCLE } from '@/data/anatomyTypes';
+import { MUSCLE_SLUGS, NON_MUSCLE } from '@/data/anatomyTypes';
+import { muscleTargets } from '@/data/exerciseMedia';
+import { ACCENTS } from '@/data/labels';
 import { formatNumber, formatSet, formatTime, formatWeekdayDate, pluralSets } from './format';
+import { bestSet, sessionVolume } from './stats';
 
 /** Everything the story card shows, already worked out from the session. */
 export interface ShareCard {
@@ -272,4 +276,56 @@ export function drawShareCard(ctx: CanvasRenderingContext2D, card: ShareCard, an
   ctx.textBaseline = 'alphabetic';
   ctx.fillText('Записано в Pulse', W / 2, CARD_H - 120);
   ctx.textAlign = 'left';
+}
+
+/** Works out what the card shows: only completed sets, muscles weighted like the weekly map. */
+export function buildShareCard(
+  session: WorkoutSession,
+  exerciseById: (id: string) => Exercise | undefined,
+  settings: Pick<Settings, 'accent' | 'bodyType'>,
+): ShareCard {
+  const load: Partial<Record<Slug, number>> = {};
+  const add = (slugs: Slug[] | undefined, n: number) => {
+    for (const slug of slugs ?? []) load[slug] = (load[slug] ?? 0) + n;
+  };
+  const exercises: ShareCard['exercises'] = [];
+  let sets = 0;
+  for (const e of session.exercises) {
+    const done = e.sets.filter((x) => x.done !== false && x.reps > 0);
+    if (!done.length) continue;
+    sets += done.length;
+    const best = bestSet(done.map((x) => ({ ...x, done: true })));
+    exercises.push({ name: e.name, sets: done.length, best: best && { weight: best.weight, reps: best.reps } });
+    const { primary, secondary } = muscleTargets(exerciseById(e.exerciseId) ?? { id: e.exerciseId, muscleGroup: 'fullBody' });
+    for (const m of primary) add(MUSCLE_SLUGS[m], done.length);
+    for (const m of secondary) if (!primary.includes(m)) add(MUSCLE_SLUGS[m], done.length / 2);
+  }
+  return {
+    name: session.name,
+    startedAt: session.startedAt,
+    durationSec: session.durationSec,
+    volumeKg: sessionVolume(session),
+    sets,
+    exercises,
+    load,
+    sex: settings.bodyType === 'female' ? 'female' : 'male',
+    accent: (ACCENTS[settings.accent] ?? ACCENTS.lime).accent,
+  };
+}
+
+/** Draws the card off-screen and returns it as a PNG. */
+export async function renderShareImage(card: ShareCard): Promise<Blob> {
+  const [{ ANATOMY }] = await Promise.all([
+    import('@/data/anatomy'),
+    document.fonts?.load(font(76, 700)),
+    document.fonts?.load(font(36, 500)),
+    document.fonts?.load(font(36, 650)),
+  ]);
+  const canvas = document.createElement('canvas');
+  canvas.width = CARD_W;
+  canvas.height = CARD_H;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas недоступний');
+  drawShareCard(ctx, card, ANATOMY);
+  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Не вдалося створити зображення'))), 'image/png'));
 }
