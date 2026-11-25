@@ -119,3 +119,34 @@ test('swap an exercise for one on the same muscles, filtered by equipment', asyn
   await expect(page.getByRole('navigation', { name: 'Вправи тренування' })).toContainText(pick);
   noErrors();
 });
+
+test('note on a single set: added from the row actions, kept in the journal', async ({ page }) => {
+  const noErrors = trackErrors(page);
+  await startDemo(page);
+  await page.getByRole('button', { name: 'Почати тренування' }).first().click();
+
+  await page.getByRole('button', { name: 'Позначити підхід 1 виконаним' }).click();
+  await page.getByRole('button', { name: 'Підхід 1: дії' }).click();
+  await page.getByRole('button', { name: 'Нотатка' }).first().click();
+  const input = page.getByRole('textbox', { name: 'Нотатка до підходу 1' });
+  await expect(input).toBeFocused();
+  await input.fill('вузький хват');
+  await input.press('Enter');
+  await expect(page.getByRole('button', { name: /Нотатка до підходу 1: вузький хват/ })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Завершити тренування' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Завершити' }).click();
+  await page.getByRole('link', { name: /Деталі в журналі/ }).click();
+  await expect(page.getByRole('list', { name: 'Нотатки до підходів' }).first()).toContainText('Підхід 1:вузький хват');
+  noErrors();
+});
+
+test('rest chime setting is on by default and can be turned off', async ({ page }) => {
+  await startDemo(page);
+  await page.goto('./#/profile');
+  await page.getByRole('button', { name: /^Налаштування/ }).click();
+  const sound = page.getByRole('switch', { name: /Звук/ });
+  await expect(sound).toBeChecked();
+  await sound.click();
+  await expect(sound).not.toBeChecked();
+});

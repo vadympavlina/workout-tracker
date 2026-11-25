@@ -8,6 +8,7 @@ import {
 import { IDLE_LIMIT_MS, useActiveWorkout } from '@/store/ActiveWorkoutContext';
 import { useData } from '@/store/DataContext';
 import { useNow } from '@/hooks/useNow';
+import { playRestChime, unlockAudio } from '@/utils/sound';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { Button, ButtonLink, IconButton } from '@/components/ui/Button';
@@ -54,10 +55,20 @@ export default function ActiveWorkoutPage() {
   useEffect(() => {
     if (restLeft != null && restLeft <= 0) {
       workout.expireRest();
-      if (data.settings.vibration) navigator.vibrate?.([180, 80, 180]);
+      // Back from the background long after the end: no late beep, just the note.
+      const onTime = restLeft > -3;
+      if (onTime && data.settings.vibration) navigator.vibrate?.([180, 80, 180]);
+      if (onTime && data.settings.sound) playRestChime();
       toast.info('Відпочинок завершено', 'Час для наступного підходу');
     }
-  }, [restLeft, workout, data.settings.vibration, toast]);
+  }, [restLeft, workout, data.settings.vibration, data.settings.sound, toast]);
+
+  // iOS plays sound only after a tap has unlocked audio; any tap on this screen does.
+  useEffect(() => {
+    if (!data.settings.sound) return;
+    document.addEventListener('pointerdown', unlockAudio, { passive: true });
+    return () => document.removeEventListener('pointerdown', unlockAudio);
+  }, [data.settings.sound]);
 
   useEffect(() => {
     setNoteOpen(false);
@@ -374,6 +385,7 @@ export default function ActiveWorkoutPage() {
                   onChange={(setIndex, patch) => workout.updateSet(idx, setIndex, patch)}
                   onToggle={toggle}
                   onRir={(setIndex, rir) => workout.updateSet(idx, setIndex, { rir })}
+                  onNote={(setIndex, note) => workout.updateSet(idx, setIndex, { note: note || undefined })}
                   onRemove={(setIndex) => {
                     const removed = workout.removeSet(idx, setIndex);
                     if (removed)

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import clsx from 'clsx';
+import { matchesExercise } from '@/utils/exerciseSearch';
 import { Check, Info, Plus } from 'lucide-react';
 import type { Exercise, MuscleGroup } from '@/types';
 import { Modal } from '@/components/ui/Modal';
@@ -40,7 +41,7 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
     const q = query.trim().toLowerCase();
     return data.exercises
       .filter((e) => (group === 'all' || e.muscleGroup === group) && (equipment === 'all' || e.equipment === equipment))
-      .filter((e) => !q || e.name.toLowerCase().includes(q))
+      .filter((e) => !q || matchesExercise(e, q))
       .sort((a, b) => a.name.localeCompare(b.name, 'uk'));
   }, [data.exercises, query, group, equipment]);
 

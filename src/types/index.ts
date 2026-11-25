@@ -118,6 +118,8 @@ export interface SetEntry {
   done: boolean;
   /** Reps in reserve: how many more reps were left (0 = failure, 4 = 4 or more). */
   rir?: number;
+  /** Short remark for this one set ("болить плече", "вузький хват"). */
+  note?: string;
 }
 
 export interface SessionExercise {
@@ -179,6 +181,7 @@ export interface ActiveSet {
   prevWeight: number | null;
   prevReps: number | null;
   rir?: number | null;
+  note?: string;
 }
 
 export interface BodyWeightEntry {
@@ -196,6 +199,8 @@ export interface Settings {
   restTimerSec: number;
   autoRestTimer: boolean;
   vibration: boolean;
+  /** Short chime when the rest timer ends. */
+  sound: boolean;
   /** Keep the screen on during an active workout. */
   keepAwake: boolean;
   /** Figure used in muscle drawings. */

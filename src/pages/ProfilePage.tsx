@@ -400,7 +400,8 @@ function SettingsSheet({ open, onClose, settings, onChange }: { open: boolean; o
           checked={settings.autoRestTimer}
           onChange={(v) => onChange({ autoRestTimer: v })}
         />
-        <Switch label="Вібрація" description="Сигнал про кінець відпочинку та нові рекорди" checked={settings.vibration} onChange={(v) => onChange({ vibration: v })} />
+        <Switch label="Звук" description="Короткий сигнал, коли закінчився відпочинок. Музику не перериває" checked={settings.sound} onChange={(v) => onChange({ sound: v })} />
+        <Switch label="Вібрація" description="Сигнал про кінець відпочинку та нові рекорди (не працює на iPhone)" checked={settings.vibration} onChange={(v) => onChange({ vibration: v })} />
         <Switch
           label="Екран не гасне"
           description="Під час тренування телефон не блокується"

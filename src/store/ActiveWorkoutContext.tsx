@@ -8,7 +8,7 @@ import { uid } from '@/utils/id';
 interface ActiveApi {
   active: ActiveWorkout | null;
   start: (plan: WorkoutPlan | null) => ActiveWorkout;
-  updateSet: (exIndex: number, setIndex: number, patch: Partial<Pick<ActiveSet, 'weight' | 'reps' | 'rir'>>) => void;
+  updateSet: (exIndex: number, setIndex: number, patch: Partial<Pick<ActiveSet, 'weight' | 'reps' | 'rir' | 'note'>>) => void;
   /** Toggles a set; returns `record` when the completed set beats the personal record. */
   toggleSet: (exIndex: number, setIndex: number) => { ok: boolean; record: boolean; reason?: string };
   addSet: (exIndex: number) => void;
@@ -338,7 +338,7 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
             note: e.note.trim(),
             sets: e.sets
               .filter((s) => s.done)
-              .map((s) => ({ id: s.id, weight: s.weight ?? 0, reps: s.reps ?? 0, done: true, ...(s.rir != null ? { rir: s.rir } : {}) })),
+              .map((s) => ({ id: s.id, weight: s.weight ?? 0, reps: s.reps ?? 0, done: true, ...(s.rir != null ? { rir: s.rir } : {}), ...(s.note?.trim() ? { note: s.note.trim() } : {}) })),
           }))
           .filter((e) => e.sets.length > 0);
         if (exercises.length === 0) return null;

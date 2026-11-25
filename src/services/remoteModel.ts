@@ -57,6 +57,7 @@ const set = (raw: unknown): SetEntry => {
   const out: SetEntry = { id: str(s.id), weight: num(s.weight), reps: num(s.reps), done: s.done !== false };
   const rir = numOrNull(s.rir);
   if (rir != null) out.rir = rir;
+  if (typeof s.note === 'string' && s.note.trim()) out.note = s.note;
   return out;
 };
 
@@ -150,6 +151,7 @@ const activeSet = (raw: unknown): ActiveSet => {
     prevWeight: numOrNull(s.prevWeight),
     prevReps: numOrNull(s.prevReps),
     ...(typeof s.rir === 'number' ? { rir: s.rir } : {}),
+    ...(typeof s.note === 'string' && s.note ? { note: s.note } : {}),
   };
 };
 

@@ -1,6 +1,6 @@
-import { Fragment, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { Fragment, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import clsx from 'clsx';
-import { Check, Minus, Plus, Trash2, Trophy } from 'lucide-react';
+import { Check, Minus, NotebookPen, Plus, Trash2, Trophy } from 'lucide-react';
 import type { ActiveExercise, ActiveSet } from '@/types';
 import { NumberInput } from '@/components/ui/NumberInput';
 import { formatNumber } from '@/utils/format';
@@ -16,21 +16,25 @@ interface Props {
   onRemove: (setIndex: number) => void;
   /** Reps in reserve for a done set (null clears it). */
   onRir: (setIndex: number, rir: number | null) => void;
+  /** Note for one set; an empty string removes it. */
+  onNote: (setIndex: number, note: string) => void;
 }
 
 const RIR_OPTIONS = [0, 1, 2, 3, 4] as const;
 const rirLabel = (n: number) => (n >= 4 ? '4+' : String(n));
 
 const GRID = 'grid grid-cols-[28px_minmax(0,1fr)_64px_46px] items-center gap-1.5 sm:grid-cols-[40px_minmax(0,1fr)_96px_52px] sm:gap-2.5';
-const REVEAL = 88;
+const ACTION = 84;
+const REVEAL = ACTION * 2 + 4;
 
 /**
  * Compact set logger. Each row: set number, weight with −/+ steppers, reps, done.
  * Last time's values sit as tiny captions inside the inputs. Swipe a row left —
- * or tap its number — to reveal "Delete".
+ * or tap its number — to reveal "Note" and "Delete".
  */
-export function SetTable({ exercise, isBodyweight, weightStep, recordSetId, onChange, onToggle, onRemove, onRir }: Props) {
+export function SetTable({ exercise, isBodyweight, weightStep, recordSetId, onChange, onToggle, onRemove, onRir, onNote }: Props) {
   const [openId, setOpenId] = useState<string | null>(null);
+  const [noteId, setNoteId] = useState<string | null>(null);
   // The effort question follows the latest completed set; earlier answers stay as a badge.
   let lastDone = -1;
   exercise.sets.forEach((s, i) => {
@@ -71,13 +75,29 @@ export function SetTable({ exercise, isBodyweight, weightStep, recordSetId, onCh
               setOpenId(null);
               onRemove(i);
             }}
+            onNote={() => {
+              setOpenId(null);
+              setNoteId(set.id);
+            }}
           />
+          {(noteId === set.id || set.note) && (
+            <SetNote
+              index={i}
+              value={set.note ?? ''}
+              editing={noteId === set.id}
+              onEdit={() => setNoteId(set.id)}
+              onSave={(note) => {
+                setNoteId(null);
+                if (note !== (set.note ?? '')) onNote(i, note);
+              }}
+            />
+          )}
           {i === lastDone && !exercise.finished && <RirPicker index={i} value={set.rir ?? null} onChange={(v) => onRir(i, v)} />}
           </Fragment>
         ))}
       </div>
       {exercise.sets.length > 0 && (
-        <p className="mt-2 text-center text-caption2 text-subtle">Свайп ← або натисни номер, щоб видалити підхід</p>
+        <p className="mt-2 text-center text-caption2 text-subtle">Свайп ← або натисни номер: нотатка чи видалення підходу</p>
       )}
     </div>
   );
@@ -93,9 +113,10 @@ interface RowProps {
   onChange: (patch: Partial<Pick<ActiveSet, 'weight' | 'reps'>>) => void;
   onToggle: () => void;
   onRemove: () => void;
+  onNote: () => void;
 }
 
-function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange, onToggle, onRemove }: RowProps) {
+function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange, onToggle, onRemove, onNote }: RowProps) {
   const [drag, setDrag] = useState<number | null>(null);
   const start = useRef<{ x: number; y: number; base: number; horizontal: boolean | null } | null>(null);
   const offset = drag ?? (open ? -REVEAL : 0);
@@ -122,20 +143,28 @@ function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange
 
   return (
     <div role="row" className="relative overflow-hidden rounded-tile">
-      <button
-        type="button"
-        onClick={onRemove}
-        tabIndex={open ? 0 : -1}
-        aria-hidden={!open}
-        className={clsx(
-          'absolute inset-y-0 right-0 flex items-center justify-center gap-1.5 rounded-tile bg-negative text-footnote font-semibold text-black transition-opacity',
-          offset === 0 ? 'opacity-0' : 'opacity-100',
-        )}
-        style={{ width: REVEAL - 6 }}
-      >
-        <Trash2 size={16} aria-hidden />
-        Видалити
-      </button>
+      <div className={clsx('absolute inset-y-0 right-0 flex gap-1 transition-opacity', offset === 0 ? 'opacity-0' : 'opacity-100')} aria-hidden={!open}>
+        <button
+          type="button"
+          onClick={onNote}
+          tabIndex={open ? 0 : -1}
+          className="flex flex-col items-center justify-center gap-0.5 rounded-tile bg-white/[0.12] text-caption font-semibold text-fg"
+          style={{ width: ACTION }}
+        >
+          <NotebookPen size={16} aria-hidden />
+          Нотатка
+        </button>
+        <button
+          type="button"
+          onClick={onRemove}
+          tabIndex={open ? 0 : -1}
+          className="flex flex-col items-center justify-center gap-0.5 rounded-tile bg-negative text-caption font-semibold text-black"
+          style={{ width: ACTION }}
+        >
+          <Trash2 size={16} aria-hidden />
+          Видалити
+        </button>
+      </div>
 
       <div
         onPointerDown={onPointerDown}
@@ -274,6 +303,47 @@ function RirPicker({ index, value, onChange }: { index: number; value: number | 
       ))}
     </div>
     </div>
+    </div>
+  );
+}
+
+/** A remark under one set: shown as a small line, edited in place. */
+function SetNote({ index, value, editing, onEdit, onSave }: { index: number; value: string; editing: boolean; onEdit: () => void; onSave: (note: string) => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (editing) ref.current?.focus();
+  }, [editing]);
+  const save = () => onSave((ref.current?.value ?? '').trim());
+  return (
+    <div role="row">
+      <div role="cell" className="block px-1">
+        {editing ? (
+          <input
+            ref={ref}
+            defaultValue={value}
+            maxLength={120}
+            enterKeyHint="done"
+            placeholder="Нотатка: вузький хват, боліло плече…"
+            aria-label={`Нотатка до підходу ${index + 1}`}
+            onBlur={save}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') e.currentTarget.blur();
+              if (e.key === 'Escape') onSave(value);
+            }}
+            className="h-10 w-full rounded-chip border border-white/[0.1] bg-white/[0.04] px-3 text-subhead text-fg placeholder:text-subtle focus:border-accent/60 focus:outline-none"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={onEdit}
+            aria-label={`Нотатка до підходу ${index + 1}: ${value}. Змінити`}
+            className="flex w-full items-start gap-2 rounded-chip px-2 py-1 text-left text-footnote text-muted transition hover:bg-white/[0.04]"
+          >
+            <NotebookPen size={14} className="mt-0.5 shrink-0 text-subtle" aria-hidden />
+            <span className="min-w-0 flex-1 break-words">{value}</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 }

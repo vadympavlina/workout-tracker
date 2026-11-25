@@ -269,6 +269,18 @@ export default function SessionDetail() {
                         </li>
                       ))}
                     </ul>
+                    {ex.sets.some((s) => s.note) && (
+                      <ul className="mt-2 space-y-1" aria-label="Нотатки до підходів">
+                        {ex.sets.map((s, si) =>
+                          s.note ? (
+                            <li key={s.id} className="flex gap-2 text-footnote text-muted">
+                              <span className="tabular shrink-0 text-subtle">Підхід {si + 1}:</span>
+                              <span className="min-w-0 break-words">{s.note}</span>
+                            </li>
+                          ) : null,
+                        )}
+                      </ul>
+                    )}
                     {prev && (
                       <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-line pt-3 text-footnote text-subtle">
                         <span>
