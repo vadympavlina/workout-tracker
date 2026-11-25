@@ -88,3 +88,27 @@ test('heavy sets: planned in the editor, tagged in the workout and the journal',
   await expect(page.getByRole('list', { name: 'Підходи' }).first()).toContainText('важк');
   noErrors();
 });
+
+test('only heavy sets: regular sets can be removed and added back', async ({ page }) => {
+  const noErrors = trackErrors(page);
+  await startDemo(page);
+  await page.goto('./#/plan');
+  await page.getByRole('link', { name: /Груди \+ Руки/ }).first().click();
+  await page.getByRole('button', { name: 'Редагувати' }).click();
+
+  const first = page.locator('ol > li').first();
+  await first.getByRole('button', { name: 'Додати важкий підхід' }).click();
+  await first.getByRole('button', { name: 'Прибрати звичайні підходи' }).click();
+  await expect(first.getByText('Лише важкі підходи')).toBeVisible();
+  await expect(first.getByRole('radiogroup', { name: 'Коли робити важкі підходи' })).toBeHidden();
+  await first.getByRole('textbox', { name: 'Важких підходів' }).fill('3');
+  await page.keyboard.press('Tab');
+  await page.getByRole('button', { name: 'Зберегти' }).click();
+
+  await expect(page.locator('ol li').first()).toContainText('3 важкі × 6–8');
+  await page.getByRole('button', { name: 'Почати тренування' }).click();
+  for (const n of [1, 2, 3]) await expect(page.getByRole('button', { name: `Підхід ${n} (важкий): дії` })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Підхід 4/ })).toHaveCount(0);
+  await expect(page.getByText(/Ціль: 3 важкі × 6–8$/)).toBeVisible();
+  noErrors();
+});

@@ -287,9 +287,29 @@ export default function PlanEditor() {
                       onClick={() => patch({ exercises: plan.exercises.filter((_, j) => j !== i) })}
                     />
                   </div>
-                  <div className="mt-3 grid grid-cols-3 gap-2">
-                    <CompactField label={pe.heavySets ? 'Звичайні' : 'Підходи'}>
-                      <NumberInput variant="compact" ariaLabel="Підходи" value={pe.sets} min={pe.heavySets ? 0 : 1} max={12} onChange={(v) => patchExercise(i, { sets: v ?? (pe.heavySets ? 0 : 1) })} />
+                  {pe.heavySets && pe.sets === 0 ? (
+                    <div className="mt-3 flex items-center gap-2 rounded-tile border border-dashed border-white/[0.12] px-3 py-2">
+                      <span className="flex-1 text-footnote text-muted">Лише важкі підходи</span>
+                      <button
+                        type="button"
+                        onClick={() => patchExercise(i, { sets: 2 })}
+                        className="inline-flex h-10 items-center gap-1.5 rounded-full px-2 text-footnote font-medium text-muted transition hover:bg-white/[0.06] hover:text-fg"
+                      >
+                        <Plus size={15} aria-hidden />
+                        Додати звичайні
+                      </button>
+                    </div>
+                  ) : (
+                    <div className={clsx(pe.heavySets && 'mt-3 rounded-tile border border-white/[0.08] p-2.5')} role={pe.heavySets ? 'group' : undefined} aria-label={pe.heavySets ? `Звичайні підходи: ${ex?.name ?? 'вправа'}` : undefined}>
+                      {!!pe.heavySets && (
+                        <div className="mb-2 flex items-center gap-1.5">
+                          <span className="flex-1 text-footnote font-semibold text-muted">Звичайні підходи</span>
+                          <IconButton icon={X} label="Прибрати звичайні підходи" size="sm" onClick={() => patchExercise(i, { sets: 0 })} />
+                        </div>
+                      )}
+                  <div className={clsx('grid grid-cols-3 gap-2', !pe.heavySets && 'mt-3')}>
+                    <CompactField label="Підходи">
+                      <NumberInput variant="compact" ariaLabel="Підходи" value={pe.sets} min={1} max={12} onChange={(v) => patchExercise(i, { sets: v ?? 1 })} />
                     </CompactField>
                     <CompactField label="Повт. від">
                       <NumberInput variant="compact" ariaLabel="Повторень від" value={pe.repsMin} min={1} max={100} onChange={(v) => patchExercise(i, { repsMin: v ?? 1 })} />
@@ -298,6 +318,8 @@ export default function PlanEditor() {
                       <NumberInput variant="compact" ariaLabel="Повторень до" value={pe.repsMax} min={1} max={100} onChange={(v) => patchExercise(i, { repsMax: v ?? 1 })} />
                     </CompactField>
                   </div>
+                    </div>
+                  )}
                   {pe.heavySets ? (
                     <div className="mt-3 rounded-tile border border-warning/25 bg-warning/[0.05] p-2.5" role="group" aria-label={`Важкі підходи: ${ex?.name ?? 'вправа'}`}>
                       <div className="mb-2 flex items-center gap-1.5">
@@ -321,6 +343,7 @@ export default function PlanEditor() {
                           <NumberInput variant="compact" ariaLabel="Важкі: повторень до" value={pe.heavyRepsMax ?? 8} min={1} max={100} onChange={(v) => patchExercise(i, { heavyRepsMax: v ?? 1 })} />
                         </CompactField>
                       </div>
+                      {pe.sets > 0 && (
                       <div className="mt-2 grid grid-cols-2 gap-1" role="radiogroup" aria-label="Коли робити важкі підходи">
                         {[
                           { last: false, label: 'Спочатку' },
@@ -342,6 +365,7 @@ export default function PlanEditor() {
                           );
                         })}
                       </div>
+                      )}
                     </div>
                   ) : (
                     <button
