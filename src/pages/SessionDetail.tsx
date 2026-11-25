@@ -90,13 +90,26 @@ export default function SessionDetail() {
       notes: '',
       exercises: session.exercises
         .filter((e) => exerciseById(e.exerciseId))
-        .map((e) => ({
-          id: uid(),
-          exerciseId: e.exerciseId,
-          sets: e.sets.length,
-          repsMin: e.targetRepsMin ?? Math.min(...e.sets.map((s) => s.reps)),
-          repsMax: e.targetRepsMax ?? Math.max(...e.sets.map((s) => s.reps)),
-        })),
+        .map((e) => {
+          const heavy = e.sets.filter((s) => s.heavy);
+          const regular = e.sets.filter((s) => !s.heavy);
+          const reps = (regular.length ? regular : e.sets).map((s) => s.reps);
+          return {
+            id: uid(),
+            exerciseId: e.exerciseId,
+            sets: regular.length,
+            repsMin: e.targetRepsMin ?? Math.min(...reps),
+            repsMax: e.targetRepsMax ?? Math.max(...reps),
+            ...(heavy.length
+              ? {
+                  heavySets: heavy.length,
+                  heavyRepsMin: Math.min(...heavy.map((s) => s.reps)),
+                  heavyRepsMax: Math.max(...heavy.map((s) => s.reps)),
+                  ...(e.sets[0]?.heavy ? {} : { heavyLast: true }),
+                }
+              : {}),
+          };
+        }),
       createdAt: now,
       updatedAt: now,
     };
@@ -260,6 +273,11 @@ export default function SessionDetail() {
                           )}
                         >
                           <span className="mr-1.5 text-subtle">{si + 1}</span>
+                          {s.heavy && (
+                            <span className="mr-1.5 rounded-full bg-warning/15 px-1.5 py-0.5 text-caption2 font-bold uppercase text-warning" title="Важкий підхід">
+                              важк<span className="sr-only">ий</span>
+                            </span>
+                          )}
                           {formatSet(s.weight, s.reps)}
                           {s.rir != null && (
                             <span className="ml-1.5 text-subtle" title="Запас повторень">

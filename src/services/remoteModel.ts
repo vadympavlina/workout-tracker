@@ -58,6 +58,7 @@ const set = (raw: unknown): SetEntry => {
   const rir = numOrNull(s.rir);
   if (rir != null) out.rir = rir;
   if (typeof s.note === 'string' && s.note.trim()) out.note = s.note;
+  if (s.heavy === true) out.heavy = true;
   return out;
 };
 
@@ -152,6 +153,7 @@ const activeSet = (raw: unknown): ActiveSet => {
     prevReps: numOrNull(s.prevReps),
     ...(typeof s.rir === 'number' ? { rir: s.rir } : {}),
     ...(typeof s.note === 'string' && s.note ? { note: s.note } : {}),
+    ...(s.heavy === true ? { heavy: true } : {}),
   };
 };
 
@@ -164,7 +166,19 @@ export function activeFromRemote(raw: unknown): ActiveWorkout | null {
     currentIndex: num(raw.currentIndex),
     restEndsAt: numOrNull(raw.restEndsAt),
     exercises: arr<Json>(raw.exercises).map(
-      (e): ActiveExercise => ({ ...sessionExercise(e), sets: arr(e.sets).map(activeSet), finished: e.finished === true, ...(typeof e.restSec === 'number' ? { restSec: e.restSec } : {}) }),
+      (e): ActiveExercise => {
+        const opt = (k: 'restSec' | 'targetRepsMin' | 'targetRepsMax' | 'heavyRepsMin' | 'heavyRepsMax') => (typeof e[k] === 'number' ? { [k]: e[k] as number } : {});
+        return {
+          ...sessionExercise(e),
+          sets: arr(e.sets).map(activeSet),
+          finished: e.finished === true,
+          ...opt('restSec'),
+          ...opt('targetRepsMin'),
+          ...opt('targetRepsMax'),
+          ...opt('heavyRepsMin'),
+          ...opt('heavyRepsMax'),
+        };
+      },
     ),
   };
 }

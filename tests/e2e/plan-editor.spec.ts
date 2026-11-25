@@ -52,3 +52,39 @@ test('exercise picker: open details before adding', async ({ page }) => {
   await expect(page.locator('main').getByText('Гак-присід', { exact: true })).toBeVisible();
   noErrors();
 });
+
+test('heavy sets: planned in the editor, tagged in the workout and the journal', async ({ page }) => {
+  const noErrors = trackErrors(page);
+  await startDemo(page);
+  await page.goto('./#/plan');
+  await page.getByRole('link', { name: /Груди \+ Руки/ }).first().click();
+  await page.getByRole('button', { name: 'Редагувати' }).click();
+
+  const first = page.locator('ol > li').first();
+  await first.getByRole('textbox', { name: 'Підходи' }).fill('2');
+  await page.keyboard.press('Tab');
+  await first.getByRole('button', { name: 'Додати важкий підхід' }).click();
+  const heavy = first.getByRole('group', { name: /^Важкі підходи/ });
+  await expect(heavy.getByRole('textbox', { name: 'Важких підходів' })).toHaveValue('1');
+  await heavy.getByRole('textbox', { name: 'Важкі: повторень від' }).fill('5');
+  await page.keyboard.press('Tab');
+  await heavy.getByRole('textbox', { name: 'Важкі: повторень до' }).fill('6');
+  await page.keyboard.press('Tab');
+  await page.getByRole('button', { name: 'Зберегти' }).click();
+
+  await expect(page).toHaveURL(/#\/workout\//);
+  await expect(page.locator('ol li').first()).toContainText('1 важкий × 5–6 + 2 ×');
+  await page.getByRole('button', { name: 'Почати тренування' }).click();
+
+  await expect(page.getByRole('button', { name: 'Підхід 1 (важкий): дії' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Підхід 2: дії' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Підхід 3: дії' })).toBeVisible();
+  await expect(page.getByText(/Ціль: 1 важкий × 5–6 \+ 2 ×/)).toBeVisible();
+
+  await page.getByRole('button', { name: 'Позначити підхід 1 виконаним' }).click();
+  await page.getByRole('button', { name: 'Завершити тренування' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Завершити' }).click();
+  await page.getByRole('link', { name: /Деталі в журналі/ }).click();
+  await expect(page.getByRole('list', { name: 'Підходи' }).first()).toContainText('важк');
+  noErrors();
+});

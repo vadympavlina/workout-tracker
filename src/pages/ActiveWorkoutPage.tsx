@@ -25,7 +25,7 @@ import { SwapExerciseModal } from '@/components/workout/SwapExerciseModal';
 import { WarmupPanel } from '@/components/workout/WarmupPanel';
 import { ExerciseMediaButton } from '@/components/exercise/ExerciseMediaButton';
 import { MUSCLE_GROUPS } from '@/data/labels';
-import { formatClock, formatDurationWords, formatNumber, formatSet, repsRange } from '@/utils/format';
+import { formatClock, formatDurationWords, formatNumber, formatSet, setScheme } from '@/utils/format';
 import { lastPerformance } from '@/utils/stats';
 import { suggestProgression } from '@/utils/progression';
 
@@ -102,9 +102,15 @@ export default function ActiveWorkoutPage() {
   const weightStep = currentEx?.equipment === 'dumbbell' || currentEx?.equipment === 'kettlebell' ? 1 : 2.5;
   const hint =
     current && lastTime && !current.finished
-      ? suggestProgression(lastTime.exercise.sets, current.targetRepsMin ?? 8, current.targetRepsMax ?? 12, weightStep)
+      ? suggestProgression(
+          // Heavy sets have their own reps and weight; the hint is about the regular ones.
+          lastTime.exercise.sets.some((s) => !s.heavy) ? lastTime.exercise.sets.filter((s) => !s.heavy) : lastTime.exercise.sets,
+          current.targetRepsMin ?? 8,
+          current.targetRepsMax ?? 12,
+          weightStep,
+        )
       : null;
-  const undone = current ? current.sets.filter((s) => !s.done) : [];
+  const undone = current ? current.sets.filter((s) => !s.done && !s.heavy) : [];
   // Warm-up targets the heaviest planned set (sets often ramp to a top weight).
   const workingWeight = current ? Math.max(0, ...current.sets.map((s) => s.weight ?? 0)) || null : null;
   const showHint =
@@ -282,7 +288,15 @@ export default function ActiveWorkoutPage() {
                   </p>
                   {currentEx && <p className="mt-1 text-footnote text-muted">{MUSCLE_GROUPS[currentEx.muscleGroup]}</p>}
                   <p className="mt-1 text-subhead text-muted">
-                    Ціль: <span className="tabular font-semibold text-fg">{current.sets.length} × {repsRange(current.targetRepsMin ?? 8, current.targetRepsMax ?? 12)}</span>
+                    Ціль: <span className="tabular font-semibold text-fg">{setScheme({
+                        sets: current.sets.filter((s) => !s.heavy).length,
+                        repsMin: current.targetRepsMin ?? 8,
+                        repsMax: current.targetRepsMax ?? 12,
+                        heavySets: current.sets.filter((s) => s.heavy).length,
+                        heavyRepsMin: current.heavyRepsMin,
+                        heavyRepsMax: current.heavyRepsMax,
+                        heavyLast: !!current.sets.length && !current.sets[0].heavy,
+                      })}</span>
                   </p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {currentEx?.equipment === 'barbell' && (
@@ -350,7 +364,7 @@ export default function ActiveWorkoutPage() {
                     className="h-9 shrink-0 px-3"
                     onClick={() => {
                       current.sets.forEach((s, i) => {
-                        if (!s.done) workout.updateSet(idx, i, { weight: hint.weight, reps: hint.reps });
+                        if (!s.done && !s.heavy) workout.updateSet(idx, i, { weight: hint.weight, reps: hint.reps });
                       });
                       setDismissedHints((d) => [...d, current.id]);
                     }}

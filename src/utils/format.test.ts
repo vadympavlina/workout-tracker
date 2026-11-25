@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatClock, formatPercent, formatSet, formatSigned, parseDecimal, plural, pluralWorkouts, repsRange } from './format';
+import { formatClock, formatPercent, formatSet, formatSigned, parseDecimal, plural, pluralWorkouts, repsRange, setScheme } from './format';
 import { startOfWeek, toISODate, weekdayOf } from './date';
 
 describe('Ukrainian plurals', () => {
@@ -48,5 +48,14 @@ describe('formatSet', () => {
     expect(formatSet(60, 12)).toBe('60 кг × 12');
     expect(formatSet(52.5, 8)).toBe('52,5 кг × 8');
     expect(formatSet(0, 17)).toBe('17 повт.');
+  });
+});
+
+describe('setScheme', () => {
+  it('describes plain and heavy-set plans', () => {
+    expect(setScheme({ sets: 3, repsMin: 10, repsMax: 12 })).toBe('3 × 10–12');
+    expect(setScheme({ sets: 2, repsMin: 12, repsMax: 15, heavySets: 1, heavyRepsMin: 6, heavyRepsMax: 8 })).toBe('1 важкий × 6–8 + 2 × 12–15');
+    expect(setScheme({ sets: 1, repsMin: 12, repsMax: 15, heavySets: 2, heavyRepsMin: 8, heavyRepsMax: 8, heavyLast: true })).toBe('1 × 12–15 + 2 важкі × 8');
+    expect(setScheme({ sets: 0, repsMin: 10, repsMax: 12, heavySets: 3, heavyRepsMin: 5, heavyRepsMax: 6 })).toBe('3 важкі × 5–6');
   });
 });

@@ -48,19 +48,34 @@ export const IDLE_LIMIT_MS = 60 * 60_000;
 function buildExercise(exercise: Exercise, planned: PlanExercise | null, sessions: WorkoutSession[]): ActiveExercise {
   const last = lastPerformance(sessions, exercise.id);
   const lastSets = last?.exercise.sets.filter((s) => s.done) ?? [];
-  const count = planned?.sets ?? (lastSets.length || exercise.defaultSets);
+  const heavyCount = planned?.heavySets ?? 0;
+  const count = planned ? planned.sets + heavyCount : lastSets.length || exercise.defaultSets;
   const repsMax = planned?.repsMax ?? exercise.defaultRepsMax;
+  const heavyRepsMax = planned?.heavyRepsMax ?? planned?.heavyRepsMin ?? repsMax;
   const isBodyweight = exercise.equipment === 'bodyweight';
+  // Heavy and regular sets are matched with their own kind from last time.
+  const lastHeavy = lastSets.filter((s) => s.heavy);
+  const lastRegular = lastSets.filter((s) => !s.heavy);
+  const topWeight = lastSets.length ? Math.max(...lastSets.map((s) => s.weight)) : null;
+  const heavyAt = (i: number) => (planned?.heavyLast ? i >= count - heavyCount : i < heavyCount);
 
+  let h = 0;
+  let r = 0;
   const sets: ActiveSet[] = Array.from({ length: count }, (_, i) => {
-    const prev = lastSets[i] ?? lastSets[lastSets.length - 1];
+    const heavy = heavyCount > 0 && heavyAt(i);
+    const pool = heavyCount > 0 ? (heavy ? lastHeavy : lastRegular) : lastSets;
+    const k = heavy ? h++ : r++;
+    const same = pool[k];
+    const prev = same ?? pool[pool.length - 1];
+    const weight = prev ? prev.weight : heavy && topWeight != null ? topWeight : lastSets[i]?.weight ?? lastSets[lastSets.length - 1]?.weight;
     return {
       id: uid(),
-      weight: prev ? prev.weight : isBodyweight ? 0 : null,
-      reps: prev ? prev.reps : repsMax,
+      weight: weight ?? (isBodyweight ? 0 : null),
+      reps: prev ? prev.reps : heavy ? heavyRepsMax : repsMax,
       done: false,
-      prevWeight: lastSets[i]?.weight ?? null,
-      prevReps: lastSets[i]?.reps ?? null,
+      prevWeight: same?.weight ?? null,
+      prevReps: same?.reps ?? null,
+      ...(heavy ? { heavy: true } : {}),
     };
   });
 
@@ -74,6 +89,7 @@ function buildExercise(exercise: Exercise, planned: PlanExercise | null, session
     note: '',
     finished: false,
     restSec: planned?.restSec,
+    ...(heavyCount > 0 ? { heavyRepsMin: planned?.heavyRepsMin ?? heavyRepsMax, heavyRepsMax } : {}),
   };
 }
 
@@ -272,13 +288,17 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
         mutate((a) => {
           const old = a.exercises[exIndex];
           if (!old) return a;
+          const left = old.sets.filter((s) => !s.done);
+          const pool = left.length ? left : old.sets;
+          const heavySets = pool.filter((s) => s.heavy).length;
           const planned: PlanExercise = {
             id: uid(),
             exerciseId: exercise.id,
-            sets: Math.max(1, old.sets.filter((s) => !s.done).length || old.sets.length),
+            sets: Math.max(heavySets ? 0 : 1, pool.length - heavySets),
             repsMin: old.targetRepsMin ?? exercise.defaultRepsMin,
             repsMax: old.targetRepsMax ?? exercise.defaultRepsMax,
             restSec: old.restSec,
+            ...(heavySets ? { heavySets, heavyRepsMin: old.heavyRepsMin, heavyRepsMax: old.heavyRepsMax, heavyLast: !pool[0]?.heavy } : {}),
           };
           const next = buildExercise(exercise, planned, sessions);
           const exercises = [...a.exercises];
@@ -338,7 +358,7 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
             note: e.note.trim(),
             sets: e.sets
               .filter((s) => s.done)
-              .map((s) => ({ id: s.id, weight: s.weight ?? 0, reps: s.reps ?? 0, done: true, ...(s.rir != null ? { rir: s.rir } : {}), ...(s.note?.trim() ? { note: s.note.trim() } : {}) })),
+              .map((s) => ({ id: s.id, weight: s.weight ?? 0, reps: s.reps ?? 0, done: true, ...(s.rir != null ? { rir: s.rir } : {}), ...(s.note?.trim() ? { note: s.note.trim() } : {}), ...(s.heavy ? { heavy: true } : {}) })),
           }))
           .filter((e) => e.sets.length > 0);
         if (exercises.length === 0) return null;

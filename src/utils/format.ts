@@ -106,3 +106,17 @@ export function parseDecimal(input: string): number | null {
   const n = Number(normalized);
   return Number.isFinite(n) ? n : null;
 }
+
+/**
+ * Planned sets in words: "3 × 10–12", or with heavy sets
+ * "1 важкий × 6–8 + 2 × 12–15" (heavy first unless they go last).
+ */
+export function setScheme(p: { sets: number; repsMin: number; repsMax: number; heavySets?: number; heavyRepsMin?: number; heavyRepsMax?: number; heavyLast?: boolean }): string {
+  const regular = p.sets > 0 ? `${p.sets} × ${repsRange(p.repsMin, p.repsMax)}` : '';
+  const n = p.heavySets ?? 0;
+  if (!n) return regular;
+  const hMax = p.heavyRepsMax ?? p.heavyRepsMin ?? p.repsMax;
+  const heavy = `${n} ${plural(n, ['важкий', 'важкі', 'важких'])} × ${repsRange(p.heavyRepsMin ?? hMax, hMax)}`;
+  if (!regular) return heavy;
+  return p.heavyLast ? `${regular} + ${heavy}` : `${heavy} + ${regular}`;
+}

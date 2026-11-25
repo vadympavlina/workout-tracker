@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useBlocker, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
-import { ArrowDown, ArrowUp, GripVertical, ListPlus, Plus, Save, Timer, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Flame, GripVertical, ListPlus, Plus, Save, Timer, Trash2, X } from 'lucide-react';
 import type { IconKey, PlanExercise, Weekday, WorkoutPlan } from '@/types';
 import { useData } from '@/store/DataContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -109,11 +109,14 @@ export default function PlanEditor() {
       ...plan,
       name: plan.name.trim(),
       notes: plan.notes.trim(),
-      exercises: plan.exercises.map((e) => ({
-        ...e,
-        repsMin: Math.min(e.repsMin, e.repsMax),
-        repsMax: Math.max(e.repsMin, e.repsMax),
-      })),
+      exercises: plan.exercises.map((e) => {
+        const { heavySets, heavyRepsMin, heavyRepsMax, heavyLast, ...rest } = e;
+        const base = { ...rest, sets: heavySets ? e.sets : Math.max(1, e.sets), repsMin: Math.min(e.repsMin, e.repsMax), repsMax: Math.max(e.repsMin, e.repsMax) };
+        if (!heavySets) return base;
+        const lo = heavyRepsMin ?? 6;
+        const hi = heavyRepsMax ?? lo;
+        return { ...base, heavySets, heavyRepsMin: Math.min(lo, hi), heavyRepsMax: Math.max(lo, hi), ...(heavyLast ? { heavyLast: true } : {}) };
+      }),
     };
     leaving.current = true;
     savePlan(cleaned);
@@ -285,8 +288,8 @@ export default function PlanEditor() {
                     />
                   </div>
                   <div className="mt-3 grid grid-cols-3 gap-2">
-                    <CompactField label="Підходи">
-                      <NumberInput variant="compact" ariaLabel="Підходи" value={pe.sets} min={1} max={12} onChange={(v) => patchExercise(i, { sets: v ?? 1 })} />
+                    <CompactField label={pe.heavySets ? 'Звичайні' : 'Підходи'}>
+                      <NumberInput variant="compact" ariaLabel="Підходи" value={pe.sets} min={pe.heavySets ? 0 : 1} max={12} onChange={(v) => patchExercise(i, { sets: v ?? (pe.heavySets ? 0 : 1) })} />
                     </CompactField>
                     <CompactField label="Повт. від">
                       <NumberInput variant="compact" ariaLabel="Повторень від" value={pe.repsMin} min={1} max={100} onChange={(v) => patchExercise(i, { repsMin: v ?? 1 })} />
@@ -295,6 +298,61 @@ export default function PlanEditor() {
                       <NumberInput variant="compact" ariaLabel="Повторень до" value={pe.repsMax} min={1} max={100} onChange={(v) => patchExercise(i, { repsMax: v ?? 1 })} />
                     </CompactField>
                   </div>
+                  {pe.heavySets ? (
+                    <div className="mt-3 rounded-tile border border-warning/25 bg-warning/[0.05] p-2.5" role="group" aria-label={`Важкі підходи: ${ex?.name ?? 'вправа'}`}>
+                      <div className="mb-2 flex items-center gap-1.5">
+                        <Flame size={15} className="shrink-0 text-warning" aria-hidden />
+                        <span className="flex-1 text-footnote font-semibold text-warning">Важкі підходи</span>
+                        <IconButton
+                          icon={X}
+                          label="Прибрати важкі підходи"
+                          size="sm"
+                          onClick={() => patchExercise(i, { heavySets: undefined, heavyRepsMin: undefined, heavyRepsMax: undefined, heavyLast: undefined, sets: Math.max(1, pe.sets) })}
+                        />
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <CompactField label="Підходи">
+                          <NumberInput variant="compact" ariaLabel="Важких підходів" value={pe.heavySets} min={1} max={6} onChange={(v) => patchExercise(i, { heavySets: v ?? 1 })} />
+                        </CompactField>
+                        <CompactField label="Повт. від">
+                          <NumberInput variant="compact" ariaLabel="Важкі: повторень від" value={pe.heavyRepsMin ?? 6} min={1} max={100} onChange={(v) => patchExercise(i, { heavyRepsMin: v ?? 1 })} />
+                        </CompactField>
+                        <CompactField label="Повт. до">
+                          <NumberInput variant="compact" ariaLabel="Важкі: повторень до" value={pe.heavyRepsMax ?? 8} min={1} max={100} onChange={(v) => patchExercise(i, { heavyRepsMax: v ?? 1 })} />
+                        </CompactField>
+                      </div>
+                      <div className="mt-2 grid grid-cols-2 gap-1" role="radiogroup" aria-label="Коли робити важкі підходи">
+                        {[
+                          { last: false, label: 'Спочатку' },
+                          { last: true, label: 'В кінці' },
+                        ].map(({ last, label }) => {
+                          const selected = !!pe.heavyLast === last;
+                          return (
+                            <button
+                              key={label}
+                              type="button"
+                              role="radio"
+                              aria-checked={selected}
+                              onClick={() => patchExercise(i, { heavyLast: last || undefined })}
+                              data-variant={selected ? 'filled' : undefined}
+                              className={clsx('lg-glass lg-button !h-9 !rounded-full !px-0 text-caption font-medium', !selected && 'text-muted')}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => patchExercise(i, { heavySets: 1, heavyRepsMin: 6, heavyRepsMax: 8 })}
+                      className="mt-2 inline-flex h-10 items-center gap-1.5 rounded-full px-2 text-footnote font-medium text-muted transition hover:bg-white/[0.06] hover:text-fg"
+                    >
+                      <Flame size={15} aria-hidden />
+                      Додати важкий підхід
+                    </button>
+                  )}
                   <div className="mt-3">
                     <span className="mb-1.5 flex items-center gap-1.5 text-footnote text-subtle">
                       <Timer size={14} className="shrink-0" aria-hidden />

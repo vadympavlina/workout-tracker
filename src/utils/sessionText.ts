@@ -40,7 +40,7 @@ export function sessionToText(session: WorkoutSession): string {
     lines.push('', `${e.name} — ${sets(e.sets.length)}`);
     e.sets.forEach((s, i) =>
       lines.push(
-        `${i + 1}. ${s.weight > 0 ? `${formatNumber(s.weight, 2)} кг × ${s.reps}` : `${s.reps} повт.`}${s.rir != null ? ` (запас ${s.rir >= 4 ? '4+' : s.rir})` : ''}${s.note ? ` — ${s.note}` : ''}`,
+        `${i + 1}. ${s.weight > 0 ? `${formatNumber(s.weight, 2)} кг × ${s.reps}` : `${s.reps} повт.`}${s.heavy ? ' (важкий)' : ''}${s.rir != null ? ` (запас ${s.rir >= 4 ? '4+' : s.rir})` : ''}${s.note ? ` — ${s.note}` : ''}`,
       ),
     );
     if (e.note.trim()) lines.push(`Нотатка: ${e.note.trim()}`);

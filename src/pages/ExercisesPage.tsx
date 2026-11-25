@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
-import { matchesExercise } from '@/utils/exerciseSearch';
+import { searchExercises } from '@/utils/exerciseSearch';
 import { ChevronRight, PersonStanding, Plus, X } from 'lucide-react';
 import type { Exercise, Muscle, MuscleGroup } from '@/types';
 import { useData } from '@/store/DataContext';
@@ -69,11 +69,11 @@ export default function ExercisesPage() {
       const t = muscleTargets(e);
       return t.primary.includes(muscle) ? 0 : t.secondary.includes(muscle) ? 1 : 2;
     };
-    return data.exercises
+    const filtered = data.exercises
       .filter((e) => (muscle ? rank(e) < 2 : group === 'all' ? true : group === 'custom' ? e.isCustom : e.muscleGroup === group))
-      .filter((e) => equipment === 'all' || e.equipment === equipment)
-      .filter((e) => !q || matchesExercise(e, q))
-      .sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, 'uk'));
+      .filter((e) => equipment === 'all' || e.equipment === equipment);
+    // With a query the best matches come first; without one, by muscle rank and name.
+    return q ? searchExercises(filtered, q) : filtered.sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, 'uk'));
   }, [data.exercises, query, group, equipment, muscle]);
   const picked: Partial<Record<Slug, string>> = {};
   if (muscle) for (const s of slugsOf([muscle])) picked[s] = ACCENT;

@@ -14,7 +14,7 @@ export interface ShareCard {
   volumeKg: number;
   sets: number;
   /** Completed sets of each exercise, in order. */
-  exercises: { name: string; sets: { weight: number; reps: number }[] }[];
+  exercises: { name: string; sets: { weight: number; reps: number; heavy?: boolean }[] }[];
   /** Sets per body shape (primary muscles 1, secondary ½). */
   load: Partial<Record<Slug, number>>;
   sex: BodyType;
@@ -138,7 +138,7 @@ interface Block {
   name: string;
   nameSize: number;
   /** Chips placed relative to the block. */
-  chips: { text: string; x: number; y: number; w: number; best: boolean }[];
+  chips: { text: string; x: number; y: number; w: number; best: boolean; heavy: boolean }[];
   height: number;
 }
 
@@ -176,7 +176,7 @@ function layoutList(ctx: CanvasRenderingContext2D, card: ShareCard, cols: number
         cx = 0;
         cy += chipH + gap;
       }
-      chips.push({ text, x: cx, y: cy, w, best: i === bestIdx });
+      chips.push({ text, x: cx, y: cy, w, best: i === bestIdx, heavy: !!set.heavy });
       cx += w + gap;
     });
     return { x: 0, y: 0, width, name: e.name, nameSize, chips, height: cy + chipH };
@@ -214,6 +214,12 @@ function drawList(ctx: CanvasRenderingContext2D, l: ListLayout, top: number, acc
       roundRect(ctx, b.x + c.x, by + c.y, c.w, chipH, 16 * k);
       ctx.fillStyle = c.best ? rgba(accent, 0.16) : 'rgba(255,255,255,0.06)';
       ctx.fill();
+      if (c.heavy) {
+        // Heavy set: warm outline, same as the "важк" tag in the app.
+        ctx.strokeStyle = 'rgb(255 196 72 / 0.75)';
+        ctx.lineWidth = 2.5 * k;
+        ctx.stroke();
+      }
       ctx.fillStyle = c.best ? `rgb(${accent})` : FG;
       ctx.fillText(c.text, b.x + c.x + 16 * k, by + c.y + chipH / 2 + 1);
     }
@@ -379,7 +385,7 @@ export function buildShareCard(
     const done = e.sets.filter((x) => x.done !== false && x.reps > 0);
     if (!done.length) continue;
     sets += done.length;
-    exercises.push({ name: e.name, sets: done.map((x) => ({ weight: x.weight, reps: x.reps })) });
+    exercises.push({ name: e.name, sets: done.map((x) => ({ weight: x.weight, reps: x.reps, ...(x.heavy ? { heavy: true } : {}) })) });
     const { primary, secondary } = muscleTargets(exerciseById(e.exerciseId) ?? { id: e.exerciseId, muscleGroup: 'fullBody' });
     for (const m of primary) add(MUSCLE_SLUGS[m], done.length);
     for (const m of secondary) if (!primary.includes(m)) add(MUSCLE_SLUGS[m], done.length / 2);

@@ -96,6 +96,12 @@ export interface PlanExercise {
   repsMax: number;
   /** Rest between sets for this exercise; falls back to the global setting. */
   restSec?: number;
+  /** Extra heavy sets on top of `sets`, with their own (usually lower) rep range. */
+  heavySets?: number;
+  heavyRepsMin?: number;
+  heavyRepsMax?: number;
+  /** Heavy sets go after the regular ones (default: first). */
+  heavyLast?: boolean;
 }
 
 export interface WorkoutPlan {
@@ -120,6 +126,8 @@ export interface SetEntry {
   rir?: number;
   /** Short remark for this one set ("болить плече", "вузький хват"). */
   note?: string;
+  /** Planned as a heavy set (lower reps, top weight). */
+  heavy?: boolean;
 }
 
 export interface SessionExercise {
@@ -170,6 +178,8 @@ export interface ActiveExercise extends Omit<SessionExercise, 'sets'> {
   finished: boolean;
   /** Planned rest for this exercise (seconds), if the plan sets one. */
   restSec?: number;
+  heavyRepsMin?: number;
+  heavyRepsMax?: number;
 }
 
 export interface ActiveSet {
@@ -182,6 +192,7 @@ export interface ActiveSet {
   prevReps: number | null;
   rir?: number | null;
   note?: string;
+  heavy?: boolean;
 }
 
 export interface BodyWeightEntry {
