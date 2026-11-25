@@ -13,6 +13,7 @@ import { ExerciseThumb } from '@/components/exercise/ExerciseThumb';
 import { EquipmentChips, type EquipmentFilter } from '@/components/exercise/EquipmentChips';
 import { useToast } from '@/components/ui/Toast';
 import { ExerciseFormModal } from '@/components/workout/ExerciseFormModal';
+import { emptyWithName } from '@/components/workout/ExercisePicker';
 import { EQUIPMENT, MUSCLE_GROUPS } from '@/data/labels';
 import { formatNumber, repsRange } from '@/utils/format';
 import { ACCENT, BodyFigure, slugsOf } from '@/components/exercise/Anatomy';
@@ -75,6 +76,7 @@ export default function ExercisesPage() {
     // With a query the best matches come first; without one, by muscle rank and name.
     return q ? searchExercises(filtered, q) : filtered.sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, 'uk'));
   }, [data.exercises, query, group, equipment, muscle]);
+  const elsewhere = list.length === 0 && query.trim() && (group !== 'all' || equipment !== 'all' || muscle) ? searchExercises(data.exercises, query).length : 0;
   const picked: Partial<Record<Slug, string>> = {};
   if (muscle) for (const s of slugsOf([muscle])) picked[s] = ACCENT;
 
@@ -153,7 +155,33 @@ export default function ExercisesPage() {
       </div>
 
       {list.length === 0 ? (
-        <p className="card p-8 text-center text-muted">Нічого не знайдено</p>
+        <div className="card flex flex-col items-center gap-3 p-8 text-center">
+          <p className="text-subhead text-muted">Нічого не знайдено{query.trim() ? ` за «${query.trim()}»` : ''}</p>
+          {elsewhere > 0 ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() =>
+                setParams(
+                  (prev) => {
+                    const next = new URLSearchParams(prev);
+                    ['group', 'eq', 'm'].forEach((k) => next.delete(k));
+                    return next;
+                  },
+                  { replace: true, preventScrollReset: true },
+                )
+              }
+            >
+              Показати {elsewhere} без фільтрів
+            </Button>
+          ) : (
+            query.trim() && (
+              <Button variant="secondary" size="sm" icon={Plus} onClick={() => setCreating(true)}>
+                Створити «{query.trim()}»
+              </Button>
+            )
+          )}
+        </div>
       ) : (
         <ul className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
           {list.map((e) => {
@@ -182,6 +210,7 @@ export default function ExercisesPage() {
 
       <ExerciseFormModal
         open={creating}
+        initial={creating && query.trim() && list.length === 0 ? emptyWithName(query.trim()) : null}
         onClose={() => setCreating(false)}
         onSave={(ex) => {
           saveExercise(ex);

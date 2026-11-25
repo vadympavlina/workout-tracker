@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import clsx from 'clsx';
 import {
-  ClipboardCopy, Clock, Copy, Dumbbell, Image as ImageIcon, Layers, Pencil, Play, Plus, Save, Share2, Trash2, TrendingDown, TrendingUp, Trophy, Weight, X,
+  ClipboardCopy, Clock, Copy, Dumbbell, Flame, Image as ImageIcon, Layers, NotebookPen, Pencil, Play, Plus, Save, Share2, Trash2, TrendingDown, TrendingUp, Trophy, Weight, X,
 } from 'lucide-react';
 import type { WorkoutPlan, WorkoutSession } from '@/types';
 import { useData } from '@/store/DataContext';
@@ -274,8 +274,9 @@ export default function SessionDetail() {
                         >
                           <span className="mr-1.5 text-subtle">{si + 1}</span>
                           {s.heavy && (
-                            <span className="mr-1.5 rounded-full bg-warning/15 px-1.5 py-0.5 text-caption2 font-bold uppercase text-warning" title="Важкий підхід">
-                              важк<span className="sr-only">ий</span>
+                            <span className="mr-1 inline-flex align-[-2px] text-warning" title="Важкий підхід">
+                              <Flame size={14} strokeWidth={2.4} aria-hidden />
+                              <span className="sr-only">важкий </span>
                             </span>
                           )}
                           {formatSet(s.weight, s.reps)}
@@ -291,7 +292,8 @@ export default function SessionDetail() {
                       <ul className="mt-2 space-y-1" aria-label="Нотатки до підходів">
                         {ex.sets.map((s, si) =>
                           s.note ? (
-                            <li key={s.id} className="flex gap-2 text-footnote text-muted">
+                            <li key={s.id} className="flex gap-1.5 text-footnote text-muted">
+                              <NotebookPen size={14} className="mt-[3px] shrink-0 text-subtle" aria-hidden />
                               <span className="tabular shrink-0 text-subtle">Підхід {si + 1}:</span>
                               <span className="min-w-0 break-words">{s.note}</span>
                             </li>

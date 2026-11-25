@@ -43,6 +43,11 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
     // With a query the best matches come first; without one, alphabetical.
     return q ? searchExercises(filtered, q) : filtered.sort((a, b) => a.name.localeCompare(b.name, 'uk'));
   }, [data.exercises, query, group, equipment]);
+  // Matches hidden by the group/equipment chips, offered when the filtered list is empty.
+  const elsewhere = useMemo(
+    () => (list.length === 0 && query.trim() && (group !== 'all' || equipment !== 'all') ? searchExercises(data.exercises, query).length : 0),
+    [list.length, query, group, equipment, data.exercises],
+  );
 
   return (
     <>
@@ -98,7 +103,23 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
             );
           })}
         </ul>
-        {list.length === 0 && <p className="py-8 text-center text-muted">Нічого не знайдено</p>}
+        {list.length === 0 && (
+          <div className="flex flex-col items-center gap-3 py-8 text-center">
+            <p className="text-subhead text-muted">Нічого не знайдено{query.trim() ? ` за «${query.trim()}»` : ''}</p>
+            {elsewhere > 0 && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setGroup('all');
+                  setEquipment('all');
+                }}
+              >
+                Показати {elsewhere} без фільтрів
+              </Button>
+            )}
+          </div>
+        )}
 
         <Button variant="secondary" block icon={Plus} className="mt-4" onClick={() => setCreating(true)}>
           Створити власну вправу
@@ -155,7 +176,7 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [], titl
   );
 }
 
-function emptyWithName(name: string): Exercise {
+export function emptyWithName(name: string): Exercise {
   return {
     id: '',
     name,

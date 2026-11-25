@@ -128,14 +128,14 @@ export default function WorkoutSummary() {
         )}
       </section>
 
-      <div className="mt-auto grid grid-cols-1 gap-3 pt-8 sm:grid-cols-3">
-        <Button variant="secondary" size="lg" icon={ImageIcon} onClick={() => setImageOpen(true)}>
-          Поділитися фото
+      <div className="mt-auto grid grid-cols-2 gap-3 pt-8 sm:grid-cols-3">
+        <Button variant="secondary" icon={ImageIcon} className="!h-12 !px-3" aria-label="Поділитися фото" onClick={() => setImageOpen(true)}>
+          Поділитися
         </Button>
-        <ButtonLink to={`/history/${session.id}`} variant="secondary" size="lg" icon={NotebookText} replace>
-          Деталі в журналі
+        <ButtonLink to={`/history/${session.id}`} variant="secondary" icon={NotebookText} className="!h-12 !px-3" aria-label="Деталі в журналі" replace>
+          Журнал
         </ButtonLink>
-        <ButtonLink to="/" size="lg" icon={House} replace>
+        <ButtonLink to="/" size="lg" icon={House} className="col-span-2 sm:col-span-1" replace>
           На головну
         </ButtonLink>
       </div>

@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import clsx from 'clsx';
-import { Check, Minus, NotebookPen, Plus, Trash2, Trophy } from 'lucide-react';
+import { Check, Flame, Minus, NotebookPen, Plus, Trash2, Trophy } from 'lucide-react';
 import type { ActiveExercise, ActiveSet } from '@/types';
 import { NumberInput } from '@/components/ui/NumberInput';
 import { formatNumber } from '@/utils/format';
@@ -179,6 +179,7 @@ function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange
         style={{ transform: `translateX(${offset}px)`, touchAction: 'pan-y' }}
       >
         <span className={clsx('pointer-events-none absolute inset-0 rounded-tile transition-colors duration-300', set.done ? 'bg-positive/[0.09]' : 'bg-transparent')} aria-hidden />
+        {set.heavy && <span className="pointer-events-none absolute inset-y-2 left-0 w-[3px] rounded-full bg-warning" aria-hidden />}
         <span role="cell" className="relative flex justify-center">
           <button
             type="button"
@@ -187,16 +188,12 @@ function SetRow({ set, index, weightStep, isRecord, open, onOpenChange, onChange
             aria-expanded={open}
             className={clsx(
               'tabular inline-flex h-9 w-7 items-center justify-center rounded-lg text-subhead font-semibold transition hover:bg-white/[0.06] sm:w-9',
-              set.done ? 'text-positive' : 'text-muted',
+              set.done ? 'text-positive' : set.heavy ? 'text-warning' : 'text-muted',
             )}
           >
             {index + 1}
           </button>
-          {set.heavy && (
-            <span className="pointer-events-none absolute -top-1.5 left-1/2 -translate-x-1/2 rounded-full bg-warning px-1 text-2xs font-bold uppercase leading-[14px] tracking-wide text-black" aria-hidden>
-              важк
-            </span>
-          )}
+          {set.heavy && <Flame size={11} strokeWidth={2.6} className="pointer-events-none absolute -top-1 left-1/2 -translate-x-1/2 text-warning" aria-hidden />}
           {set.done && set.rir != null && (
             <span
               className="tabular pointer-events-none absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-white/[0.08] px-1 text-2xs font-semibold leading-[14px] text-muted"
